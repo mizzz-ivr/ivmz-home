@@ -1,0 +1,8 @@
+.next
+node_modules
+coverage
+playwright-report
+test-results
+pnpm-lock.yaml
+*.md
+src/app/globals.css
