@@ -1,0 +1,28 @@
+@media (prefers-reduced-motion: reduce) {
+  .about-layers,
+  .writing-stack {
+    display: grid;
+    gap: 16px;
+    height: auto;
+    min-height: 0;
+  }
+
+  .about-plane,
+  .writing-stack article {
+    position: static;
+    inset: auto;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+  }
+
+  .about-plane {
+    left: auto;
+    right: auto;
+  }
+
+  .writing-stack {
+    max-width: none;
+    margin-left: 0;
+  }
+}
