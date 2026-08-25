@@ -33,13 +33,17 @@ export default function HomePage() {
   return (
     <main>
       <header className="site-header" aria-label="Primary navigation">
-        <a className="brand" href="#top" aria-label="mizzz home">mizzz</a>
+        <a className="brand" href="#top" aria-label="mizzz home">
+          mizzz
+        </a>
         <nav>
           <a href="#works">Works</a>
           <a href="#about">About</a>
           <a href="#writing">Writing</a>
           <a href="#schedule">Schedule</a>
-          <a className="nav-cta" href="#contact">Contact</a>
+          <a className="nav-cta" href="#contact">
+            Contact
+          </a>
         </nav>
       </header>
 
@@ -51,12 +55,17 @@ export default function HomePage() {
           </h1>
           <p className="hero-role">Product-minded Full Stack Developer</p>
           <p className="hero-description">
-            Web・Realtime AI・Discord・API・DB・運用まで、アイデアを触れるものにして、育てられる状態までつなげます。
+            Web・Realtime
+            AI・Discord・API・DB・運用まで、アイデアを触れるものにして、育てられる状態までつなげます。
           </p>
           <p className="hero-motto">BUILD SMALL · POLISH FAST · OPERATE SAFELY</p>
           <div className="hero-actions">
-            <a className="button button-primary" href="#works">Selected Works</a>
-            <a className="button button-ghost" href="#contact">Contact</a>
+            <a className="button button-primary" href="#works">
+              Selected Works
+            </a>
+            <a className="button button-ghost" href="#contact">
+              Contact
+            </a>
           </div>
         </div>
 
@@ -71,14 +80,28 @@ export default function HomePage() {
               priority
             />
           </div>
-          <span className="scribble scribble-a" aria-hidden="true">/////</span>
-          <span className="scribble scribble-b" aria-hidden="true">BUILDING...</span>
-          <span className="signal-tag tag-a" aria-hidden="true">React</span>
-          <span className="signal-tag tag-b" aria-hidden="true">Realtime</span>
-          <span className="signal-tag tag-c" aria-hidden="true">OSS</span>
-          <span className="cursor-mark" aria-hidden="true">↗</span>
+          <span className="scribble scribble-a" aria-hidden="true">
+            {'/////'}
+          </span>
+          <span className="scribble scribble-b" aria-hidden="true">
+            BUILDING...
+          </span>
+          <span className="signal-tag tag-a" aria-hidden="true">
+            React
+          </span>
+          <span className="signal-tag tag-b" aria-hidden="true">
+            Realtime
+          </span>
+          <span className="signal-tag tag-c" aria-hidden="true">
+            OSS
+          </span>
+          <span className="cursor-mark" aria-hidden="true">
+            ↗
+          </span>
         </div>
-        <a className="scroll-cue" href="#works">SCROLL ↓</a>
+        <a className="scroll-cue" href="#works">
+          SCROLL ↓
+        </a>
       </section>
 
       <section className="scene works" id="works" aria-labelledby="works-title">
@@ -109,7 +132,8 @@ export default function HomePage() {
         <div className="about-layers">
           {focus.map(([label, text], index) => (
             <div className={`about-plane about-plane-${index + 1}`} key={label}>
-              <strong>{label}</strong><span>{text}</span>
+              <strong>{label}</strong>
+              <span>{text}</span>
             </div>
           ))}
         </div>
@@ -122,9 +146,21 @@ export default function HomePage() {
           <span>技術記事・設計判断・制作記録を、読み返せる形で積み上げる。</span>
         </div>
         <div className="writing-stack">
-          <article><small>TECHNICAL</small><h3>Engineering Notes</h3><p>実装で得た知見を再現可能な形に。</p></article>
-          <article><small>CASE STUDY</small><h3>Build Decisions</h3><p>選定理由・制約・トレードオフまで残す。</p></article>
-          <article><small>ACTIVITY</small><h3>Release Log</h3><p>公開・改善・運用を継続して記録する。</p></article>
+          <article>
+            <small>TECHNICAL</small>
+            <h3>Engineering Notes</h3>
+            <p>実装で得た知見を再現可能な形に。</p>
+          </article>
+          <article>
+            <small>CASE STUDY</small>
+            <h3>Build Decisions</h3>
+            <p>選定理由・制約・トレードオフまで残す。</p>
+          </article>
+          <article>
+            <small>ACTIVITY</small>
+            <h3>Release Log</h3>
+            <p>公開・改善・運用を継続して記録する。</p>
+          </article>
         </div>
       </section>
 
@@ -135,26 +171,51 @@ export default function HomePage() {
           <span>Event / Release / Meetup / Publication / Availabilityだけを公開する。</span>
         </div>
         <div className="timeline" role="list">
-          <div role="listitem"><i /><strong>EVENT</strong><span>Public schedule entry</span></div>
-          <div role="listitem"><i /><strong>RELEASE</strong><span>Product / OSS release</span></div>
-          <div role="listitem"><i /><strong>PUBLICATION</strong><span>Article / announcement</span></div>
+          <div role="listitem">
+            <i />
+            <strong>EVENT</strong>
+            <span>Public schedule entry</span>
+          </div>
+          <div role="listitem">
+            <i />
+            <strong>RELEASE</strong>
+            <span>Product / OSS release</span>
+          </div>
+          <div role="listitem">
+            <i />
+            <strong>PUBLICATION</strong>
+            <span>Article / announcement</span>
+          </div>
         </div>
       </section>
 
       <section className="scene contact" id="contact" aria-labelledby="contact-title">
-        <div className="contact-signal" aria-hidden="true">mizzz / signal / contact</div>
+        <div className="contact-signal" aria-hidden="true">
+          mizzz / signal / contact
+        </div>
         <div className="contact-copy">
           <p>05 / CONTACT</p>
           <h2 id="contact-title">Let’s make something people can use.</h2>
           <span>問い合わせカテゴリからserver-sideで配送先を決定します。</span>
         </div>
         <div className="contact-routes">
-          <a href={`mailto:${site.contactEmail}`}><strong>Personal / Development / Job / Collaboration / Media</strong><span>{site.contactEmail}</span></a>
-          <a href={`mailto:${site.teamEmail}`}><strong>ivRooom / Community / Team</strong><span>{site.teamEmail}</span></a>
-          <a href={`mailto:${site.securityEmail}`}><strong>Security</strong><span>{site.securityEmail}</span></a>
+          <a href={`mailto:${site.contactEmail}`}>
+            <strong>Personal / Development / Job / Collaboration / Media</strong>
+            <span>{site.contactEmail}</span>
+          </a>
+          <a href={`mailto:${site.teamEmail}`}>
+            <strong>ivRooom / Community / Team</strong>
+            <span>{site.teamEmail}</span>
+          </a>
+          <a href={`mailto:${site.securityEmail}`}>
+            <strong>Security</strong>
+            <span>{site.securityEmail}</span>
+          </a>
         </div>
         <footer>
-          <a href={site.githubUrl}>GitHub</a><a href={site.communityUrl}>ivRooom</a><a href={site.url}>mizzz.ivrm.jp</a>
+          <a href={site.githubUrl}>GitHub</a>
+          <a href={site.communityUrl}>ivRooom</a>
+          <a href={site.url}>mizzz.ivrm.jp</a>
         </footer>
       </section>
     </main>
