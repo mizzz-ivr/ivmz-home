@@ -59,3 +59,11 @@ Do not adopt as a new default. AWS states App Runner stopped accepting new custo
 5. Keep anti-abuse/rate limiting replaceable.
 6. No DNS-provider-specific logic in page or content code.
 7. Deployment-specific config lives in dedicated files and ADRs.
+
+## References checked on 2026-08-25
+
+- AWS Amplify — Next.js support: https://docs.aws.amazon.com/amplify/latest/userguide/ssr-amplify-support.html
+- Netlify — Next.js overview: https://docs.netlify.com/build/frameworks/framework-setup-guides/nextjs/overview/
+- Payload — Production deployment: https://payloadcms.com/docs/production/deployment
+- Payload — Storage adapters / AWS S3: https://payloadcms.com/docs/upload/storage-adapters
+- AWS App Runner — CreateService availability notice: https://docs.aws.amazon.com/apprunner/latest/api/API_CreateService.html
