@@ -30,20 +30,23 @@ test('serves primary content, metadata, robots and sitemap', async ({ page, requ
   expect(await sitemap.text()).toContain('<loc>https://ivmz.ivrm.jp</loc>')
 })
 
-test('keeps layered content non-overlapping with reduced motion', async ({ page }) => {
+test('keeps layered content readable with reduced motion', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/')
 
-  const aboutPlanes = page.locator('.about-plane')
-  const writingCards = page.locator('.writing-stack article')
+  const workbench = page.locator('.about-workbench')
+  const workbenchWindows = workbench.locator('.workbench-window')
+  const writingCards = page.locator('.editorial-stack article')
 
-  await expect(aboutPlanes.first()).toBeVisible()
+  await expect(workbench).toBeVisible()
+  await expect(workbench.getByText('ship → learn → refine')).toBeVisible()
   await expect(writingCards.first()).toBeVisible()
 
-  for (const locator of [aboutPlanes, writingCards]) {
+  for (const locator of [workbenchWindows, writingCards]) {
     const count = await locator.count()
+    expect(count).toBeGreaterThan(0)
     for (let index = 0; index < count; index += 1) {
-      await expect(locator.nth(index)).toHaveCSS('position', 'static')
+      await expect(locator.nth(index)).toHaveCSS('transform', 'none')
     }
   }
 })
