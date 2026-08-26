@@ -156,13 +156,15 @@ function formatScheduleMeta(startAt: string, timezone: string, location?: string
  */
 export async function getHomeViewModel(): Promise<HomeViewModel> {
   try {
-    const [worksResult, postsResult, newsResult, scheduleResult, socialsResult] = await Promise.all([
-      getPublishedWorks(),
-      getLatestPosts(),
-      getLatestNews(),
-      getUpcomingSchedule(),
-      getEnabledSocialLinks(),
-    ])
+    const [worksResult, postsResult, newsResult, scheduleResult, socialsResult] = await Promise.all(
+      [
+        getPublishedWorks(),
+        getLatestPosts(),
+        getLatestNews(),
+        getUpcomingSchedule(),
+        getEnabledSocialLinks(),
+      ],
+    )
 
     return {
       capabilities: staticHomeViewModel.capabilities,
