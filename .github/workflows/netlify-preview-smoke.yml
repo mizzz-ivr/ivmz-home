@@ -103,15 +103,25 @@ jobs:
         shell: bash
         run: |
           response_file="$(mktemp)"
+          set +e
           status="$(
             curl --silent --show-error --location \
+              --connect-timeout 10 \
+              --max-time 60 \
               --output "$response_file" \
               --write-out '%{http_code}' \
               "$E2E_BASE_URL/api/payload-diagnostics"
           )"
+          curl_exit=$?
+          set -e
 
           cat "$response_file"
           echo
+
+          if [[ "$curl_exit" -ne 0 ]]; then
+            echo "Payload runtime preflight request failed: curl_exit=$curl_exit status=$status"
+            exit "$curl_exit"
+          fi
 
           if [[ "$status" != "200" ]]; then
             echo "Payload runtime preflight failed: status=$status"
