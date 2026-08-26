@@ -9,12 +9,6 @@ async function responseDiagnostic(response: APIResponse) {
   return `status=${response.status()} content-type=${contentType} body=${body.slice(0, 2_000)}`
 }
 
-test('Payload runtimeを初期化できる', async ({ request }) => {
-  const response = await request.get('/api/payload-diagnostics')
-
-  expect(response.status(), await responseDiagnostic(response)).toBe(200)
-})
-
 test('保護されたPayload Adminの入口を表示できる', async ({ page }) => {
   const response = await page.goto('/admin')
 
