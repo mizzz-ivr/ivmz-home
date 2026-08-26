@@ -6,6 +6,7 @@ on:
 
 permissions:
   contents: read
+  statuses: read
 
 jobs:
   preview-smoke:
@@ -13,6 +14,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       E2E_BASE_URL: https://deploy-preview-${{ github.event.pull_request.number }}--ivmz-home.netlify.app
+      NETLIFY_STATUS_CONTEXT: netlify/ivmz-home/deploy-preview
+      PREVIEW_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -25,16 +29,37 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium webkit
-      - name: Deploy Previewの起動を待機
+      - name: 対象commitのDeploy Preview完了を待機
         shell: bash
         run: |
-          for attempt in {1..20}; do
-            if curl --fail --silent --show-error --location --head "$E2E_BASE_URL" >/dev/null; then
-              exit 0
+          for attempt in {1..40}; do
+            state="$(
+              curl --fail --silent --show-error \
+                --header "Authorization: Bearer $GH_TOKEN" \
+                --header "Accept: application/vnd.github+json" \
+                "https://api.github.com/repos/$GITHUB_REPOSITORY/commits/$PREVIEW_HEAD_SHA/status" \
+                | jq -r --arg context "$NETLIFY_STATUS_CONTEXT" \
+                  '[.statuses[] | select(.context == $context)][0].state // "missing"'
+            )"
+
+            case "$state" in
+              success)
+                break
+                ;;
+              failure|error)
+                echo "Deploy Previewが失敗しました: commit=$PREVIEW_HEAD_SHA state=$state"
+                exit 1
+                ;;
+            esac
+
+            if [[ "$attempt" -eq 40 ]]; then
+              echo "対象commitのDeploy Preview完了を確認できませんでした: commit=$PREVIEW_HEAD_SHA state=$state"
+              exit 1
             fi
+
             sleep 15
           done
-          echo "Deploy Previewへ接続できませんでした: $E2E_BASE_URL"
-          exit 1
+
+          curl --fail --silent --show-error --location --head "$E2E_BASE_URL" >/dev/null
       - name: 実Deploy Previewに対するPlaywright smokeを実行
         run: pnpm test:e2e
