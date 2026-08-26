@@ -99,5 +99,23 @@ jobs:
           done
 
           curl --fail --silent --show-error --location --head "$E2E_BASE_URL" >/dev/null
+      - name: Payload runtime preflight
+        shell: bash
+        run: |
+          response_file="$(mktemp)"
+          status="$(
+            curl --silent --show-error --location \
+              --output "$response_file" \
+              --write-out '%{http_code}' \
+              "$E2E_BASE_URL/api/payload-diagnostics"
+          )"
+
+          cat "$response_file"
+          echo
+
+          if [[ "$status" != "200" ]]; then
+            echo "Payload runtime preflight failed: status=$status"
+            exit 1
+          fi
       - name: 実Deploy Previewに対するPlaywright smokeを実行
         run: pnpm test:e2e
