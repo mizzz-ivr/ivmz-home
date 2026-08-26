@@ -1,6 +1,6 @@
 # Payload CMS + PostgreSQL Foundation
 
-状態: Draft PR実装中 — 2026-08-26
+状態: Foundation実装・Deploy Preview検証済み — 2026-08-26
 
 ## Scope
 
@@ -101,7 +101,7 @@ Admin認証はPayload標準Authのみを使用する。
 - Production cookieはSecure
 - CSRF/CORSは設定済みoriginのみ許可
 
-Usersの各operationへ重複した独自access logicを追加せず、Payloadの標準的なauthenticated collection accessをbaselineとする。
+UsersのCRUDはPayload標準のauthenticated default accessをbaselineとする。Payload 3.88.0で認可拒否が環境によってHTTP 500へ包まれるケースに対しては、Users collectionの`afterError`で、匿名リクエストかつPayloadのUnauthorizedシグナルと判定できる場合だけHTTP 401へ正規化する。DB/TLS/その他のserver errorは500のまま維持し、E2Eでも500を正常扱いしない。
 
 ## Media境界
 
@@ -117,7 +117,7 @@ Production:
 
 次のmedia-storage PRでPayload S3 adapterを追加できる。AWS S3を採用する場合、production writeを有効化する前にbucket、public access block、encryption、lifecycle、CORS、least-privilege IAM設定をTerraformで管理する。
 
-## CI gate
+## CI / Deploy Preview gate
 
 GitHub ActionsではPostgreSQL 17を使用し、以下を検証する。
 
@@ -130,11 +130,18 @@ GitHub ActionsではPostgreSQL 17を使用し、以下を検証する。
 - generated Payload artifactのdrift
 - Next.js build
 
-既存Netlify remote Playwright jobをdeployment gateとして維持し、`/admin` と匿名 `/api/users` accessの検証を追加している。
+Netlify remote Playwrightでは以下を検証する。
 
-## Deploy Previewの現在状態
+- canonical / robots / sitemapが `https://ivmz.ivrm.jp` を指すこと
+- `/admin` がPayload loginまたはfirst-user画面へ正常遷移すること
+- 匿名 `/api/users?limit=1` が401/403で拒否されること
+- Chromium / mobile WebKitの両方で成立すること
 
-2026-08-26、Preview用runtime role `ivmz_home_app` のPassword設定とNetlify `DATABASE_URL` の更新を確認した。
+Remote Deploy Previewでは一時的なTLS/connection resetが発生し得るため、remote実行時のみPlaywright retryを最大2回許可する。HTTP statusやauthorization assertionは緩和しない。
+
+## Deploy Preview PostgreSQL
+
+2026-08-26、Preview用runtime role `ivmz_home_app` とNetlifyの接続設定を実環境で検証した。
 
 対応済み:
 
@@ -143,16 +150,41 @@ GitHub ActionsではPostgreSQL 17を使用し、以下を検証する。
 - Netlify Deploy Preview scopeへ `DATABASE_URL` をsecretとして設定
 - Preview用PostgreSQLに専用schema `ivmz_home` を作成
 - Preview用runtime role `ivmz_home_app` を作成（superuser / CREATEDB / CREATEROLEなし）
-- `ivmz_home_app` は `LOGIN = true` かつPassword設定済み
+- `ivmz_home_app` は `LOGIN = true` かつSCRAM-SHA-256 Password設定済み
 - Repositoryと同じ初期Payload migrationを `ivmz_home` schemaへ適用
 - `payload_migrations` にRepository migrationと一致するmigration stateを記録
-- Repository rename後のruntime role名に合わせ、Netlify `DATABASE_URL` のusername更新を確認
-- Runtime接続診断を受け、URL-safeな新PasswordへrotationしNetlify secretへ再反映済み
-- Supabase Connect画面のSession pooler接続先を基準に、Netlify `DATABASE_URL` のhost / port側を再反映済み
-- `pg-connection-string` のlibpq互換TLS解釈へ合わせ、接続URLのTLS互換オプションを再反映済み
+- application table ownerを `ivmz_home_app` に統一
+- Runtime credentialをURL-safeなPasswordへrotation
+- Supabase Connect画面のSession pooler host / port `5432` を使用
+- `pg@8.20.0` / `pg-connection-string@2.14.0` のTLS解釈に合わせ、libpq互換TLSオプションを接続設定へ反映
+- 安全診断でPayload initializationと実DB queryの成功を確認後、診断route / workflowをRepositoryから削除
 
-この更新commitでDeploy Previewを再生成し、`/admin` の正常起動、匿名 `/api/users` の401/403応答、Chromium / mobile WebKitのremote smokeを再確認する。
+Secret値や完全な`DATABASE_URL`はRepository・PR・ドキュメントへ保存しない。
 
-HTTP 500を正常扱いにするためのテスト緩和は行わない。実Deploy PreviewのPayload runtimeが正常になるまでPRはDraftのまま維持する。
+## 検証結果
 
-このPhaseではDNS recordを変更しない。
+接続・認可修正後の実Deploy Previewで以下を確認済み。
+
+- CI #81: GREEN
+- Netlify Deploy Preview: Ready / secret scan 0件
+- Netlify Preview Smoke #64: GREEN
+- `/admin`: 正常起動
+- 匿名 `/api/users`: 401/403
+- Chromium / mobile WebKit: GREEN
+
+このドキュメント更新後のHEADでも同じCI / Deploy Preview smokeを再実行し、merge readinessの最終gateとする。
+
+## Identity
+
+Runtime identityは以下へ統一する。
+
+- Repository: `mizzz-ivr/ivmz-home`
+- Canonical: `https://ivmz.ivrm.jp`
+- General contact: `ivmz@ivrm.jp`
+- Developer / OSS: `mizzz@ivrm.jp`
+- Team: `contact@ivrm.jp`
+- Security: `security@ivrm.jp`
+
+旧Identityは`docs/identity-contact.md`の移行履歴として必要な箇所だけ保持する。
+
+このPhaseではProduction DNS recordを変更しない。
