@@ -1,69 +1,103 @@
-const expectedPoolerUsername = 'ivmz_home_app.drazbrcqnjxjuygfxmlz'
+type SafeErrorDetails = {
+  codes: string[]
+  names: string[]
+  messages: string[]
+}
 
-export function GET() {
-  const rawDatabaseUrl = process.env.DATABASE_URL
+const knownCategories: Record<string, string> = {
+  '28P01': 'authentication',
+  '3D000': 'database',
+  '42501': 'authorization',
+  ECONNREFUSED: 'connection-refused',
+  ECONNRESET: 'connection-reset',
+  ENETUNREACH: 'network',
+  ENOTFOUND: 'dns',
+  ETIMEDOUT: 'timeout',
+}
 
-  if (!rawDatabaseUrl) {
-    return Response.json({
-      ok: false,
-      hasDatabaseUrl: false,
+function collectSafeErrorDetails(
+  error: unknown,
+  details: SafeErrorDetails = { codes: [], names: [], messages: [] },
+  depth = 0,
+): SafeErrorDetails {
+  if (depth > 4 || typeof error !== 'object' || error === null) return details
+
+  const candidate = error as {
+    cause?: unknown
+    code?: unknown
+    errors?: unknown[]
+    message?: unknown
+    name?: unknown
+  }
+
+  if (typeof candidate.code === 'string' && /^[A-Z0-9_]+$/.test(candidate.code)) {
+    details.codes.push(candidate.code)
+  }
+
+  if (typeof candidate.name === 'string' && /^[A-Za-z0-9_.-]+$/.test(candidate.name)) {
+    details.names.push(candidate.name)
+  }
+
+  if (typeof candidate.message === 'string') {
+    details.messages.push(candidate.message.toLowerCase())
+  }
+
+  collectSafeErrorDetails(candidate.cause, details, depth + 1)
+
+  for (const nestedError of candidate.errors ?? []) {
+    collectSafeErrorDetails(nestedError, details, depth + 1)
+  }
+
+  return details
+}
+
+export const dynamic = 'force-dynamic'
+
+export async function GET() {
+  try {
+    const [{ getPayload }, { default: config }] = await Promise.all([
+      import('payload'),
+      import('@payload-config'),
+    ])
+    const payload = await getPayload({ config })
+
+    await payload.find({
+      collection: 'users',
+      limit: 1,
+      overrideAccess: true,
+      pagination: false,
     })
+
+    return Response.json({ ok: true })
+  } catch (error) {
+    const details = collectSafeErrorDetails(error)
+    const uniqueCodes = [...new Set(details.codes)]
+    const uniqueNames = [...new Set(details.names)]
+    const combinedMessage = details.messages.join('\n')
+    const category =
+      uniqueCodes.map((code) => knownCategories[code]).find(Boolean) ??
+      (combinedMessage.includes('password authentication failed') ? 'authentication' : null) ??
+      (combinedMessage.includes('tenant or user not found') ? 'pooler-user' : null) ??
+      (combinedMessage.includes('sasl') ? 'sasl' : null) ??
+      (combinedMessage.includes('certificate') ? 'tls' : null) ??
+      (combinedMessage.includes('prepared statement') ? 'prepared-statement' : null) ??
+      'unknown'
+
+    return Response.json(
+      {
+        ok: false,
+        category,
+        codes: uniqueCodes,
+        names: uniqueNames,
+        signals: {
+          passwordAuthenticationFailed: combinedMessage.includes('password authentication failed'),
+          poolerUserNotFound: combinedMessage.includes('tenant or user not found'),
+          saslFailure: combinedMessage.includes('sasl'),
+          tlsFailure: combinedMessage.includes('certificate'),
+          preparedStatementFailure: combinedMessage.includes('prepared statement'),
+        },
+      },
+      { status: 503 },
+    )
   }
-
-  const protocolMatch = rawDatabaseUrl.match(/^(postgresql|postgres):\/\//)
-  const protocolPrefixOk = Boolean(protocolMatch)
-  const hasOuterQuotes = /^["']|["']$/.test(rawDatabaseUrl)
-  const containsWhitespace = /\s/.test(rawDatabaseUrl)
-  const containsPlaceholderAngles = /[<>]/.test(rawDatabaseUrl)
-  const malformedPercentEncoding = /%(?![0-9A-Fa-f]{2})/.test(rawDatabaseUrl)
-
-  const authorityStart = protocolMatch?.[0].length ?? 0
-  const lastAt = rawDatabaseUrl.lastIndexOf('@')
-  const hasCredentialSeparator = lastAt > authorityStart
-  const credentialPart = hasCredentialSeparator
-    ? rawDatabaseUrl.slice(authorityStart, lastAt)
-    : ''
-  const passwordSeparator = credentialPart.indexOf(':')
-  const username = passwordSeparator >= 0 ? credentialPart.slice(0, passwordSeparator) : ''
-  const rawPassword = passwordSeparator >= 0 ? credentialPart.slice(passwordSeparator + 1) : ''
-  const hostAndPath = hasCredentialSeparator ? rawDatabaseUrl.slice(lastAt + 1) : ''
-  const hostPort = hostAndPath.split('/', 1)[0] ?? ''
-  const pathAndQuery = hostAndPath.slice(hostPort.length)
-
-  const checks = {
-    hasDatabaseUrl: true,
-    protocolPrefixOk,
-    hasOuterQuotes,
-    containsWhitespace,
-    containsPlaceholderAngles,
-    malformedPercentEncoding,
-    hasCredentialSeparator,
-    usernameOk: username === expectedPoolerUsername,
-    hasPassword: rawPassword.length > 0,
-    passwordHasUnencodedStructuralCharacters: /[/?#\[\]@]/.test(rawPassword),
-    poolerDomainOk: /\.pooler\.supabase\.com(?::\d+)?$/.test(hostPort),
-    directDbHostDetected: /^db\.drazbrcqnjxjuygfxmlz\.supabase\.co(?::\d+)?$/.test(hostPort),
-    sessionPort5432: /:5432$/.test(hostPort),
-    transactionPort6543: /:6543$/.test(hostPort),
-    hasExplicitPort: /:\d+$/.test(hostPort),
-    databasePathOk: /^\/postgres(?:\?|$)/.test(pathAndQuery),
-    sslModeLiteralOk: /[?&]sslmode=require(?:&|$)/.test(rawDatabaseUrl),
-  }
-
-  const ok =
-    checks.protocolPrefixOk &&
-    !checks.hasOuterQuotes &&
-    !checks.containsWhitespace &&
-    !checks.containsPlaceholderAngles &&
-    !checks.malformedPercentEncoding &&
-    checks.hasCredentialSeparator &&
-    checks.usernameOk &&
-    checks.hasPassword &&
-    !checks.passwordHasUnencodedStructuralCharacters &&
-    checks.poolerDomainOk &&
-    checks.sessionPort5432 &&
-    checks.databasePathOk &&
-    checks.sslModeLiteralOk
-
-  return Response.json({ ok, ...checks })
 }
