@@ -1,0 +1,22 @@
+.theme-mark-light {
+  display: none;
+}
+
+:root[data-theme='light'] .theme-mark-dark {
+  display: none;
+}
+
+:root[data-theme='light'] .theme-mark-light {
+  display: inline;
+}
+
+:root.ivmz-signature-seen .signature-intro {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .work-entry::after {
+    left: 0;
+    right: 0;
+  }
+}
