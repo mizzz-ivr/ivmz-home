@@ -112,13 +112,24 @@ export function SiteHeader() {
     <>
       <header className="signal-header" aria-label="Primary navigation">
         <div className="desktop-nav-shell">
-          <Link className="brand-mark" href="/" aria-label="ivmz home" aria-current={homeCurrent ? 'page' : undefined}>
-            <span className="brand-glyph" aria-hidden="true">i/</span>
+          <Link
+            className="brand-mark"
+            href="/"
+            aria-label="ivmz home"
+            aria-current={homeCurrent ? 'page' : undefined}
+          >
+            <span className="brand-glyph" aria-hidden="true">
+              i/
+            </span>
             <span className="brand-word">ivmz</span>
           </Link>
           <nav className="desktop-nav" aria-label="Desktop navigation">
             {navigation.map(([label, href]) => (
-              <Link key={label} href={href} aria-current={isCurrentRoute(pathname, href) ? 'page' : undefined}>
+              <Link
+                key={label}
+                href={href}
+                aria-current={isCurrentRoute(pathname, href) ? 'page' : undefined}
+              >
                 {label}
               </Link>
             ))}
@@ -130,8 +141,16 @@ export function SiteHeader() {
         </div>
 
         <div className="mobile-nav-shell">
-          <Link className="brand-mark" href="/" aria-label="ivmz home" aria-current={homeCurrent ? 'page' : undefined} onClick={closeDrawer}>
-            <span className="brand-glyph" aria-hidden="true">i/</span>
+          <Link
+            className="brand-mark"
+            href="/"
+            aria-label="ivmz home"
+            aria-current={homeCurrent ? 'page' : undefined}
+            onClick={closeDrawer}
+          >
+            <span className="brand-glyph" aria-hidden="true">
+              i/
+            </span>
             <span className="brand-word">ivmz</span>
           </Link>
           <div className="mobile-actions">
@@ -152,24 +171,53 @@ export function SiteHeader() {
         </div>
       </header>
 
-      <div className={`drawer-backdrop${open ? ' is-open' : ''}`} aria-hidden="true" onClick={closeDrawer} />
-      <div ref={drawerRef} id="mobile-navigation" className={`mobile-drawer${open ? ' is-open' : ''}`} aria-hidden={!open}>
+      <div
+        className={`drawer-backdrop${open ? ' is-open' : ''}`}
+        aria-hidden="true"
+        onClick={closeDrawer}
+      />
+      <div
+        ref={drawerRef}
+        id="mobile-navigation"
+        className={`mobile-drawer${open ? ' is-open' : ''}`}
+        aria-hidden={!open}
+      >
         <div className="drawer-topline">
           <span>NAV / 001</span>
-          <button type="button" onClick={() => { closeDrawer(); triggerRef.current?.focus() }} aria-label="メニューを閉じる">
+          <button
+            type="button"
+            onClick={() => {
+              closeDrawer()
+              triggerRef.current?.focus()
+            }}
+            aria-label="メニューを閉じる"
+          >
             CLOSE
           </button>
         </div>
         <nav aria-label="Mobile navigation">
           {navigation.map(([label, href], index) => (
-            <Link key={label} href={href} onClick={closeDrawer} tabIndex={open ? 0 : -1} aria-current={isCurrentRoute(pathname, href) ? 'page' : undefined}>
+            <Link
+              key={label}
+              href={href}
+              onClick={closeDrawer}
+              tabIndex={open ? 0 : -1}
+              aria-current={isCurrentRoute(pathname, href) ? 'page' : undefined}
+            >
               <span>0{index + 1}</span>
               {label}
             </Link>
           ))}
-          <span className="drawer-coming"><span>08</span>STORE <small>COMING SOON</small></span>
+          <span className="drawer-coming">
+            <span>08</span>
+            STORE <small>COMING SOON</small>
+          </span>
         </nav>
-        <p>いゔる。 a.k.a. mizzz（ずーみー）<br />Personal Web Platform</p>
+        <p>
+          いゔる。 a.k.a. mizzz（ずーみー）
+          <br />
+          Personal Web Platform
+        </p>
       </div>
     </>
   )

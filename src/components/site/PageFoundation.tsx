@@ -32,10 +32,12 @@ type PageSectionProps = {
 }
 
 export function PageSection({ title, description, children }: PageSectionProps) {
+  const sectionId = `section-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
+
   return (
-    <section className="page-section" aria-labelledby={`section-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>
+    <section className="page-section" aria-labelledby={sectionId}>
       <div className="page-section-heading">
-        <h2 id={`section-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>{title}</h2>
+        <h2 id={sectionId}>{title}</h2>
         {description && <div>{description}</div>}
       </div>
       {children}

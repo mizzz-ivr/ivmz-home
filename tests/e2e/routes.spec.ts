@@ -24,11 +24,24 @@ test('serves every static/list route directly and after reload', async ({ page }
   }
 })
 
-test('marks the current route in desktop and mobile navigation', async ({ page }) => {
+test('marks the current route in desktop and mobile navigation', async ({ page }, testInfo) => {
   await page.goto('/works')
 
-  await expect(page.getByRole('navigation', { name: 'Desktop navigation' }).getByRole('link', { name: 'WORKS' })).toHaveAttribute('aria-current', 'page')
-  await expect(page.getByRole('navigation', { name: 'Mobile navigation' }).getByRole('link', { name: /WORKS/ })).toHaveAttribute('aria-current', 'page')
+  if (testInfo.project.name === 'chromium') {
+    await page.setViewportSize({ width: 1280, height: 900 })
+    const worksLink = page
+      .getByRole('navigation', { name: 'Desktop navigation' })
+      .getByRole('link', { name: 'WORKS' })
+    await expect(worksLink).toHaveAttribute('aria-current', 'page')
+    return
+  }
+
+  const trigger = page.locator('button[aria-controls="mobile-navigation"]')
+  await trigger.click()
+  const worksLink = page
+    .getByRole('navigation', { name: 'Mobile navigation' })
+    .getByRole('link', { name: /WORKS/ })
+  await expect(worksLink).toHaveAttribute('aria-current', 'page')
 })
 
 test('keeps route pages overflow-free at representative widths', async ({ page }, testInfo) => {
@@ -42,7 +55,9 @@ test('keeps route pages overflow-free at representative widths', async ({ page }
         scrollWidth: document.documentElement.scrollWidth,
         clientWidth: document.documentElement.clientWidth,
       }))
-      expect(dimensions.scrollWidth, `${route} overflow at ${width}px`).toBeLessThanOrEqual(dimensions.clientWidth + 1)
+      expect(dimensions.scrollWidth, `${route} overflow at ${width}px`).toBeLessThanOrEqual(
+        dimensions.clientWidth + 1,
+      )
     }
   }
 })
