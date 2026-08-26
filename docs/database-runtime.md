@@ -16,7 +16,7 @@ Repository migration (`pnpm db:migrate`) はdirect connectionまたはSupabase S
 - Supabase Session pooler: `5432`
 - application側で追加のpool上限を強制しない
 
-Migrationはsession-level behaviorや複数接続を必要とする可能性があるため、serverless向けの1接続制限を適用しない。
+Migrationはsession-level behaviorや複数接続を必要とする可能性があるため、serverless向けのpool上限を適用しない。
 
 ### Netlify serverless runtime
 
@@ -42,7 +42,7 @@ PAYLOAD_DATABASE_POOL_MODE=transaction
 
 username / password / hostname / database / query parameterは変更しない。完全なconnection stringを別の環境変数へ複製しないため、credential rotation時の二重管理も避けられる。
 
-Transaction pooler使用時はPayload内部の`node-postgres` application poolを `max: 1` に制限する。Supavisorがtransaction単位でbackend connectionを共有するため、各serverless instanceが複数のbackend connectionを抱え込む構成を避ける。
+Transaction pooler使用時はPayload内部の`node-postgres` application poolを小さい固定上限 `max: 5` に制限する。Payload初期化が接続を保持している間も後続query用の接続枠を確保しつつ、各serverless instanceが過剰な接続を抱え込まない構成にする。`max: 1` は初期化用接続だけでpoolを使い切り、後続の`find()`等がpool待ちになるため使用しない。
 
 ## Safety guards
 
@@ -65,7 +65,7 @@ Payload / Drizzle / node-postgres更新時にnamed prepared statementの利用�
 2. Chromium / mobile WebKit / Payload security smokeを実Deploy Previewで完走する
 3. `/admin` がPayload login / first-user routeへ正常遷移することを確認する
 4. anonymous Users APIが401/403になることを確認する
-5. public Content API readが200になることを確認する
+5. public Content API readが200になり、`docs`配列を返すことを確認する
 6. anonymous Content mutationが401/403になることを確認する
 7. GitHub CI migrationが従来どおりGREENであることを確認する
 8. Preview検証がGREENになった後だけProduction contextへ同じ非Secretmodeを設定する
