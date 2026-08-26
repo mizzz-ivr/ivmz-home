@@ -48,12 +48,8 @@ export default async function WorksPage() {
                   <span>{work.role}</span>
                   <small>{work.stack.join(' · ')}</small>
                   {work.githubUrl && <a href={work.githubUrl}>GitHub ↗</a>}
-                  {!work.githubUrl && work.liveUrl && (
-                    <a href={work.liveUrl}>Live site ↗</a>
-                  )}
-                  {!work.githubUrl && !work.liveUrl && (
-                    <small>Detail route coming next</small>
-                  )}
+                  {!work.githubUrl && work.liveUrl && <a href={work.liveUrl}>Live site ↗</a>}
+                  {!work.githubUrl && !work.liveUrl && <small>Detail route coming next</small>}
                 </div>
               </article>
             ))}
