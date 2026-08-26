@@ -10,6 +10,12 @@ export const metadata = createPageMetadata({
   path: '/works',
 })
 
+const copy = {
+  hero: '公開済みの制作物をPayload CMSから取得します。詳細Case Study routeは次PRでslugへ接続します。',
+  queryError: 'CMS queryに失敗しました。Homeの既存fallbackは維持され、この一覧だけ安全に縮退しています。',
+  empty: 'CMSは正常です。公開済みWorksが登録されるまで、このempty stateを表示します。',
+} as const
+
 export default async function WorksPage() {
   const content = await getWorksListContent()
 
@@ -18,12 +24,7 @@ export default async function WorksPage() {
       <PageHero
         index="WORKS / 02"
         title="Work, with the decisions attached."
-        description={
-          <p>
-            公開済みの制作物をPayload CMSから取得します。詳細Case Study
-            routeは次PRでslugへ接続します。
-          </p>
-        }
+        description={<p>{copy.hero}</p>}
         signal="BUILD / CASE STUDY"
       />
       <PageSection
@@ -31,13 +32,9 @@ export default async function WorksPage() {
         description={<p>公開状態 `_status = published` のコンテンツだけを表示します。</p>}
       >
         {content.state === 'error' ? (
-          <EmptyState title="Works are temporarily unavailable.">
-            CMS queryに失敗しました。Homeの既存fallbackは維持され、この一覧だけ安全に縮退しています。
-          </EmptyState>
+          <EmptyState title="Works are temporarily unavailable.">{copy.queryError}</EmptyState>
         ) : content.items.length === 0 ? (
-          <EmptyState title="No published works yet.">
-            CMSは正常です。公開済みWorksが登録されるまで、このempty stateを表示します。
-          </EmptyState>
+          <EmptyState title="No published works yet.">{copy.empty}</EmptyState>
         ) : (
           <div className="content-list">
             {content.items.map((work) => (
@@ -50,13 +47,9 @@ export default async function WorksPage() {
                 <div className="content-row-meta">
                   <span>{work.role}</span>
                   <small>{work.stack.join(' · ')}</small>
-                  {work.githubUrl ? (
-                    <a href={work.githubUrl}>GitHub ↗</a>
-                  ) : work.liveUrl ? (
-                    <a href={work.liveUrl}>Live site ↗</a>
-                  ) : (
-                    <small>Detail route coming next</small>
-                  )}
+                  {work.githubUrl && <a href={work.githubUrl}>GitHub ↗</a>}
+                  {!work.githubUrl && work.liveUrl && <a href={work.liveUrl}>Live site ↗</a>}
+                  {!work.githubUrl && !work.liveUrl && <small>Detail route coming next</small>}
                 </div>
               </article>
             ))}
