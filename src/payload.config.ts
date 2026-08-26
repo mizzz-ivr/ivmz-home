@@ -36,6 +36,7 @@ export default buildConfig({
       connectionString: process.env.DATABASE_URL ?? '',
     },
     push: false,
+    schemaName: 'ivumz_home',
   }),
   defaultDepth: 1,
   defaultMaxTextLength: 10_000,
