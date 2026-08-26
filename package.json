@@ -17,10 +17,20 @@
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "payload": "cross-env NODE_OPTIONS=--no-deprecation PAYLOAD_CONFIG_PATH=src/payload.config.ts payload",
+    "generate:types": "pnpm payload generate:types",
+    "generate:importmap": "pnpm payload generate:importmap",
+    "db:migrate": "pnpm payload migrate",
+    "db:migrate:create": "pnpm payload migrate:create"
   },
   "dependencies": {
+    "@payloadcms/db-postgres": "3.88.0",
+    "@payloadcms/next": "3.88.0",
+    "@payloadcms/ui": "3.88.0",
+    "graphql": "16.11.0",
     "next": "16.3.3",
+    "payload": "3.88.0",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },
@@ -32,6 +42,7 @@
     "@types/node": "24.12.3",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
+    "cross-env": "10.1.0",
     "eslint": "9.39.1",
     "eslint-config-next": "16.3.3",
     "jsdom": "28.0.0",
