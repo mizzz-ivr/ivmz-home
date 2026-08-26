@@ -11,18 +11,16 @@ jobs:
   diagnose:
     runs-on: ubuntu-latest
     env:
-      DIAGNOSTIC_URL: https://deploy-preview-4--ivmz-home.netlify.app/preview-db-diagnostic
+      DIAGNOSTIC_URL: https://6a8e7b7c7628e9000838d02f--ivmz-home.netlify.app/preview-db-diagnostic
     steps:
-      - name: 最新Deploy Previewの接続文字列構造を診断
+      - name: Ready済みDeploy Previewの接続文字列構造を診断
         shell: bash
         run: |
-          for attempt in {1..30}; do
-            status="$(curl --location --max-time 20 --silent --show-error --output /tmp/db-diagnostic.json --write-out '%{http_code}' "$DIAGNOSTIC_URL" || true)"
-            if [ "$status" = "200" ]; then
-              cat /tmp/db-diagnostic.json
-              exit 0
-            fi
-            sleep 10
-          done
+          status="$(curl --location --max-time 30 --silent --show-error --output /tmp/db-diagnostic.json --write-out '%{http_code}' "$DIAGNOSTIC_URL" || true)"
+          echo "HTTP_STATUS=$status"
+          if [ "$status" = "200" ]; then
+            cat /tmp/db-diagnostic.json
+            exit 0
+          fi
           echo "診断routeが200を返しませんでした。"
           exit 1
