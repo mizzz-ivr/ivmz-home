@@ -11,7 +11,7 @@ import { Schedule } from './collections/Schedule'
 import { SocialLinks } from './collections/SocialLinks'
 import { Users } from './collections/Users'
 import { Works } from './collections/Works'
-import { getDatabasePoolConfig } from './lib/database-connection'
+import { getDatabasePoolConfig, resolveDatabasePoolMode } from './lib/database-connection'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -23,10 +23,11 @@ const allowedOrigins = (
   .map((origin) => origin.trim())
   .filter(Boolean)
 
-const databasePool = getDatabasePoolConfig(
-  process.env.DATABASE_URL ?? '',
+const databasePoolMode = resolveDatabasePoolMode(
   process.env.PAYLOAD_DATABASE_POOL_MODE,
+  process.env.SITE_ID,
 )
+const databasePool = getDatabasePoolConfig(process.env.DATABASE_URL ?? '', databasePoolMode)
 
 export default buildConfig({
   admin: {
