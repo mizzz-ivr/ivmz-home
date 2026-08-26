@@ -14,6 +14,7 @@ import {
 import {
   createSlugField,
   normalizeSlug,
+  validateIanaTimezone,
   validateOptionalHttpUrl,
   validateRequiredHttpUrl,
 } from '@/content/fields'
@@ -100,7 +101,7 @@ describe('slug fields', () => {
   })
 })
 
-describe('URL validation', () => {
+describe('field validation', () => {
   it('accepts HTTP(S) URLs and rejects unsafe or malformed values', () => {
     expect(validateOptionalHttpUrl('https://example.com/path')).toBe(true)
     expect(validateOptionalHttpUrl('http://localhost:3000')).toBe(true)
@@ -108,6 +109,13 @@ describe('URL validation', () => {
     expect(validateOptionalHttpUrl('not a url')).not.toBe(true)
     expect(validateOptionalHttpUrl('')).toBe(true)
     expect(validateRequiredHttpUrl('')).not.toBe(true)
+  })
+
+  it('accepts IANA timezones and rejects invalid schedule timezone values', () => {
+    expect(validateIanaTimezone('Asia/Tokyo')).toBe(true)
+    expect(validateIanaTimezone('America/New_York')).toBe(true)
+    expect(validateIanaTimezone('Tokyo')).not.toBe(true)
+    expect(validateIanaTimezone('')).not.toBe(true)
   })
 })
 
