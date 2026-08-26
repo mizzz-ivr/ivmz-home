@@ -11,7 +11,7 @@ const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 const allowedOrigins = (
-  process.env.PAYLOAD_ALLOWED_ORIGINS ?? 'http://localhost:3000,https://mizzz.ivrm.jp'
+  process.env.PAYLOAD_ALLOWED_ORIGINS ?? 'http://localhost:3000,https://ivmz.ivrm.jp'
 )
   .split(',')
   .map((origin) => origin.trim())
@@ -36,7 +36,7 @@ export default buildConfig({
       connectionString: process.env.DATABASE_URL ?? '',
     },
     push: false,
-    schemaName: 'ivumz_home',
+    schemaName: 'ivmz_home',
   }),
   defaultDepth: 1,
   defaultMaxTextLength: 10_000,
