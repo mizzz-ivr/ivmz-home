@@ -62,10 +62,7 @@ export function SignatureIntro() {
   }, [])
 
   return (
-    <div
-      className={`signature-intro${skip ? ' signature-intro-skip' : ''}`}
-      aria-hidden="true"
-    >
+    <div className={`signature-intro${skip ? ' signature-intro-skip' : ''}`} aria-hidden="true">
       <svg viewBox="0 0 220 76" role="presentation">
         <path
           className="signature-path"
