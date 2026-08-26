@@ -1,13 +1,35 @@
-# ivumz-home
+# ivmz-home
 
-Public repository for **いゔる。 a.k.a. mizzz（ずーみー）** — a Personal Web Platform for portfolio, case studies, writing, news, public schedule, social links, and contact conversion.
+Public repository for **ivmz** — the unified personal web platform for **いゔる。 a.k.a. mizzz（ずーみー）**. It covers portfolio, case studies, writing, news, public schedule, social links, and contact conversion.
 
-- Production canonical: <https://mizzz.ivrm.jp>
+- Production canonical: <https://ivmz.ivrm.jp>
 - Community / Team root: <https://ivrm.jp>
 - GitHub: <https://github.com/mizzz-ivr>
-- Personal contact: `mizzz@ivrm.jp`
+- General / Personal contact: `ivmz@ivrm.jp`
+- Person-facing identity: `ivuru@ivrm.jp`
+- Developer / OSS identity: `mizzz@ivrm.jp`
 - Team contact: `contact@ivrm.jp`
 - Security: `security@ivrm.jp`
+- Legacy mail alias: `contact@mizzz.jp`
+
+## Identity model
+
+`ivmz` is the unified personal identity slug used for the canonical URL, general personal contact, and Personal Web Platform naming.
+
+- **ivmz** — unified personal identity / URL / general personal mail
+- **いゔる。** — SNS / creator / person-facing identity
+- **mizzz** — developer / OSS / technical identity
+- **ivRooom** — team / community / ecosystem
+
+Public contact surfaces should normally expose only:
+
+- General / Personal → `ivmz@ivrm.jp`
+- ivRooom / Team → `contact@ivrm.jp`
+- Security → `security@ivrm.jp`
+
+`ivuru@ivrm.jp` and `mizzz@ivrm.jp` remain valid role-specific From / Reply identities and may be used according to the context of the conversation.
+
+See `docs/identity-contact.md`.
 
 ## Identity / design rule
 
@@ -54,7 +76,7 @@ Reasons:
 - current Netlify Next.js runtime supports App Router, SSR, RSC, Streaming, Server Actions and `next/after`
 - AWS Amplify's documented managed Next.js support is currently through Next.js 15, which conflicts with the Next.js 16 direction
 - Payload can run anywhere Next.js runs, including Netlify and AWS
-- DNS is intentionally outside application architecture so `mizzz.ivrm.jp` can move from Cloudflare DNS to Amazon Route 53 later without rewriting the application
+- DNS is intentionally outside application architecture so `ivmz.ivrm.jp` can move from Cloudflare DNS to Amazon Route 53 later without rewriting the application
 
 AWS-first remains a future option, likely via ECS/Fargate + RDS/Aurora PostgreSQL + S3 + SES + Route 53 when the operational value justifies it.
 
@@ -114,6 +136,7 @@ pnpm build
 
 ## Docs
 
+- `docs/identity-contact.md`
 - `docs/architecture.md`
 - `docs/hosting.md`
 - `docs/design-direction.md`
