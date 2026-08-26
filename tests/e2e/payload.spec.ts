@@ -1,6 +1,13 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type APIResponse } from '@playwright/test'
 
 const publicCollections = ['works', 'posts', 'news', 'schedule', 'social-links'] as const
+
+async function responseDiagnostic(response: APIResponse) {
+  const contentType = response.headers()['content-type'] ?? 'unknown'
+  const body = await response.text()
+
+  return `status=${response.status()} content-type=${contentType} body=${body.slice(0, 2_000)}`
+}
 
 test('保護されたPayload Adminの入口を表示できる', async ({ page }) => {
   const response = await page.goto('/admin')
@@ -12,15 +19,16 @@ test('保護されたPayload Adminの入口を表示できる', async ({ page })
 test('Users collectionを匿名ユーザーへ公開しない', async ({ request }) => {
   const response = await request.get('/api/users?limit=1')
 
-  expect([401, 403]).toContain(response.status())
+  expect([401, 403], await responseDiagnostic(response)).toContain(response.status())
 })
 
 test('公開Content collectionは匿名readできる', async ({ request }) => {
   for (const collection of publicCollections) {
     const response = await request.get(`/api/${collection}?limit=1`)
+    const diagnostic = await responseDiagnostic(response)
 
-    expect(response.status(), collection).toBe(200)
-    const payload = await response.json()
+    expect(response.status(), `${collection}: ${diagnostic}`).toBe(200)
+    const payload = JSON.parse(await response.body().then((body) => body.toString('utf8')))
     expect(Array.isArray(payload.docs), collection).toBe(true)
   }
 })
@@ -33,7 +41,9 @@ test('匿名ユーザーはContent collectionを作成できない', async ({ re
       },
     })
 
-    expect([401, 403], collection).toContain(response.status())
+    expect([401, 403], `${collection}: ${await responseDiagnostic(response)}`).toContain(
+      response.status(),
+    )
   }
 })
 
@@ -45,6 +55,10 @@ test('匿名ユーザーはContent collectionを更新・削除できない', as
   })
   const deleteResponse = await request.delete('/api/works/999999999')
 
-  expect([401, 403]).toContain(updateResponse.status())
-  expect([401, 403]).toContain(deleteResponse.status())
+  expect([401, 403], `update: ${await responseDiagnostic(updateResponse)}`).toContain(
+    updateResponse.status(),
+  )
+  expect([401, 403], `delete: ${await responseDiagnostic(deleteResponse)}`).toContain(
+    deleteResponse.status(),
+  )
 })
