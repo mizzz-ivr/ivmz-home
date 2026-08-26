@@ -41,7 +41,12 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm format:check
+      - name: Diagnose Works formatting
+        shell: bash
+        run: |
+          pnpm exec prettier --write 'src/app/(site)/works/page.tsx'
+          git diff -- 'src/app/(site)/works/page.tsx'
+          exit 1
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
