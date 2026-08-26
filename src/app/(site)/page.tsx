@@ -3,8 +3,10 @@ import { HeroPointerSignal } from '@/components/site/SiteExperience'
 import { getHomeViewModel } from '@/lib/home-content'
 import { site } from '@/lib/site'
 
-export default function HomePage() {
-  const home = getHomeViewModel()
+export const revalidate = 300
+
+export default async function HomePage() {
+  const home = await getHomeViewModel()
 
   return (
     <main id="main-content">
