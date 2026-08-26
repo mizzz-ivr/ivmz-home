@@ -1,7 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { contentMutationAccess, publicScheduleOrAuthenticated } from '@/content/access'
-import { validateOptionalHttpUrl } from '@/content/fields'
+import { validateIanaTimezone, validateOptionalHttpUrl } from '@/content/fields'
 
 export const Schedule: CollectionConfig = {
   slug: 'schedule',
@@ -67,6 +67,7 @@ export const Schedule: CollectionConfig = {
           defaultValue: 'Asia/Tokyo',
           maxLength: 80,
           required: true,
+          validate: validateIanaTimezone,
           admin: {
             description: 'IANA timezone used to preserve the intended public display context.',
           },
