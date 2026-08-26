@@ -1,221 +1,335 @@
 import Image from 'next/image'
+import { HeroPointerSignal } from '@/components/site/SiteExperience'
+import { getHomeViewModel } from '@/lib/home-content'
 import { site } from '@/lib/site'
 
-const works = [
-  {
-    title: 'RooMate Voice',
-    summary: 'Discord × Realtime AI Voice Bot。会話体験から運用までつなぐOSS。',
-    stack: 'TypeScript / React / Realtime AI / Discord / Docker',
-    href: 'https://github.com/mizzz-ivr/roomate-voice',
-  },
-  {
-    title: 'QuizVerse',
-    summary: 'クイズ作成・公開・プレイ・ランキング・レビューを扱うWeb Platform。',
-    stack: 'React / Flask / PostgreSQL / Docker',
-    href: 'https://github.com/mizzz-ivr/quizverse',
-  },
-  {
-    title: 'Site Sentry Go',
-    summary: '複数URLの定期監視、UP/DOWN、応答時間、履歴を扱う軽量監視ツール。',
-    stack: 'Go / SQLite / HTTP / Docker',
-    href: 'https://github.com/mizzz-ivr/site-sentry-go',
-  },
-] as const
-
-const focus = [
-  ['WEB', 'React / TypeScript'],
-  ['AI', 'Realtime / Agents'],
-  ['COMMUNITY', 'Discord / Voice'],
-  ['OPS', 'Docker / CI / Cloud'],
-] as const
-
 export default function HomePage() {
-  return (
-    <main>
-      <header className="site-header" aria-label="Primary navigation">
-        <a className="brand" href="#top" aria-label="mizzz home">
-          mizzz
-        </a>
-        <nav>
-          <a href="#works">Works</a>
-          <a href="#about">About</a>
-          <a href="#writing">Writing</a>
-          <a href="#schedule">Schedule</a>
-          <a className="nav-cta" href="#contact">
-            Contact
-          </a>
-        </nav>
-      </header>
+  const home = getHomeViewModel()
 
-      <section className="hero scene" id="top" aria-labelledby="hero-title">
+  return (
+    <main id="main-content">
+      <section className="hero section-shell" id="top" aria-labelledby="hero-title">
+        <HeroPointerSignal />
+        <div className="hero-grid" aria-hidden="true" />
         <div className="hero-copy">
+          <p className="signal-label">PERSONAL WEB / PORTFOLIO PLATFORM</p>
           <h1 id="hero-title">
-            <span>いゔる。</span>
-            <small>a.k.a. mizzz（ずーみー）</small>
+            <span className="hero-name">いゔる。</span>
+            <span className="hero-alias">a.k.a. mizzz（ずーみー）</span>
           </h1>
-          <p className="hero-role">Product-minded Full Stack Developer</p>
+          <p className="hero-role">Product-minded Full Stack Developer / Creator</p>
           <p className="hero-description">
-            Web・Realtime
-            AI・Discord・API・DB・運用まで、アイデアを触れるものにして、育てられる状態までつなげます。
+            Web・Realtime AI・Discord・API・DB・運用まで。
+            <br className="desktop-break" />
+            アイデアを、触れて、使えて、育てられるプロダクトへ。
           </p>
-          <p className="hero-motto">BUILD SMALL · POLISH FAST · OPERATE SAFELY</p>
           <div className="hero-actions">
-            <a className="button button-primary" href="#works">
-              Selected Works
+            <a className="action-link action-primary" href="#works">
+              Selected Works <span aria-hidden="true">↗</span>
             </a>
-            <a className="button button-ghost" href="#contact">
-              Contact
+            <a className="action-link" href="#contact">
+              Contact <span aria-hidden="true">→</span>
             </a>
+          </div>
+          <div className="hero-status" aria-label="Current focus">
+            <span>
+              <i aria-hidden="true" /> CURRENT SIGNAL
+            </span>
+            <strong>BUILD SMALL · POLISH FAST · OPERATE SAFELY</strong>
           </div>
         </div>
 
         <div className="identity-stage" aria-label="mizzz original character identity">
-          <div className="identity-shadow" aria-hidden="true" />
+          <div className="depth-plane depth-plane-back" aria-hidden="true">
+            WEB / AI / OSS
+          </div>
           <div className="avatar-frame">
             <Image
               src={site.githubAvatarUrl}
               alt="mizzzのGitHubアイコンに使用しているオリジナルキャラクター"
-              width={460}
-              height={460}
+              width={720}
+              height={720}
               priority
+              sizes="(max-width: 760px) 70vw, 42vw"
             />
           </div>
-          <span className="scribble scribble-a" aria-hidden="true">
-            {'/////'}
+          <div className="selection-mark" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+            <span />
+          </div>
+          <span className="floating-note note-a" aria-hidden="true">
+            [ creator / engineer ]
           </span>
-          <span className="scribble scribble-b" aria-hidden="true">
-            BUILDING...
+          <span className="floating-note note-b" aria-hidden="true">
+            building...
           </span>
-          <span className="signal-tag tag-a" aria-hidden="true">
-            React
+          <span className="floating-note note-c" aria-hidden="true">
+            01 / identity
           </span>
-          <span className="signal-tag tag-b" aria-hidden="true">
-            Realtime
-          </span>
-          <span className="signal-tag tag-c" aria-hidden="true">
-            OSS
-          </span>
-          <span className="cursor-mark" aria-hidden="true">
-            ↗
-          </span>
+          <svg className="rough-line" viewBox="0 0 180 70" aria-hidden="true">
+            <path d="M4 54 C36 10 68 68 96 28 S144 50 176 8" />
+          </svg>
         </div>
-        <a className="scroll-cue" href="#works">
-          SCROLL ↓
+        <a className="scroll-signal" href="#works">
+          SCROLL TO SIGNAL <span aria-hidden="true">↓</span>
         </a>
       </section>
 
-      <section className="scene works" id="works" aria-labelledby="works-title">
-        <div className="section-heading">
-          <p>01 / SELECTED WORKS</p>
-          <h2 id="works-title">Public builds, with the decisions left in.</h2>
-          <span>完成画面だけでなく、役割・判断・運用までCase Studyとして見せる。</span>
+      <section className="section-shell works-section" id="works" aria-labelledby="works-title">
+        <div className="section-intro">
+          <p className="signal-label">01 / SELECTED WORKS</p>
+          <h2 id="works-title">
+            Built in public.
+            <br />
+            Decisions included.
+          </h2>
+          <p>完成画面だけではなく、役割・制約・技術・運用までCase Studyとして見せる。</p>
         </div>
-        <div className="works-corridor">
-          {works.map((work, index) => (
-            <article className={`work-panel work-${index + 1}`} key={work.title}>
-              <span className="work-index">0{index + 1}</span>
-              <h3>{work.title}</h3>
-              <p>{work.summary}</p>
-              <small>{work.stack}</small>
-              <a href={work.href}>View repository ↗</a>
+        <div className="works-rail">
+          {home.works.map((work, index) => (
+            <article className="work-entry" key={work.title}>
+              <div className="work-number" aria-hidden="true">
+                0{index + 1}
+              </div>
+              <div className="work-copy">
+                <span>{work.signal}</span>
+                <h3>{work.title}</h3>
+                <p>{work.summary}</p>
+              </div>
+              <div className="work-meta">
+                <span>{work.role}</span>
+                <small>{work.stack}</small>
+                <a href={work.href}>
+                  View repository <span aria-hidden="true">↗</span>
+                </a>
+              </div>
             </article>
           ))}
         </div>
       </section>
 
-      <section className="scene about" id="about" aria-labelledby="about-title">
-        <div className="section-heading about-heading">
-          <p>02 / ABOUT</p>
-          <h2 id="about-title">画面の向こう側までつくる。</h2>
-          <span>UIだけで終わらせず、API・データ・権限・ログ・デプロイまで。</span>
+      <section
+        className="section-shell capability-section"
+        id="what-i-do"
+        aria-labelledby="capability-title"
+      >
+        <div className="section-intro compact-intro">
+          <p className="signal-label">02 / WHAT I DO</p>
+          <h2 id="capability-title">
+            From interface
+            <br />
+            to operation.
+          </h2>
         </div>
-        <div className="about-layers">
-          {focus.map(([label, text], index) => (
-            <div className={`about-plane about-plane-${index + 1}`} key={label}>
-              <strong>{label}</strong>
-              <span>{text}</span>
+        <div className="capability-lines">
+          {home.capabilities.map((item, index) => (
+            <article key={item.title}>
+              <span className="capability-index">0{index + 1}</span>
+              <h3>{item.title}</h3>
+              <p>{item.description}</p>
+              <small>{item.tools}</small>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="section-shell about-section" id="about" aria-labelledby="about-title">
+        <div className="about-copy">
+          <p className="signal-label">03 / ABOUT SNAPSHOT</p>
+          <h2 id="about-title">画面の向こう側まで、つくる。</h2>
+          <p className="about-lead">
+            実装することが好きです。設計を理解したうえで手を動かし、小さく公開して、反応と運用から磨き続けます。
+          </p>
+          <p>
+            コード・UI・インフラを別々の成果物として扱わず、「人が使い続けられるか」を境界に考えるのが自分の開発スタイルです。
+          </p>
+          <a className="text-link" href={site.githubUrl}>
+            Explore GitHub activity <span aria-hidden="true">↗</span>
+          </a>
+        </div>
+        <div className="about-workbench" aria-label="Development workbench fragments">
+          <div className="workbench-window window-main">
+            <div className="window-chrome">
+              <span />
+              <span />
+              <span />
+              <b>workbench.ts</b>
+            </div>
+            <pre aria-label="Development philosophy code fragment">
+              <code>{`const build = async () => {
+  understand();
+  implement();
+  shipSmall();
+  observe();
+  polish();
+}`}</code>
+            </pre>
+          </div>
+          <div className="workbench-window window-note" aria-hidden="true">
+            <span>signal.log</span>
+            <strong>ship → learn → refine</strong>
+          </div>
+          <div className="workbench-cross" aria-hidden="true">
+            +
+          </div>
+        </div>
+      </section>
+
+      <section
+        className="section-shell writing-section"
+        id="writing"
+        aria-labelledby="writing-title"
+      >
+        <div className="section-intro">
+          <p className="signal-label">04 / LATEST WRITING</p>
+          <h2 id="writing-title">
+            Notes become
+            <br />
+            reusable knowledge.
+          </h2>
+        </div>
+        <div className="editorial-stack">
+          {home.writing.map((item, index) => (
+            <article key={item.title}>
+              <div>
+                <span>{item.label}</span>
+                <small>0{index + 1}</small>
+              </div>
+              <h3>{item.title}</h3>
+              <p>{item.meta}</p>
+              {item.href && (
+                <a href={item.href}>
+                  Read on Qiita <span aria-hidden="true">↗</span>
+                </a>
+              )}
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section
+        className="section-shell activity-section"
+        id="activity"
+        aria-labelledby="activity-title"
+      >
+        <div className="section-intro compact-intro">
+          <p className="signal-label">05 / NEWS & ACTIVITY</p>
+          <h2 id="activity-title">What is moving now.</h2>
+        </div>
+        <div className="activity-stream">
+          {home.activity.map((item) => (
+            <article key={item.title}>
+              <span>{item.label}</span>
+              <div>
+                <h3>{item.title}</h3>
+                <p>{item.meta}</p>
+              </div>
+              {item.href ? (
+                <a href={item.href} aria-label={`${item.title}を開く`}>
+                  ↗
+                </a>
+              ) : (
+                <b aria-hidden="true">•</b>
+              )}
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section
+        className="section-shell schedule-section"
+        id="schedule"
+        aria-labelledby="schedule-title"
+      >
+        <div className="section-intro compact-intro">
+          <p className="signal-label">06 / SCHEDULE</p>
+          <h2 id="schedule-title">
+            Public plans,
+            <br />
+            not a private calendar.
+          </h2>
+          <p>イベント・公開・リリースなど、外部へ見せてよい予定だけを扱います。</p>
+        </div>
+        <div className="timeline-rail" role="list">
+          {home.schedule.map((item, index) => (
+            <div role="listitem" key={item.label}>
+              <i aria-hidden="true" />
+              <span>0{index + 1}</span>
+              <strong>{item.label}</strong>
+              <div>
+                <b>{item.title}</b>
+                <small>{item.meta}</small>
+              </div>
             </div>
           ))}
         </div>
       </section>
 
-      <section className="scene writing" id="writing" aria-labelledby="writing-title">
-        <div className="section-heading">
-          <p>03 / WRITING</p>
-          <h2 id="writing-title">Notes become reusable knowledge.</h2>
-          <span>技術記事・設計判断・制作記録を、読み返せる形で積み上げる。</span>
+      <section className="section-shell social-section" id="social" aria-labelledby="social-title">
+        <div className="section-intro compact-intro">
+          <p className="signal-label">07 / SOCIAL SIGNAL</p>
+          <h2 id="social-title">Find the live edges.</h2>
+          <p>外部サービスが落ちてもこのサイトは残る。最新活動はリンクを常時fallbackとして持つ。</p>
         </div>
-        <div className="writing-stack">
-          <article>
-            <small>TECHNICAL</small>
-            <h3>Engineering Notes</h3>
-            <p>実装で得た知見を再現可能な形に。</p>
-          </article>
-          <article>
-            <small>CASE STUDY</small>
-            <h3>Build Decisions</h3>
-            <p>選定理由・制約・トレードオフまで残す。</p>
-          </article>
-          <article>
-            <small>ACTIVITY</small>
-            <h3>Release Log</h3>
-            <p>公開・改善・運用を継続して記録する。</p>
-          </article>
+        <div className="social-links">
+          {home.socials.map((social, index) => (
+            <a href={social.href} key={social.label}>
+              <span>0{index + 1}</span>
+              <strong>{social.label}</strong>
+              <small>{social.handle}</small>
+              <b aria-hidden="true">↗</b>
+            </a>
+          ))}
         </div>
       </section>
 
-      <section className="scene schedule" id="schedule" aria-labelledby="schedule-title">
-        <div className="section-heading">
-          <p>04 / SCHEDULE</p>
-          <h2 id="schedule-title">Public plans, not a private calendar.</h2>
-          <span>Event / Release / Meetup / Publication / Availabilityだけを公開する。</span>
-        </div>
-        <div className="timeline" role="list">
-          <div role="listitem">
-            <i />
-            <strong>EVENT</strong>
-            <span>Public schedule entry</span>
-          </div>
-          <div role="listitem">
-            <i />
-            <strong>RELEASE</strong>
-            <span>Product / OSS release</span>
-          </div>
-          <div role="listitem">
-            <i />
-            <strong>PUBLICATION</strong>
-            <span>Article / announcement</span>
-          </div>
-        </div>
-      </section>
-
-      <section className="scene contact" id="contact" aria-labelledby="contact-title">
-        <div className="contact-signal" aria-hidden="true">
-          mizzz / signal / contact
+      <section
+        className="section-shell contact-section"
+        id="contact"
+        aria-labelledby="contact-title"
+      >
+        <div className="contact-signal-art" aria-hidden="true">
+          IVMZ / SIGNAL / CONTACT
         </div>
         <div className="contact-copy">
-          <p>05 / CONTACT</p>
-          <h2 id="contact-title">Let’s make something people can use.</h2>
-          <span>問い合わせカテゴリからserver-sideで配送先を決定します。</span>
+          <p className="signal-label">08 / CONTACT</p>
+          <h2 id="contact-title">
+            Let’s make something
+            <br />
+            people can use.
+          </h2>
+          <p>
+            開発相談、仕事、コラボ、取材など。用途ごとのIdentityを保ちつつ、ここを入口にします。
+          </p>
         </div>
         <div className="contact-routes">
           <a href={`mailto:${site.contactEmail}`}>
-            <strong>Personal / Development / Job / Collaboration / Media</strong>
-            <span>{site.contactEmail}</span>
+            <span>GENERAL / PERSONAL</span>
+            <strong>{site.contactEmail}</strong>
+            <b aria-hidden="true">↗</b>
+          </a>
+          <a href={`mailto:${site.developerEmail}`}>
+            <span>DEVELOPMENT / OSS</span>
+            <strong>{site.developerEmail}</strong>
+            <b aria-hidden="true">↗</b>
           </a>
           <a href={`mailto:${site.teamEmail}`}>
-            <strong>ivRooom / Community / Team</strong>
-            <span>{site.teamEmail}</span>
+            <span>IVROOOM / TEAM</span>
+            <strong>{site.teamEmail}</strong>
+            <b aria-hidden="true">↗</b>
           </a>
           <a href={`mailto:${site.securityEmail}`}>
-            <strong>Security</strong>
-            <span>{site.securityEmail}</span>
+            <span>SECURITY</span>
+            <strong>{site.securityEmail}</strong>
+            <b aria-hidden="true">↗</b>
           </a>
         </div>
-        <footer>
-          <a href={site.githubUrl}>GitHub</a>
-          <a href={site.communityUrl}>ivRooom</a>
-          <a href={site.url}>mizzz.ivrm.jp</a>
+        <footer className="site-footer">
+          <span>© 2026 ivmz</span>
+          <span>Canonical / ivmz.ivrm.jp</span>
+          <a href="#top">BACK TO TOP ↑</a>
         </footer>
       </section>
     </main>
