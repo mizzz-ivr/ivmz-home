@@ -12,7 +12,7 @@ jobs:
     if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     env:
-      E2E_BASE_URL: https://deploy-preview-${{ github.event.pull_request.number }}--ivumz-home.netlify.app
+      E2E_BASE_URL: https://deploy-preview-${{ github.event.pull_request.number }}--ivmz-home.netlify.app
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
