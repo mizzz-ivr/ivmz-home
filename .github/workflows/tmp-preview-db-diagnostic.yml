@@ -11,9 +11,9 @@ jobs:
   diagnose:
     runs-on: ubuntu-latest
     env:
-      DIAGNOSTIC_URL: https://6a8e7b7c7628e9000838d02f--ivmz-home.netlify.app/preview-db-diagnostic
+      DIAGNOSTIC_URL: https://6a8e7c175046ba0008d5d29a--ivmz-home.netlify.app/preview-db-diagnostic
     steps:
-      - name: Ready済みDeploy Previewの接続文字列構造を診断
+      - name: Ready済みDeploy Previewの接続先構造を診断
         shell: bash
         run: |
           status="$(curl --location --max-time 30 --silent --show-error --output /tmp/db-diagnostic.json --write-out '%{http_code}' "$DIAGNOSTIC_URL" || true)"
