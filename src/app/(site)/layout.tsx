@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import '../globals.css'
 import '../responsive-foundation.css'
 import '../reduced-motion.css'
+import './pages.css'
 import { SignatureIntro, SiteHeader } from '@/components/site/SiteExperience'
 import { site } from '@/lib/site'
 
@@ -41,13 +42,9 @@ const themeBootScript = `(() => {
 export default function SiteLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ja" suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
-      </head>
+      <head><script dangerouslySetInnerHTML={{ __html: themeBootScript }} /></head>
       <body>
-        <a className="skip-link" href="#main-content">
-          本文へスキップ
-        </a>
+        <a className="skip-link" href="#main-content">本文へスキップ</a>
         <SignatureIntro />
         <SiteHeader />
         {children}
