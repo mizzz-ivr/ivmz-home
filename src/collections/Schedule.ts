@@ -1,9 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import {
-  contentMutationAccess,
-  publicScheduleOrAuthenticated,
-} from '@/content/access'
+import { contentMutationAccess, publicScheduleOrAuthenticated } from '@/content/access'
 import { validateOptionalHttpUrl } from '@/content/fields'
 
 export const Schedule: CollectionConfig = {

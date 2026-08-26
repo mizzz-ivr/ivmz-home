@@ -1,9 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import {
-  contentMutationAccess,
-  enabledSocialOrAuthenticated,
-} from '@/content/access'
+import { contentMutationAccess, enabledSocialOrAuthenticated } from '@/content/access'
 import { validateRequiredHttpUrl } from '@/content/fields'
 
 export const SocialLinks: CollectionConfig = {

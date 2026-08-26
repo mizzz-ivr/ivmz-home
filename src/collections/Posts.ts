@@ -5,10 +5,7 @@ import {
   contentVersionAccess,
   publishedOrAuthenticated,
 } from '@/content/access'
-import {
-  createSlugField,
-  validateOptionalHttpUrl,
-} from '@/content/fields'
+import { createSlugField, validateOptionalHttpUrl } from '@/content/fields'
 import { setPublishedAtOnPublish } from '@/content/hooks'
 
 export const Posts: CollectionConfig = {

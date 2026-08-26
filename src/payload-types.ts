@@ -69,6 +69,11 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
+    works: Work;
+    posts: Post;
+    news: News;
+    schedule: Schedule;
+    'social-links': SocialLink;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -78,6 +83,11 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    works: WorksSelect<false> | WorksSelect<true>;
+    posts: PostsSelect<false> | PostsSelect<true>;
+    news: NewsSelect<false> | NewsSelect<true>;
+    schedule: ScheduleSelect<false> | ScheduleSelect<true>;
+    'social-links': SocialLinksSelect<false> | SocialLinksSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -163,6 +173,111 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "works".
+ */
+export interface Work {
+  id: number;
+  title: string;
+  /**
+   * URL path segment. A value is generated from the title when left blank.
+   */
+  slug: string;
+  summary: string;
+  role: string;
+  projectStatus: 'active' | 'maintained' | 'completed' | 'archived';
+  stack: string[];
+  githubUrl?: string | null;
+  liveUrl?: string | null;
+  gallery?: (number | Media)[] | null;
+  highlights?: string[] | null;
+  caseStudy?: string | null;
+  publishedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts".
+ */
+export interface Post {
+  id: number;
+  title: string;
+  /**
+   * URL path segment. A value is generated from the title when left blank.
+   */
+  slug: string;
+  excerpt: string;
+  /**
+   * Markdown/plain-text content baseline. Rich-text editor adoption is intentionally deferred.
+   */
+  body: string;
+  category: string;
+  tags?: string[] | null;
+  cover?: (number | null) | Media;
+  canonicalUrl?: string | null;
+  relatedWorks?: (number | Work)[] | null;
+  publishedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "news".
+ */
+export interface News {
+  id: number;
+  title: string;
+  /**
+   * URL path segment. A value is generated from the title when left blank.
+   */
+  slug: string;
+  body: string;
+  type: 'release' | 'announcement' | 'event' | 'publication' | 'activity';
+  externalUrl?: string | null;
+  publishedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "schedule".
+ */
+export interface Schedule {
+  id: number;
+  title: string;
+  type: 'event' | 'release' | 'meetup' | 'stream' | 'publication' | 'availability';
+  startAt: string;
+  endAt?: string | null;
+  /**
+   * IANA timezone used to preserve the intended public display context.
+   */
+  timezone: string;
+  visibility: 'public' | 'private';
+  location?: string | null;
+  url?: string | null;
+  description?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "social-links".
+ */
+export interface SocialLink {
+  id: number;
+  platform: string;
+  url: string;
+  handle?: string | null;
+  enabled: boolean;
+  order: number;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -192,6 +307,26 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'media';
         value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'works';
+        value: number | Work;
+      } | null)
+    | ({
+        relationTo: 'posts';
+        value: number | Post;
+      } | null)
+    | ({
+        relationTo: 'news';
+        value: number | News;
+      } | null)
+    | ({
+        relationTo: 'schedule';
+        value: number | Schedule;
+      } | null)
+    | ({
+        relationTo: 'social-links';
+        value: number | SocialLink;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -275,6 +410,91 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "works_select".
+ */
+export interface WorksSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  summary?: T;
+  role?: T;
+  projectStatus?: T;
+  stack?: T;
+  githubUrl?: T;
+  liveUrl?: T;
+  gallery?: T;
+  highlights?: T;
+  caseStudy?: T;
+  publishedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts_select".
+ */
+export interface PostsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  excerpt?: T;
+  body?: T;
+  category?: T;
+  tags?: T;
+  cover?: T;
+  canonicalUrl?: T;
+  relatedWorks?: T;
+  publishedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "news_select".
+ */
+export interface NewsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  body?: T;
+  type?: T;
+  externalUrl?: T;
+  publishedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "schedule_select".
+ */
+export interface ScheduleSelect<T extends boolean = true> {
+  title?: T;
+  type?: T;
+  startAt?: T;
+  endAt?: T;
+  timezone?: T;
+  visibility?: T;
+  location?: T;
+  url?: T;
+  description?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "social-links_select".
+ */
+export interface SocialLinksSelect<T extends boolean = true> {
+  platform?: T;
+  url?: T;
+  handle?: T;
+  enabled?: T;
+  order?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
