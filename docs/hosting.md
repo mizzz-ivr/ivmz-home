@@ -1,100 +1,100 @@
-# Hosting decision — 2026-08-25
+# Hosting方針 — 2026-08-25
 
-## Goal
+## 目的
 
-Choose a launch host without coupling the application to the current DNS provider. `mizzz.ivrm.jp` should be able to move from Cloudflare DNS to Amazon Route 53 later without a product rewrite.
+現在のDNS providerへapplicationを密結合せずにLaunch hostを決定する。`mizzz.ivrm.jp` のauthoritative DNSを将来CloudflareからAmazon Route 53へ移行しても、product codeを書き直さずに済む構成を維持する。
 
-## Best launch option: Netlify
+## Launch時のベスト案: Netlify
 
-Why it currently fits:
+現時点で適している理由:
 
-- Netlify documents support for Next.js App Router, SSR, ISR, React Server Components, Server Actions, response streaming, `next/after`, middleware and image optimization.
-- Payload states it can deploy anywhere Next.js can run, including Netlify and AWS.
-- It keeps initial platform operations small while the product is content/design heavy.
-- DNS remains independent; changing authoritative DNS later changes records and validation, not application code.
+- NetlifyはNext.js App Router、SSR、ISR、React Server Components、Server Actions、response streaming、`next/after`、middleware、image optimizationを公式にサポートしている。
+- PayloadはNext.jsが動作する環境へdeploy可能であり、NetlifyとAWSも対象に含まれる。
+- Content/design中心の初期Phaseではplatform運用負荷を小さく保てる。
+- DNSを独立させられるため、将来authoritative DNSを変更してもrecordとvalidationの変更に留まり、application codeへ波及しない。
 
-Recommended launch shape:
+推奨するLaunch構成:
 
 ```text
-Route/DNS (temporary Cloudflare -> future Route 53)
+Route/DNS（当面Cloudflare -> 将来Route 53）
   -> Netlify Next.js runtime
-      -> PostgreSQL (provider-neutral DATABASE_URL)
+      -> PostgreSQL（provider-neutralなDATABASE_URL）
       -> AWS S3 media
       -> Email adapter
 ```
 
 ## Payload + PostgreSQL deployment gate
 
-Payload `3.88.0` uses `@payloadcms/db-postgres` with `DATABASE_URL`.
+Payload `3.88.0` は `@payloadcms/db-postgres` と `DATABASE_URL` を使用する。
 
-Required runtime variables for the foundation:
+Foundationで必要なruntime variable:
 
 - `DATABASE_URL`
 - `PAYLOAD_SECRET`
 - `PAYLOAD_ALLOWED_ORIGINS`
-- `PAYLOAD_PUBLIC_SERVER_URL` when an explicit canonical Payload origin is needed
+- hosting環境で明示的なPayload originが必要な場合は `PAYLOAD_PUBLIC_SERVER_URL`
 
-Repository migrations under `src/migrations` are authoritative. The deployment sequence is intentionally split:
+`src/migrations` 配下のRepository migrationを正本とする。Deployment sequenceは意図的に分離する。
 
-1. install with `pnpm install --frozen-lockfile`
-2. apply migrations with `pnpm db:migrate` to the target database as an explicit gate
-3. deploy the already-reviewed application revision
-4. validate `/admin`, Payload REST API authorization, and existing public smoke tests
+1. `pnpm install --frozen-lockfile` でinstallする
+2. 対象databaseへ明示的なgateとして `pnpm db:migrate` を適用する
+3. Review済みの同一revisionをdeployする
+4. `/admin`、Payload REST API authorization、既存public smoke testを検証する
 
-`pnpm build` does **not** automatically execute production migrations. This prevents every Netlify build or retry from becoming an implicit schema mutation.
+`pnpm build` からproduction migrationを**自動実行しない**。Netlify buildやretryのたびに暗黙のschema変更が発生する設計を避けるためである。
 
-For CI, GitHub Actions provides an ephemeral PostgreSQL 17 service and applies the same repository migrations before the Next.js build.
+CIではGitHub Actions上にephemeral PostgreSQL 17 serviceを起動し、Next.js build前に同一のRepository migrationを適用する。
 
 ## Media storage gate
 
-The Foundation PR does not provision AWS resources.
+Foundation PRではAWS resourceを作成しない。
 
-- local development may write Payload Media to `media/`
-- production local storage is disabled
-- production Media create/update/delete remains denied until a durable storage adapter is configured
-- AWS S3 remains the preferred first production adapter
-- when S3 is introduced, the persistent AWS resources and IAM policy must be managed by Terraform
+- local developmentではPayload Mediaを `media/` へ保存できる
+- productionではlocal storageを無効化する
+- durable storage adapterを設定するまではproductionのMedia create/update/deleteを許可しない
+- Production用adapterの第一候補はAWS S3とする
+- S3導入時は恒常的なAWS resourceとIAM policyをTerraformで管理する
 
-No `netlify.toml`, Netlify database API, Cloudflare R2 binding, or AWS resource is added merely to make this foundation compile.
+Foundationをcompileさせるだけの目的で `netlify.toml`、Netlify database API、Cloudflare R2 binding、AWS resourceを追加しない。
 
-## AWS option
+## AWS案
 
-### Do not choose Amplify for the current Next.js 16 foundation yet
+### 現在のNext.js 16 FoundationではAmplifyを採用しない
 
-AWS currently documents managed Amplify Hosting support for Next.js through version 15. That is a version mismatch with this project's Next.js 16 direction.
+AWSが現時点で公式に記載しているmanaged Amplify HostingのNext.js対応範囲はversion 15までであり、本projectのNext.js 16方針とversion差がある。
 
-Re-evaluate Amplify when AWS explicitly documents Next.js 16 support and the project features used by Payload pass a real preview deploy.
+AWSがNext.js 16対応を明示し、Payloadで利用する機能が実Deploy Previewを通過した時点で再評価する。
 
-### AWS-first full runtime
+### AWS-firstのfull runtime
 
-A long-term AWS-native shape can be:
+長期的なAWS native構成の候補:
 
 ```text
 Route 53
   -> CloudFront / ALB
-      -> ECS Fargate (Next.js + Payload container)
+      -> ECS Fargate（Next.js + Payload container）
           -> RDS/Aurora PostgreSQL
           -> S3
           -> SES
 ```
 
-This is more operationally involved than Netlify and is not necessary for the first public release unless AWS learning/operations itself becomes a product goal.
+これはNetlifyより運用負荷が大きい。AWS運用・学習そのものがproduct goalにならない限り、最初のpublic releaseには不要と判断する。
 
 ### App Runner
 
-Do not adopt as a new default. AWS states App Runner stopped accepting new customers on 2026-03-31. Existing eligible accounts are a special case, not the baseline architecture.
+新規defaultとして採用しない。AWSはApp Runnerが2026-03-31以降、新規customerの受付を停止したと案内している。既存の対象accountは例外であり、baseline architectureにはしない。
 
 ## Portability rules
 
-1. Use standard Next.js / Node APIs where practical.
-2. Keep DB behind `DATABASE_URL`.
-3. Keep object storage behind Payload's storage adapter.
-4. Keep email behind an application adapter.
-5. Keep anti-abuse/rate limiting replaceable.
-6. No DNS-provider-specific logic in page or content code.
-7. Deployment-specific config lives in dedicated files and ADRs.
+1. 実用上可能な範囲で標準Next.js / Node APIを使用する。
+2. Databaseは `DATABASE_URL` の背後に置く。
+3. Object storageはPayload storage adapterの背後に置く。
+4. Emailはapplication adapterの背後に置く。
+5. Anti-abuse / rate limitingは置き換え可能にする。
+6. Page/content codeへDNS-provider固有logicを入れない。
+7. Deployment固有設定は専用fileとADRへ分離する。
 
-## References checked on 2026-08-25/26
+## 2026-08-25/26に確認した参考資料
 
 - AWS Amplify — Next.js support: https://docs.aws.amazon.com/amplify/latest/userguide/ssr-amplify-support.html
 - Netlify — Next.js overview: https://docs.netlify.com/build/frameworks/framework-setup-guides/nextjs/overview/

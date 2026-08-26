@@ -48,7 +48,7 @@ jobs:
       - run: pnpm db:migrate
       - run: pnpm generate:types
       - run: pnpm generate:importmap
-      - name: Verify generated Payload artifacts are committed
+      - name: 生成済みPayload成果物がコミットされていることを確認
         shell: bash
         run: git diff --exit-code -- src/payload-types.ts 'src/app/(payload)/admin/importMap.js'
       - run: pnpm build

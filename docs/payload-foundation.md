@@ -1,48 +1,48 @@
-# Payload CMS + PostgreSQL foundation
+# Payload CMS + PostgreSQL Foundation
 
-Status: Draft PR implementation — 2026-08-26
+状態: Draft PR実装中 — 2026-08-26
 
 ## Scope
 
-This foundation adds Payload CMS to the existing single Next.js application without creating a separate CMS service.
+このFoundationでは、独立したCMS serviceを作らず、既存の単一Next.js applicationへPayload CMSを統合する。
 
-Implemented:
+実装済み:
 
 - Payload CMS `3.88.0`
 - `@payloadcms/db-postgres` `3.88.0`
-- `/admin` App Router integration
-- Payload REST routes under `/api`
+- `/admin` のApp Router統合
+- `/api` 配下のPayload REST route
 - Users/Auth collection
 - Media collection
-- generated `src/payload-types.ts`
-- generated Admin import map
-- repository-managed initial PostgreSQL migration
-- CI PostgreSQL migration gate
-- Deploy Preview E2E checks for Admin protection and anonymous Users API denial
+- 生成済み `src/payload-types.ts`
+- 生成済みAdmin import map
+- Repository管理の初期PostgreSQL migration
+- CI上のPostgreSQL migration gate
+- Admin保護と匿名Users API拒否を確認するDeploy Preview E2E
 
-Not implemented in this PR:
+このPRでは未実装:
 
-- Works / Posts / News / Schedule / Social Links collections
-- production S3 storage
-- AWS resources or Terraform
+- Works / Posts / News / Schedule / Social Links collection
+- Production S3 storage
+- AWS resource / Terraform
 - SMTP/email adapter
-- distributed IP rate limiting
-- production DNS cutover
+- 分散IP rate limiting
+- Production DNS切替
 
-## Environment variables
+## 環境変数
 
-| Variable | Required runtime | Purpose |
+| Variable | Runtimeで必要 | 用途 |
 | --- | --- | --- |
-| `DATABASE_URL` | yes | PostgreSQL connection string |
-| `PAYLOAD_SECRET` | yes | Payload signing/encryption secret |
-| `PAYLOAD_ALLOWED_ORIGINS` | yes | comma-separated trusted CSRF/CORS origins |
-| `PAYLOAD_PUBLIC_SERVER_URL` | recommended | explicit Payload server origin when the hosting environment needs one |
+| `DATABASE_URL` | 必須 | PostgreSQL connection string |
+| `PAYLOAD_SECRET` | 必須 | Payloadの署名・暗号化secret |
+| `PAYLOAD_ALLOWED_ORIGINS` | 必須 | CSRF/CORSで信頼するoriginのカンマ区切り一覧 |
+| `PAYLOAD_PUBLIC_SERVER_URL` | 推奨 | hosting環境で明示的なPayload server originが必要な場合に使用 |
 
-S3 variables remain reserved in `.env.example` for the next media-storage phase and are not consumed by the foundation.
+S3関連variableは次のmedia-storage phase向けに `.env.example` へ予約しているが、Foundationでは使用しない。
 
 ## Local database lifecycle
 
-Use a dedicated local PostgreSQL database and set `DATABASE_URL`.
+専用のlocal PostgreSQL databaseを用意し、`DATABASE_URL` を設定する。
 
 ```bash
 pnpm install --frozen-lockfile
@@ -50,9 +50,9 @@ pnpm db:migrate
 pnpm dev
 ```
 
-Schema push is disabled. Schema changes should be represented by a migration rather than silently pushed from the application at startup.
+Schema pushは無効化している。Schema変更はapplication startup時に暗黙でpushせず、migrationとしてRepository管理する。
 
-To create a reviewed migration after changing Payload schema:
+Payload schema変更後にreview対象のmigrationを作成する場合:
 
 ```bash
 pnpm db:migrate:create descriptive_name
@@ -60,67 +60,69 @@ pnpm generate:types
 pnpm generate:importmap
 ```
 
-Commit the migration, generated types, and import-map change together.
+Migration、generated types、import mapの変更は同じfeature変更としてcommitする。
 
-## Preview / production migration policy
+## Preview / Production migration方針
 
-Do not add `pnpm db:migrate` to `pnpm build`.
+`pnpm db:migrate` を `pnpm build` へ追加しない。
 
-For a target environment:
+対象環境への反映手順:
 
-1. confirm the target `DATABASE_URL`
-2. back up the database when the environment contains durable data
-3. inspect the migration diff in the PR
-4. run `pnpm db:migrate` as an explicit release step
-5. deploy the same reviewed revision
-6. verify `/admin` and authorization behavior
+1. 対象の `DATABASE_URL` を確認する
+2. Durable dataが存在する環境ではdatabase backupを取得する
+3. PR上でmigration diffをreviewする
+4. 明示的なrelease stepとして `pnpm db:migrate` を実行する
+5. Review済みの同一revisionをdeployする
+6. `/admin` とauthorization behaviorを確認する
 
 ## Admin/Auth baseline
 
-Payload standard authentication is the only Admin auth system.
+Admin認証はPayload標準Authのみを使用する。
 
-- first-user bootstrap stays on Payload's standard `/admin/create-first-user` flow
-- normal Admin access requires an authenticated Payload user
-- minimum password length: 14
-- 5 failed login attempts trigger a 15-minute lock
-- Admin API keys are disabled
-- token responses are suppressed where Payload supports cookie-based Admin auth
-- production cookies are marked secure
-- CSRF/CORS accepts only configured origins
+- 初回user作成はPayload標準の `/admin/create-first-user` flowを維持する
+- 通常のAdmin accessには認証済みPayload userが必要
+- Password最小長: 14文字
+- Login失敗5回で15分間lock
+- Admin API keyは無効
+- Payloadがcookie-based Admin authをサポートする範囲でtoken responseを抑制
+- Production cookieはSecure
+- CSRF/CORSは設定済みoriginのみ許可
 
-Payload's normal authenticated collection access remains the baseline instead of duplicating access logic for every Users operation.
+Usersの各operationへ重複した独自access logicを追加せず、Payloadの標準的なauthenticated collection accessをbaselineとする。
 
-## Media boundary
+## Media境界
 
 Development:
 
-- authenticated users may create/update/delete Media
-- local files are stored under `media/`, which is gitignored
+- 認証済みuserはMediaをcreate/update/deleteできる
+- local fileはgitignore済みの `media/` へ保存する
 
 Production:
 
-- local storage is disabled
-- create/update/delete Media is denied until durable object storage is configured
+- local storageを無効化する
+- durable object storageを設定するまではMediaのcreate/update/deleteを拒否する
 
-The next media-storage PR may add the Payload S3 adapter. If AWS S3 is selected, the bucket, public-access block, encryption, lifecycle, CORS, and least-privilege IAM configuration must be represented in Terraform before production writes are enabled.
+次のmedia-storage PRでPayload S3 adapterを追加できる。AWS S3を採用する場合、production writeを有効化する前にbucket、public access block、encryption、lifecycle、CORS、least-privilege IAM設定をTerraformで管理する。
 
 ## CI gate
 
-GitHub Actions uses PostgreSQL 17 and validates:
+GitHub ActionsではPostgreSQL 17を使用し、以下を検証する。
 
 - frozen pnpm install
 - Prettier
 - ESLint
 - TypeScript
-- unit tests
-- repository migration application
-- generated Payload artifact drift
+- unit test
+- Repository migrationの適用
+- generated Payload artifactのdrift
 - Next.js build
 
-The existing Netlify remote Playwright job remains the deployment gate and now also validates `/admin` plus anonymous `/api/users` access.
+既存Netlify remote Playwright jobをdeployment gateとして維持し、`/admin` と匿名 `/api/users` accessの検証を追加している。
 
-## External environment status
+## 外部環境の状態
 
-Netlify project `ivumz-home` has a production Payload secret and allowed-origin configuration, but a dedicated `DATABASE_URL` is still required before the real Payload Admin runtime can pass Deploy Preview.
+2026-08-26の再確認時点で、Netlify project `ivumz-home` の環境変数は未設定である。このためDeploy PreviewではPayload runtimeに必要な `DATABASE_URL` と `PAYLOAD_SECRET` が存在せず、`/admin` と `/api/users` がHTTP 500になっている。
 
-No DNS record is changed by this phase.
+Deploy PreviewをGREENにする前に、Preview用PostgreSQL接続先、`PAYLOAD_SECRET`、`PAYLOAD_ALLOWED_ORIGINS`、必要に応じて `PAYLOAD_PUBLIC_SERVER_URL` をNetlify runtimeへ設定し、対象databaseへRepository migrationを明示適用する。
+
+このPhaseではDNS recordを変更しない。
