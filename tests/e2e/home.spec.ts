@@ -75,24 +75,27 @@ test('mobile drawer supports keyboard escape and closes after navigation', async
   test.skip(testInfo.project.name !== 'mobile-webkit', 'Mobile drawer only')
   await page.goto('/')
 
-  const trigger = page.getByRole('button', { name: 'メニューを開く' })
-  await trigger.click()
+  const trigger = page.locator('button[aria-controls="mobile-navigation"]')
   const drawer = page.locator('#mobile-navigation')
+
+  await expect(trigger).toHaveAccessibleName('メニューを開く')
+  await expect(trigger).toHaveAttribute('aria-expanded', 'false')
+
+  await trigger.click()
+  await expect(trigger).toHaveAccessibleName('メニューを閉じる')
   await expect(trigger).toHaveAttribute('aria-expanded', 'true')
   await expect(drawer).toHaveAttribute('aria-hidden', 'false')
 
   await page.keyboard.press('Escape')
-  await expect(page.getByRole('button', { name: 'メニューを開く' })).toHaveAttribute(
-    'aria-expanded',
-    'false',
-  )
+  await expect(trigger).toHaveAccessibleName('メニューを開く')
+  await expect(trigger).toHaveAttribute('aria-expanded', 'false')
+  await expect(trigger).toBeFocused()
 
-  await page.getByRole('button', { name: 'メニューを開く' }).click()
+  await trigger.click()
   await drawer.getByRole('link', { name: /WORKS/ }).click()
-  await expect(page.getByRole('button', { name: 'メニューを開く' })).toHaveAttribute(
-    'aria-expanded',
-    'false',
-  )
+  await expect(trigger).toHaveAccessibleName('メニューを開く')
+  await expect(trigger).toHaveAttribute('aria-expanded', 'false')
+  await expect(page).toHaveURL(/#works$/)
 })
 
 test('reduced motion keeps primary content immediately usable', async ({ page }) => {
