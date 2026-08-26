@@ -1,62 +1,38 @@
-import config from '@payload-config'
-import { getPayload } from 'payload'
+const expectedPoolerUsername = 'ivmz_home_app.drazbrcqnjxjuygfxmlz'
 
-const diagnosticCategoryByCode: Record<string, string> = {
-  '28P01': 'authentication',
-  '3D000': 'database',
-  '42501': 'authorization',
-  ECONNREFUSED: 'connection-refused',
-  ENETUNREACH: 'network',
-  ENOTFOUND: 'dns',
-  ETIMEDOUT: 'timeout',
-}
+export function GET() {
+  const rawDatabaseUrl = process.env.DATABASE_URL
 
-function findSafeErrorCode(error: unknown, depth = 0): string | null {
-  if (depth > 3 || typeof error !== 'object' || error === null) return null
-
-  const candidate = error as {
-    cause?: unknown
-    code?: unknown
-    errors?: unknown[]
-  }
-
-  if (typeof candidate.code === 'string' && /^[A-Z0-9_]+$/.test(candidate.code)) {
-    return candidate.code
-  }
-
-  const causeCode = findSafeErrorCode(candidate.cause, depth + 1)
-  if (causeCode) return causeCode
-
-  for (const nestedError of candidate.errors ?? []) {
-    const nestedCode = findSafeErrorCode(nestedError, depth + 1)
-    if (nestedCode) return nestedCode
-  }
-
-  return null
-}
-
-export async function GET() {
-  try {
-    const payload = await getPayload({ config })
-
-    await payload.find({
-      collection: 'users',
-      limit: 1,
-      overrideAccess: true,
-      pagination: false,
+  if (!rawDatabaseUrl) {
+    return Response.json({
+      ok: false,
+      hasDatabaseUrl: false,
     })
+  }
 
-    return Response.json({ ok: true })
-  } catch (error) {
-    const code = findSafeErrorCode(error)
+  try {
+    const databaseUrl = new URL(rawDatabaseUrl)
 
-    return Response.json(
-      {
-        ok: false,
-        category: code ? (diagnosticCategoryByCode[code] ?? 'database-or-runtime') : 'unknown',
-        code: code ?? 'UNKNOWN',
-      },
-      { status: 503 },
-    )
+    const checks = {
+      hasDatabaseUrl: true,
+      protocolOk: databaseUrl.protocol === 'postgresql:' || databaseUrl.protocol === 'postgres:',
+      usernameOk: decodeURIComponent(databaseUrl.username) === expectedPoolerUsername,
+      hasPassword: databaseUrl.password.length > 0,
+      poolerHostOk: databaseUrl.hostname.endsWith('.pooler.supabase.com'),
+      sessionPortOk: databaseUrl.port === '5432',
+      databaseOk: databaseUrl.pathname === '/postgres',
+      sslModeOk: databaseUrl.searchParams.get('sslmode') === 'require',
+    }
+
+    return Response.json({
+      ok: Object.values(checks).every(Boolean),
+      ...checks,
+    })
+  } catch {
+    return Response.json({
+      ok: false,
+      hasDatabaseUrl: true,
+      parseable: false,
+    })
   }
 }
