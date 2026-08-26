@@ -21,51 +21,31 @@ function applyTheme(theme: Theme) {
 }
 
 function ThemeToggle({ compact = false }: { compact?: boolean }) {
-  const [theme, setTheme] = useState<Theme>('dark')
-
-  useEffect(() => {
-    const frame = window.requestAnimationFrame(() => {
-      const current = document.documentElement.dataset.theme === 'light' ? 'light' : 'dark'
-      setTheme(current)
-    })
-    return () => window.cancelAnimationFrame(frame)
-  }, [])
-
-  const next = theme === 'dark' ? 'light' : 'dark'
   return (
     <button
       className={compact ? 'theme-toggle theme-toggle-compact' : 'theme-toggle'}
       type="button"
-      aria-label={`テーマを${next === 'light' ? 'ライト' : 'ダーク'}へ切り替える`}
-      title={`Switch to ${next} theme`}
+      aria-label="テーマを切り替える"
+      title="Switch color theme"
       onClick={() => {
-        applyTheme(next)
-        setTheme(next)
+        const current = document.documentElement.dataset.theme === 'light' ? 'light' : 'dark'
+        applyTheme(current === 'dark' ? 'light' : 'dark')
       }}
     >
-      <span aria-hidden="true" className="theme-toggle-mark">
-        {theme === 'dark' ? '☾' : '☼'}
+      <span aria-hidden="true" className="theme-toggle-mark theme-mark-dark">
+        ☾
       </span>
-      {!compact && <span>{theme === 'dark' ? 'DARK' : 'LIGHT'}</span>}
+      <span aria-hidden="true" className="theme-toggle-mark theme-mark-light">
+        ☼
+      </span>
+      {!compact && <span className="theme-toggle-label">THEME</span>}
     </button>
   )
 }
 
 export function SignatureIntro() {
-  const introRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    try {
-      const seen = window.sessionStorage.getItem('ivmz-signature-seen') === '1'
-      if (seen) introRef.current?.classList.add('signature-intro-skip')
-      window.sessionStorage.setItem('ivmz-signature-seen', '1')
-    } catch {
-      // Session storage is an enhancement only; the intro remains safe without it.
-    }
-  }, [])
-
   return (
-    <div ref={introRef} className="signature-intro" aria-hidden="true">
+    <div className="signature-intro" aria-hidden="true">
       <svg viewBox="0 0 220 76" role="presentation">
         <path
           className="signature-path"
