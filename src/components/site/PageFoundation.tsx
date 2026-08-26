@@ -48,7 +48,7 @@ export function PageSection({ title, description, children }: PageSectionProps) 
 export function EmptyState({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="empty-state" role="status">
-      <span aria-hidden="true">//</span>
+      <span aria-hidden="true">{'//'}</span>
       <div>
         <strong>{title}</strong>
         <p>{children}</p>
