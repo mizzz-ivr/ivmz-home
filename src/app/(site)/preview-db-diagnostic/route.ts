@@ -4,6 +4,8 @@ type SafeErrorDetails = {
   messages: string[]
 }
 
+type PayloadConfig = Awaited<(typeof import('@payload-config'))['default']>
+
 const knownCategories: Record<string, string> = {
   '28P01': 'authentication',
   '3D000': 'database',
@@ -102,7 +104,7 @@ export const dynamic = 'force-dynamic'
 
 export async function GET() {
   let getPayload: typeof import('payload')['getPayload']
-  let config: Awaited<ReturnType<typeof import('@payload-config')['default']>>
+  let config: PayloadConfig
 
   try {
     const payloadModule = await import('payload')
