@@ -6,13 +6,13 @@ const SUPABASE_TRANSACTION_PORT = '6543'
 
 export function resolveDatabasePoolMode(
   configuredMode: string | undefined,
-  netlifySiteId: string | undefined,
+  netlifyFunctionName: string | undefined,
 ): DatabasePoolMode | undefined {
   if (configuredMode === 'session' || configuredMode === 'transaction') {
     return configuredMode
   }
 
-  return netlifySiteId ? 'transaction' : undefined
+  return netlifyFunctionName ? 'transaction' : undefined
 }
 
 export function resolveDatabaseConnectionString(
