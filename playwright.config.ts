@@ -2,6 +2,7 @@ import { defineConfig, devices } from '@playwright/test'
 
 const remoteBaseURL = process.env.E2E_BASE_URL
 const baseURL = remoteBaseURL ?? 'http://127.0.0.1:3000'
+const payloadSecurityTest = /payload\.spec\.ts/
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -16,7 +17,20 @@ export default defineConfig({
         reuseExistingServer: true,
       },
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    { name: 'mobile-webkit', use: { ...devices['iPhone 13'], browserName: 'webkit' } },
+    {
+      name: 'chromium',
+      testIgnore: payloadSecurityTest,
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'mobile-webkit',
+      testIgnore: payloadSecurityTest,
+      use: { ...devices['iPhone 13'], browserName: 'webkit' },
+    },
+    {
+      name: 'payload-security',
+      testMatch: payloadSecurityTest,
+      use: { ...devices['Desktop Chrome'] },
+    },
   ],
 })
