@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
-import './globals.css'
-import './reduced-motion.css'
+import '../globals.css'
+import '../reduced-motion.css'
 import { site } from '@/lib/site'
 
 export const metadata: Metadata = {
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default function SiteLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ja">
       <body>{children}</body>

@@ -4,6 +4,7 @@ out
 coverage
 playwright-report
 test-results
+media
 .env
 .env.local
 .env.*.local
