@@ -169,7 +169,13 @@ async function loadHomePayloadResults(): Promise<HomePayloadResults> {
   const scheduleResult = await getUpcomingSchedule()
   const socialsResult = await getEnabledSocialLinks()
 
-  return { worksResult, postsResult, newsResult, scheduleResult, socialsResult }
+  return {
+    worksResult,
+    postsResult,
+    newsResult,
+    scheduleResult,
+    socialsResult,
+  }
 }
 
 async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
@@ -251,7 +257,10 @@ export async function getHomeViewModel(): Promise<HomeViewModel> {
           : staticHomeViewModel.socials,
     }
   } catch (error) {
-    console.error('[home-content] Payload query failed or timed out; using the static Home fallback.', error)
+    console.error(
+      '[home-content] Payload query failed or timed out; using the static Home fallback.',
+      error,
+    )
     return staticHomeViewModel
   }
 }
