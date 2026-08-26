@@ -1,9 +1,8 @@
 import configPromise from '@payload-config'
+import { cache } from 'react'
 import { getPayload } from 'payload'
 
-async function getContentPayload() {
-  return getPayload({ config: configPromise })
-}
+const getContentPayload = cache(() => getPayload({ config: configPromise }))
 
 export async function getPublishedWorks(limit = 3) {
   const payload = await getContentPayload()
@@ -11,6 +10,7 @@ export async function getPublishedWorks(limit = 3) {
   return payload.find({
     collection: 'works',
     depth: 0,
+    draft: false,
     limit,
     overrideAccess: false,
     sort: '-publishedAt',
@@ -28,6 +28,7 @@ export async function getLatestPosts(limit = 3) {
   return payload.find({
     collection: 'posts',
     depth: 0,
+    draft: false,
     limit,
     overrideAccess: false,
     sort: '-publishedAt',
@@ -45,6 +46,7 @@ export async function getLatestNews(limit = 3) {
   return payload.find({
     collection: 'news',
     depth: 0,
+    draft: false,
     limit,
     overrideAccess: false,
     sort: '-publishedAt',
