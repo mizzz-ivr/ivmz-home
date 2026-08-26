@@ -11,9 +11,9 @@ jobs:
   diagnose:
     runs-on: ubuntu-latest
     env:
-      DIAGNOSTIC_URL: https://6a8e7ca66c0ed0000806d096--ivmz-home.netlify.app/preview-db-diagnostic
+      DIAGNOSTIC_URL: https://6a8e7d325af9fd0008d85da3--ivmz-home.netlify.app/preview-db-diagnostic
     steps:
-      - name: Ready済みDeploy PreviewのDB実接続を診断
+      - name: Ready済みDeploy PreviewのDB失敗stageを診断
         shell: bash
         run: |
           status="$(curl --location --max-time 30 --silent --show-error --output /tmp/db-diagnostic.json --write-out '%{http_code}' "$DIAGNOSTIC_URL" || true)"
