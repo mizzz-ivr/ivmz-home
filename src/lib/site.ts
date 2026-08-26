@@ -7,6 +7,7 @@ export const site = {
   githubUrl: 'https://github.com/mizzz-ivr',
   githubAvatarUrl: 'https://avatars.githubusercontent.com/u/86910433?v=4',
   contactEmail: 'ivmz@ivrm.jp',
+  developerEmail: 'mizzz@ivrm.jp',
   securityEmail: 'security@ivrm.jp',
   teamEmail: 'contact@ivrm.jp',
   description:
