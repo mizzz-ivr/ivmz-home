@@ -147,6 +147,7 @@ GitHub ActionsではPostgreSQL 17を使用し、以下を検証する。
 - Repositoryと同じ初期Payload migrationを `ivmz_home` schemaへ適用
 - `payload_migrations` にRepository migrationと一致するmigration stateを記録
 - Repository rename後のruntime role名に合わせ、Netlify `DATABASE_URL` のusername更新を確認
+- Runtime接続診断を受け、URL-safeな新PasswordへrotationしNetlify secretへ再反映済み
 
 この更新commitでDeploy Previewを再生成し、`/admin` の正常起動、匿名 `/api/users` の401/403応答、Chromium / mobile WebKitのremote smokeを再確認する。
 
