@@ -1,8 +1,10 @@
-# Hosting方針 — 2026-08-25
+# Hosting方針 — 2026-08-26
 
 ## 目的
 
-現在のDNS providerへapplicationを密結合せずにLaunch hostを決定する。`mizzz.ivrm.jp` のauthoritative DNSを将来CloudflareからAmazon Route 53へ移行しても、product codeを書き直さずに済む構成を維持する。
+現在のDNS providerへapplicationを密結合せずにLaunch hostを決定する。`ivmz.ivrm.jp` のauthoritative DNSを将来CloudflareからAmazon Route 53へ移行しても、product codeを書き直さずに済む構成を維持する。
+
+Personal Web PlatformのRepositoryは `mizzz-ivr/ivmz-home`。Identity / contact方針は `docs/identity-contact.md` を正とする。
 
 ## Launch時のベスト案: Netlify
 
@@ -23,9 +25,17 @@ Route/DNS（当面Cloudflare -> 将来Route 53）
       -> Email adapter
 ```
 
+Canonical production host:
+
+```text
+https://ivmz.ivrm.jp
+```
+
+`mizzz.jp` はlegacy / old-link compatibilityとしてWeb trafficを `ivmz.ivrm.jp` へredirectする。
+
 ## Payload + PostgreSQL deployment gate
 
-Payload `3.88.0` は `@payloadcms/db-postgres` と `DATABASE_URL` を使用する。Payload管理tableはPostgreSQL schema `ivumz_home` に分離する。
+Payload `3.88.0` は `@payloadcms/db-postgres` と `DATABASE_URL` を使用する。Payload管理tableはPostgreSQL schema `ivmz_home` に分離する。
 
 Foundationで必要なruntime variable:
 
@@ -47,9 +57,9 @@ CIではGitHub Actions上にephemeral PostgreSQL 17 serviceを起動し、Next.j
 
 ## Preview database境界
 
-FoundationのDeploy Previewでは、既存PostgreSQL clusterを利用する場合もapplication専用の `ivumz_home` schemaとruntime role `ivumz_home_app` で分離する。
+FoundationのDeploy Previewでは、既存PostgreSQL clusterを利用する場合もapplication専用の `ivmz_home` schemaとruntime role `ivmz_home_app` で分離する。
 
-- Payload側は `schemaName: 'ivumz_home'` を使用する
+- Payload側は `schemaName: 'ivmz_home'` を使用する
 - `public` schemaへPayload tableを作成しない
 - Preview用runtime roleへsuperuser / CREATEDB / CREATEROLEを付与しない
 - Repository migrationとPayload migration stateを一致させる
@@ -94,6 +104,20 @@ Route 53
 ### App Runner
 
 新規defaultとして採用しない。AWSはApp Runnerが2026-03-31以降、新規customerの受付を停止したと案内している。既存の対象accountは例外であり、baseline architectureにはしない。
+
+## Email boundary
+
+Emailはapplication adapterの背後に置く。
+
+現在のIdentity-level mail role:
+
+- General / Personal → `ivmz@ivrm.jp`
+- Person-facing → `ivuru@ivrm.jp`
+- Developer / OSS → `mizzz@ivrm.jp`
+- ivRooom / Team → `contact@ivrm.jp`
+- Security → `security@ivrm.jp`
+
+Cloudflare Email Service / Email Sending SMTPはoutbound mail候補として評価中。Product codeをCloudflare固有primitiveへ直接密結合せず、provider固有処理はadapter / deployment境界へ閉じ込める。
 
 ## Portability rules
 
