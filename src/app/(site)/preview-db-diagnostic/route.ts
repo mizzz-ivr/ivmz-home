@@ -51,53 +51,91 @@ function collectSafeErrorDetails(
   return details
 }
 
+function diagnosticResponse(error: unknown, stage: string) {
+  const details = collectSafeErrorDetails(error)
+  const uniqueCodes = [...new Set(details.codes)]
+  const uniqueNames = [...new Set(details.names)]
+  const message = details.messages.join('\n')
+  const category =
+    uniqueCodes.map((code) => knownCategories[code]).find(Boolean) ??
+    (message.includes('password authentication failed') ? 'authentication' : null) ??
+    (message.includes('tenant or user not found') ? 'pooler-user' : null) ??
+    (message.includes('invalid connection') || message.includes('invalid url')
+      ? 'connection-string'
+      : null) ??
+    (message.includes('sasl') ? 'sasl' : null) ??
+    (message.includes('certificate') || message.includes('ssl') ? 'tls' : null) ??
+    (message.includes('prepared statement') ? 'prepared-statement' : null) ??
+    (message.includes('permission denied') ? 'authorization' : null) ??
+    (message.includes('schema') || message.includes('relation') ? 'schema' : null) ??
+    (message.includes('cannot find module') ? 'module-resolution' : null) ??
+    (message.includes('database') || message.includes('postgres') ? 'database-or-driver' : null) ??
+    'unknown'
+
+  return Response.json(
+    {
+      ok: false,
+      stage,
+      category,
+      codes: uniqueCodes,
+      names: uniqueNames,
+      signals: {
+        mentionsAuthentication: message.includes('authentication'),
+        mentionsConnection: message.includes('connect'),
+        mentionsDatabase: message.includes('database') || message.includes('postgres'),
+        mentionsHost: message.includes('host'),
+        mentionsModule: message.includes('module'),
+        mentionsPassword: message.includes('password'),
+        mentionsPermission: message.includes('permission'),
+        mentionsPooler: message.includes('pooler') || message.includes('tenant'),
+        mentionsSchema: message.includes('schema') || message.includes('relation'),
+        mentionsSsl: message.includes('ssl') || message.includes('certificate'),
+        mentionsTimeout: message.includes('timeout') || message.includes('timed out'),
+        mentionsUrl: message.includes('url') || message.includes('connection string'),
+      },
+    },
+    { status: 503 },
+  )
+}
+
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
-  try {
-    const [{ getPayload }, { default: config }] = await Promise.all([
-      import('payload'),
-      import('@payload-config'),
-    ])
-    const payload = await getPayload({ config })
+  let getPayload: typeof import('payload')['getPayload']
+  let config: Awaited<ReturnType<typeof import('@payload-config')['default']>>
 
+  try {
+    const payloadModule = await import('payload')
+    getPayload = payloadModule.getPayload
+  } catch (error) {
+    return diagnosticResponse(error, 'payload-module-import')
+  }
+
+  try {
+    const configModule = await import('@payload-config')
+    config = await configModule.default
+  } catch (error) {
+    return diagnosticResponse(error, 'payload-config-import')
+  }
+
+  let payload: Awaited<ReturnType<typeof getPayload>>
+
+  try {
+    payload = await getPayload({ config })
+  } catch (error) {
+    return diagnosticResponse(error, 'payload-init')
+  }
+
+  try {
     await payload.find({
       collection: 'users',
       limit: 1,
       overrideAccess: true,
       pagination: false,
     })
-
-    return Response.json({ ok: true })
   } catch (error) {
-    const details = collectSafeErrorDetails(error)
-    const uniqueCodes = [...new Set(details.codes)]
-    const uniqueNames = [...new Set(details.names)]
-    const combinedMessage = details.messages.join('\n')
-    const category =
-      uniqueCodes.map((code) => knownCategories[code]).find(Boolean) ??
-      (combinedMessage.includes('password authentication failed') ? 'authentication' : null) ??
-      (combinedMessage.includes('tenant or user not found') ? 'pooler-user' : null) ??
-      (combinedMessage.includes('sasl') ? 'sasl' : null) ??
-      (combinedMessage.includes('certificate') ? 'tls' : null) ??
-      (combinedMessage.includes('prepared statement') ? 'prepared-statement' : null) ??
-      'unknown'
-
-    return Response.json(
-      {
-        ok: false,
-        category,
-        codes: uniqueCodes,
-        names: uniqueNames,
-        signals: {
-          passwordAuthenticationFailed: combinedMessage.includes('password authentication failed'),
-          poolerUserNotFound: combinedMessage.includes('tenant or user not found'),
-          saslFailure: combinedMessage.includes('sasl'),
-          tlsFailure: combinedMessage.includes('certificate'),
-          preparedStatementFailure: combinedMessage.includes('prepared statement'),
-        },
-      },
-      { status: 503 },
-    )
+    return diagnosticResponse(error, 'payload-query')
   }
+
+  return Response.json({ ok: true })
 }
