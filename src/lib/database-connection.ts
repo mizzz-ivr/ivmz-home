@@ -3,6 +3,7 @@ export type DatabasePoolMode = 'session' | 'transaction'
 const SUPABASE_POOLER_HOST_SUFFIX = '.pooler.supabase.com'
 const SUPABASE_SESSION_PORT = '5432'
 const SUPABASE_TRANSACTION_PORT = '6543'
+const SERVERLESS_POOL_MAX = 5
 
 export function resolveDatabasePoolMode(
   configuredMode: string | undefined,
@@ -49,7 +50,7 @@ export function getDatabasePoolConfig(
   if (poolMode === 'transaction' && connectionString !== databaseUrl) {
     return {
       connectionString,
-      max: 1,
+      max: SERVERLESS_POOL_MAX,
     }
   }
 
