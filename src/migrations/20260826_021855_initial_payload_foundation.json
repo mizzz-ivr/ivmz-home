@@ -2,9 +2,9 @@
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "ivumz_home.users_sessions": {
+    "ivmz_home.users_sessions": {
       "name": "users_sessions",
-      "schema": "ivumz_home",
+      "schema": "ivmz_home",
       "columns": {
         "_order": {
           "name": "_order",
@@ -74,7 +74,7 @@
           "name": "users_sessions_parent_id_fk",
           "tableFrom": "users_sessions",
           "tableTo": "users",
-          "schemaTo": "ivumz_home",
+          "schemaTo": "ivmz_home",
           "columnsFrom": [
             "_parent_id"
           ],
@@ -91,9 +91,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "ivumz_home.users": {
+    "ivmz_home.users": {
       "name": "users",
-      "schema": "ivumz_home",
+      "schema": "ivmz_home",
       "columns": {
         "id": {
           "name": "id",
@@ -213,9 +213,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "ivumz_home.media": {
+    "ivmz_home.media": {
       "name": "media",
-      "schema": "ivumz_home",
+      "schema": "ivmz_home",
       "columns": {
         "id": {
           "name": "id",
@@ -352,9 +352,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "ivumz_home.payload_kv": {
+    "ivmz_home.payload_kv": {
       "name": "payload_kv",
-      "schema": "ivumz_home",
+      "schema": "ivmz_home",
       "columns": {
         "id": {
           "name": "id",
@@ -399,9 +399,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "ivumz_home.payload_locked_documents": {
+    "ivmz_home.payload_locked_documents": {
       "name": "payload_locked_documents",
-      "schema": "ivumz_home",
+      "schema": "ivmz_home",
       "columns": {
         "id": {
           "name": "id",
@@ -484,9 +484,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "ivumz_home.payload_locked_documents_rels": {
+    "ivmz_home.payload_locked_documents_rels": {
       "name": "payload_locked_documents_rels",
-      "schema": "ivumz_home",
+      "schema": "ivmz_home",
       "columns": {
         "id": {
           "name": "id",
@@ -607,7 +607,7 @@
           "name": "payload_locked_documents_rels_parent_fk",
           "tableFrom": "payload_locked_documents_rels",
           "tableTo": "payload_locked_documents",
-          "schemaTo": "ivumz_home",
+          "schemaTo": "ivmz_home",
           "columnsFrom": [
             "parent_id"
           ],
@@ -621,7 +621,7 @@
           "name": "payload_locked_documents_rels_users_fk",
           "tableFrom": "payload_locked_documents_rels",
           "tableTo": "users",
-          "schemaTo": "ivumz_home",
+          "schemaTo": "ivmz_home",
           "columnsFrom": [
             "users_id"
           ],
@@ -635,7 +635,7 @@
           "name": "payload_locked_documents_rels_media_fk",
           "tableFrom": "payload_locked_documents_rels",
           "tableTo": "media",
-          "schemaTo": "ivumz_home",
+          "schemaTo": "ivmz_home",
           "columnsFrom": [
             "media_id"
           ],
@@ -652,9 +652,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "ivumz_home.payload_preferences": {
+    "ivmz_home.payload_preferences": {
       "name": "payload_preferences",
-      "schema": "ivumz_home",
+      "schema": "ivmz_home",
       "columns": {
         "id": {
           "name": "id",
@@ -743,9 +743,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "ivumz_home.payload_preferences_rels": {
+    "ivmz_home.payload_preferences_rels": {
       "name": "payload_preferences_rels",
-      "schema": "ivumz_home",
+      "schema": "ivmz_home",
       "columns": {
         "id": {
           "name": "id",
@@ -845,7 +845,7 @@
           "name": "payload_preferences_rels_parent_fk",
           "tableFrom": "payload_preferences_rels",
           "tableTo": "payload_preferences",
-          "schemaTo": "ivumz_home",
+          "schemaTo": "ivmz_home",
           "columnsFrom": [
             "parent_id"
           ],
@@ -859,7 +859,7 @@
           "name": "payload_preferences_rels_users_fk",
           "tableFrom": "payload_preferences_rels",
           "tableTo": "users",
-          "schemaTo": "ivumz_home",
+          "schemaTo": "ivmz_home",
           "columnsFrom": [
             "users_id"
           ],
@@ -876,9 +876,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "ivumz_home.payload_migrations": {
+    "ivmz_home.payload_migrations": {
       "name": "payload_migrations",
-      "schema": "ivumz_home",
+      "schema": "ivmz_home",
       "columns": {
         "id": {
           "name": "id",
@@ -955,7 +955,7 @@
   },
   "enums": {},
   "schemas": {
-    "ivumz_home": "ivumz_home"
+    "ivmz_home": "ivmz_home"
   },
   "sequences": {},
   "roles": {},

@@ -13,7 +13,7 @@ Portfolio Platformでは、現行applicationをweb、CMS、adminの別serviceへ
 
 1. Payload CMS `3.88.0` を既存Next.js App Router applicationへ直接統合する。
 2. `@payloadcms/db-postgres` を使用し、connectionは `DATABASE_URL` のみから取得する。
-3. Payload管理tableはPostgreSQL schema `ivumz_home` に固定し、共有clusterでも `public` や他applicationのtableから分離する。
+3. Payload管理tableはPostgreSQL schema `ivmz_home` に固定し、共有clusterでも `public` や他applicationのtableから分離する。
 4. Migrationは `src/migrations` でRepository管理し、application codeと同じPRでreviewする。
 5. PostgreSQL schema pushを無効化し、prototype以外の環境では明示的なmigrationを使用する。
 6. 独自authenticationを作らず、Payload Users collectionをAdmin/Authのauthorityとする。

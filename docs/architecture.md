@@ -74,7 +74,7 @@ Foundation時点では具体的なproduct要件がないためGraphQLは無効�
 ## 永続化
 
 - Database: `DATABASE_URL` の背後にPostgreSQLを置く。Payload利用のために特定provider固有のapplication SQLを要求しない。
-- PostgreSQL schema: Payload管理tableは専用schema `ivumz_home` へ固定し、共有clusterを利用する場合でも `public` や他applicationのtableと名前空間を分離する。これはPostgreSQL標準機能とPayload Postgres adapterの `schemaName` を利用するもので、特定providerへは依存しない。
+- PostgreSQL schema: Payload管理tableは専用schema `ivmz_home` へ固定し、共有clusterを利用する場合でも `public` や他applicationのtableと名前空間を分離する。これはPostgreSQL標準機能とPayload Postgres adapterの `schemaName` を利用するもので、特定providerへは依存しない。
 - Schema lifecycle: `src/migrations` 配下のRepository管理migrationをSource of Truthとする。
 - CI: ephemeral PostgreSQL 17 serviceへmigrationを適用してからbuildする。
 - Preview / Production: migrationは明示的なdeployment gateとする。`next build` から破壊的なschema変更を自動実行しない。

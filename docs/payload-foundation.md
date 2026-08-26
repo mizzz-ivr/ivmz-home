@@ -14,7 +14,7 @@
 - `/api` 配下のPayload REST route
 - Users/Auth collection
 - Media collection
-- PostgreSQL専用schema `ivumz_home`
+- PostgreSQL専用schema `ivmz_home`
 - 生成済み `src/payload-types.ts`
 - 生成済みAdmin import map
 - Repository管理の初期PostgreSQL migration
@@ -43,9 +43,9 @@ S3関連variableは次のmedia-storage phase向けに `.env.example` へ予約�
 
 ## PostgreSQL schema境界
 
-Payload管理tableはPostgreSQL標準の専用schema `ivumz_home` に固定する。
+Payload管理tableはPostgreSQL標準の専用schema `ivmz_home` に固定する。
 
-- Payload Postgres adapterの `schemaName: 'ivumz_home'` を使用する
+- Payload Postgres adapterの `schemaName: 'ivmz_home'` を使用する
 - `public` schemaへPayload tableを作成しない
 - Local / CI / Preview / Productionで同じlogical schema名を使用する
 - PostgreSQL provider自体は `DATABASE_URL` の背後で交換可能に保つ
@@ -134,17 +134,17 @@ GitHub ActionsではPostgreSQL 17を使用し、以下を検証する。
 
 ## Deploy Previewの現在状態
 
-2026-08-26、Preview用runtime role `ivumz_home_app` のPassword設定とNetlify `DATABASE_URL` の更新を確認した。
+2026-08-26、Preview用runtime role `ivmz_home_app` のPassword設定とNetlify `DATABASE_URL` の更新を確認した。
 
 対応済み:
 
 - Netlify Deploy Preview scopeへ `PAYLOAD_SECRET` をsecretとして設定
 - Netlify Deploy Preview scopeへ `PAYLOAD_ALLOWED_ORIGINS` を設定
 - Netlify Deploy Preview scopeへ `DATABASE_URL` をsecretとして設定
-- Preview用PostgreSQLに専用schema `ivumz_home` を作成
-- Preview用runtime role `ivumz_home_app` を作成（superuser / CREATEDB / CREATEROLEなし）
-- `ivumz_home_app` は `LOGIN = true` かつPassword設定済み
-- Repositoryと同じ初期Payload migrationを `ivumz_home` schemaへ適用
+- Preview用PostgreSQLに専用schema `ivmz_home` を作成
+- Preview用runtime role `ivmz_home_app` を作成（superuser / CREATEDB / CREATEROLEなし）
+- `ivmz_home_app` は `LOGIN = true` かつPassword設定済み
+- Repositoryと同じ初期Payload migrationを `ivmz_home` schemaへ適用
 - `payload_migrations` にRepository migrationと一致するmigration stateを記録
 
 この更新commitでDeploy Previewを再生成し、`/admin` の正常起動、匿名 `/api/users` の401/403応答、Chromium / mobile WebKitのremote smokeを再確認する。
