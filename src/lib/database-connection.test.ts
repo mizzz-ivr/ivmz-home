@@ -10,15 +10,15 @@ const sessionPoolerUrl =
   'postgresql://ivmz_home_app.example:password@aws-1-ap-northeast-1.pooler.supabase.com:5432/postgres?sslmode=require'
 
 describe('resolveDatabasePoolMode', () => {
-  it('Netlify Functionsではtransaction modeを既定にする', () => {
-    expect(resolveDatabasePoolMode(undefined, 'site-id')).toBe('transaction')
+  it('Netlify Functions runtimeではtransaction modeを既定にする', () => {
+    expect(resolveDatabasePoolMode(undefined, 'netlify-function-name')).toBe('transaction')
   })
 
   it('明示したsession modeを優先する', () => {
-    expect(resolveDatabasePoolMode('session', 'site-id')).toBe('session')
+    expect(resolveDatabasePoolMode('session', 'netlify-function-name')).toBe('session')
   })
 
-  it('Netlify外かつ未設定ではmodeを追加しない', () => {
+  it('Functions runtime外かつ未設定ではmodeを追加しない', () => {
     expect(resolveDatabasePoolMode(undefined, undefined)).toBeUndefined()
   })
 })
