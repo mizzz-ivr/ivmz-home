@@ -149,6 +149,7 @@ GitHub ActionsではPostgreSQL 17を使用し、以下を検証する。
 - Repository rename後のruntime role名に合わせ、Netlify `DATABASE_URL` のusername更新を確認
 - Runtime接続診断を受け、URL-safeな新PasswordへrotationしNetlify secretへ再反映済み
 - Supabase Connect画面のSession pooler接続先を基準に、Netlify `DATABASE_URL` のhost / port側を再反映済み
+- `pg-connection-string` のlibpq互換TLS解釈へ合わせ、接続URLのTLS互換オプションを再反映済み
 
 この更新commitでDeploy Previewを再生成し、`/admin` の正常起動、匿名 `/api/users` の401/403応答、Chromium / mobile WebKitのremote smokeを再確認する。
 
