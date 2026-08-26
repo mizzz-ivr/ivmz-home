@@ -1,0 +1,40 @@
+name: Netlify Preview Smoke
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  preview-smoke:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    env:
+      E2E_BASE_URL: https://deploy-preview-${{ github.event.pull_request.number }}--ivumz-home.netlify.app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.0
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium webkit
+      - name: Wait for Deploy Preview
+        shell: bash
+        run: |
+          for attempt in {1..20}; do
+            if curl --fail --silent --show-error --location --head "$E2E_BASE_URL" >/dev/null; then
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "Deploy Preview did not become reachable: $E2E_BASE_URL"
+          exit 1
+      - name: Run remote Playwright smoke
+        run: pnpm test:e2e
