@@ -27,7 +27,7 @@ test('serves primary content, metadata, robots and sitemap', async ({ page, requ
 
   const sitemap = await request.get('/sitemap.xml')
   expect(sitemap.ok()).toBe(true)
-  expect(await sitemap.text()).toContain('<loc>https://ivmz.ivrm.jp</loc>')
+  expect(await sitemap.text()).toContain('<loc>https://ivmz.ivrm.jp/</loc>')
 })
 
 test('keeps layered content readable with reduced motion', async ({ page }) => {
