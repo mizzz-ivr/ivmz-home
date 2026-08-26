@@ -24,8 +24,11 @@ function ThemeToggle({ compact = false }: { compact?: boolean }) {
   const [theme, setTheme] = useState<Theme>('dark')
 
   useEffect(() => {
-    const current = document.documentElement.dataset.theme === 'light' ? 'light' : 'dark'
-    setTheme(current)
+    const frame = window.requestAnimationFrame(() => {
+      const current = document.documentElement.dataset.theme === 'light' ? 'light' : 'dark'
+      setTheme(current)
+    })
+    return () => window.cancelAnimationFrame(frame)
   }, [])
 
   const next = theme === 'dark' ? 'light' : 'dark'
@@ -49,20 +52,20 @@ function ThemeToggle({ compact = false }: { compact?: boolean }) {
 }
 
 export function SignatureIntro() {
-  const [skip, setSkip] = useState(false)
+  const introRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     try {
       const seen = window.sessionStorage.getItem('ivmz-signature-seen') === '1'
-      setSkip(seen)
+      if (seen) introRef.current?.classList.add('signature-intro-skip')
       window.sessionStorage.setItem('ivmz-signature-seen', '1')
     } catch {
-      setSkip(false)
+      // Session storage is an enhancement only; the intro remains safe without it.
     }
   }, [])
 
   return (
-    <div className={`signature-intro${skip ? ' signature-intro-skip' : ''}`} aria-hidden="true">
+    <div ref={introRef} className="signature-intro" aria-hidden="true">
       <svg viewBox="0 0 220 76" role="presentation">
         <path
           className="signature-path"
