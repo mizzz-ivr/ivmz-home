@@ -47,12 +47,13 @@ jobs:
       - run: pnpm db:migrate:create payload_content_model_foundation
       - run: pnpm generate:types
       - run: pnpm generate:importmap
-      - name: generated Payload artifactsをfeature branchへcommit
+      - run: pnpm format
+      - name: generated Payload artifactsとformatをfeature branchへcommit
         shell: bash
         run: |
-          git add src/migrations src/payload-types.ts 'src/app/(payload)/admin/importMap.js'
+          git add .
           if git diff --cached --quiet; then
-            echo "Generated artifacts are already up to date."
+            echo "Generated artifacts and formatting are already up to date."
             exit 0
           fi
           git config user.name "github-actions[bot]"
