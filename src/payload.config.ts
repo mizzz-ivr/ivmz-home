@@ -39,9 +39,6 @@ export default buildConfig({
     migrationDir: path.resolve(dirname, 'migrations'),
     pool: {
       connectionString: process.env.DATABASE_URL ?? '',
-      connectionTimeoutMillis: 10_000,
-      idleTimeoutMillis: 5_000,
-      max: 1,
     },
     push: false,
     schemaName: 'ivmz_home',
