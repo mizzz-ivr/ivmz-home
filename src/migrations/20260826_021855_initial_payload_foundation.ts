@@ -2,9 +2,9 @@ import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
 
 export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
-  CREATE SCHEMA IF NOT EXISTS "ivumz_home";
+  CREATE SCHEMA IF NOT EXISTS "ivmz_home";
 
-  CREATE TABLE "ivumz_home"."users_sessions" (
+  CREATE TABLE "ivmz_home"."users_sessions" (
   	"_order" integer NOT NULL,
   	"_parent_id" integer NOT NULL,
   	"id" varchar PRIMARY KEY NOT NULL,
@@ -12,7 +12,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"expires_at" timestamp(3) with time zone NOT NULL
   );
   
-  CREATE TABLE "ivumz_home"."users" (
+  CREATE TABLE "ivmz_home"."users" (
   	"id" serial PRIMARY KEY NOT NULL,
   	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
   	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
@@ -25,7 +25,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"lock_until" timestamp(3) with time zone
   );
   
-  CREATE TABLE "ivumz_home"."media" (
+  CREATE TABLE "ivmz_home"."media" (
   	"id" serial PRIMARY KEY NOT NULL,
   	"alt" varchar NOT NULL,
   	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
@@ -41,20 +41,20 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"focal_y" numeric
   );
   
-  CREATE TABLE "ivumz_home"."payload_kv" (
+  CREATE TABLE "ivmz_home"."payload_kv" (
   	"id" serial PRIMARY KEY NOT NULL,
   	"key" varchar NOT NULL,
   	"data" jsonb NOT NULL
   );
   
-  CREATE TABLE "ivumz_home"."payload_locked_documents" (
+  CREATE TABLE "ivmz_home"."payload_locked_documents" (
   	"id" serial PRIMARY KEY NOT NULL,
   	"global_slug" varchar,
   	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
   	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
   );
   
-  CREATE TABLE "ivumz_home"."payload_locked_documents_rels" (
+  CREATE TABLE "ivmz_home"."payload_locked_documents_rels" (
   	"id" serial PRIMARY KEY NOT NULL,
   	"order" integer,
   	"parent_id" integer NOT NULL,
@@ -63,7 +63,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"media_id" integer
   );
   
-  CREATE TABLE "ivumz_home"."payload_preferences" (
+  CREATE TABLE "ivmz_home"."payload_preferences" (
   	"id" serial PRIMARY KEY NOT NULL,
   	"key" varchar,
   	"value" jsonb,
@@ -71,7 +71,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
   );
   
-  CREATE TABLE "ivumz_home"."payload_preferences_rels" (
+  CREATE TABLE "ivmz_home"."payload_preferences_rels" (
   	"id" serial PRIMARY KEY NOT NULL,
   	"order" integer,
   	"parent_id" integer NOT NULL,
@@ -79,7 +79,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"users_id" integer
   );
   
-  CREATE TABLE "ivumz_home"."payload_migrations" (
+  CREATE TABLE "ivmz_home"."payload_migrations" (
   	"id" serial PRIMARY KEY NOT NULL,
   	"name" varchar,
   	"batch" numeric,
@@ -87,49 +87,49 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
   );
   
-  ALTER TABLE "ivumz_home"."users_sessions" ADD CONSTRAINT "users_sessions_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "ivumz_home"."users"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "ivumz_home"."payload_locked_documents_rels" ADD CONSTRAINT "payload_locked_documents_rels_parent_fk" FOREIGN KEY ("parent_id") REFERENCES "ivumz_home"."payload_locked_documents"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "ivumz_home"."payload_locked_documents_rels" ADD CONSTRAINT "payload_locked_documents_rels_users_fk" FOREIGN KEY ("users_id") REFERENCES "ivumz_home"."users"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "ivumz_home"."payload_locked_documents_rels" ADD CONSTRAINT "payload_locked_documents_rels_media_fk" FOREIGN KEY ("media_id") REFERENCES "ivumz_home"."media"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "ivumz_home"."payload_preferences_rels" ADD CONSTRAINT "payload_preferences_rels_parent_fk" FOREIGN KEY ("parent_id") REFERENCES "ivumz_home"."payload_preferences"("id") ON DELETE cascade ON UPDATE no action;
-  ALTER TABLE "ivumz_home"."payload_preferences_rels" ADD CONSTRAINT "payload_preferences_rels_users_fk" FOREIGN KEY ("users_id") REFERENCES "ivumz_home"."users"("id") ON DELETE cascade ON UPDATE no action;
-  CREATE INDEX "users_sessions_order_idx" ON "ivumz_home"."users_sessions" USING btree ("_order");
-  CREATE INDEX "users_sessions_parent_id_idx" ON "ivumz_home"."users_sessions" USING btree ("_parent_id");
-  CREATE INDEX "users_updated_at_idx" ON "ivumz_home"."users" USING btree ("updated_at");
-  CREATE INDEX "users_created_at_idx" ON "ivumz_home"."users" USING btree ("created_at");
-  CREATE UNIQUE INDEX "users_email_idx" ON "ivumz_home"."users" USING btree ("email");
-  CREATE INDEX "media_updated_at_idx" ON "ivumz_home"."media" USING btree ("updated_at");
-  CREATE INDEX "media_created_at_idx" ON "ivumz_home"."media" USING btree ("created_at");
-  CREATE UNIQUE INDEX "media_filename_idx" ON "ivumz_home"."media" USING btree ("filename");
-  CREATE UNIQUE INDEX "payload_kv_key_idx" ON "ivumz_home"."payload_kv" USING btree ("key");
-  CREATE INDEX "payload_locked_documents_global_slug_idx" ON "ivumz_home"."payload_locked_documents" USING btree ("global_slug");
-  CREATE INDEX "payload_locked_documents_updated_at_idx" ON "ivumz_home"."payload_locked_documents" USING btree ("updated_at");
-  CREATE INDEX "payload_locked_documents_created_at_idx" ON "ivumz_home"."payload_locked_documents" USING btree ("created_at");
-  CREATE INDEX "payload_locked_documents_rels_order_idx" ON "ivumz_home"."payload_locked_documents_rels" USING btree ("order");
-  CREATE INDEX "payload_locked_documents_rels_parent_idx" ON "ivumz_home"."payload_locked_documents_rels" USING btree ("parent_id");
-  CREATE INDEX "payload_locked_documents_rels_path_idx" ON "ivumz_home"."payload_locked_documents_rels" USING btree ("path");
-  CREATE INDEX "payload_locked_documents_rels_users_id_idx" ON "ivumz_home"."payload_locked_documents_rels" USING btree ("users_id");
-  CREATE INDEX "payload_locked_documents_rels_media_id_idx" ON "ivumz_home"."payload_locked_documents_rels" USING btree ("media_id");
-  CREATE INDEX "payload_preferences_key_idx" ON "ivumz_home"."payload_preferences" USING btree ("key");
-  CREATE INDEX "payload_preferences_updated_at_idx" ON "ivumz_home"."payload_preferences" USING btree ("updated_at");
-  CREATE INDEX "payload_preferences_created_at_idx" ON "ivumz_home"."payload_preferences" USING btree ("created_at");
-  CREATE INDEX "payload_preferences_rels_order_idx" ON "ivumz_home"."payload_preferences_rels" USING btree ("order");
-  CREATE INDEX "payload_preferences_rels_parent_idx" ON "ivumz_home"."payload_preferences_rels" USING btree ("parent_id");
-  CREATE INDEX "payload_preferences_rels_path_idx" ON "ivumz_home"."payload_preferences_rels" USING btree ("path");
-  CREATE INDEX "payload_preferences_rels_users_id_idx" ON "ivumz_home"."payload_preferences_rels" USING btree ("users_id");
-  CREATE INDEX "payload_migrations_updated_at_idx" ON "ivumz_home"."payload_migrations" USING btree ("updated_at");
-  CREATE INDEX "payload_migrations_created_at_idx" ON "ivumz_home"."payload_migrations" USING btree ("created_at");`)
+  ALTER TABLE "ivmz_home"."users_sessions" ADD CONSTRAINT "users_sessions_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "ivmz_home"."users"("id") ON DELETE cascade ON UPDATE no action;
+  ALTER TABLE "ivmz_home"."payload_locked_documents_rels" ADD CONSTRAINT "payload_locked_documents_rels_parent_fk" FOREIGN KEY ("parent_id") REFERENCES "ivmz_home"."payload_locked_documents"("id") ON DELETE cascade ON UPDATE no action;
+  ALTER TABLE "ivmz_home"."payload_locked_documents_rels" ADD CONSTRAINT "payload_locked_documents_rels_users_fk" FOREIGN KEY ("users_id") REFERENCES "ivmz_home"."users"("id") ON DELETE cascade ON UPDATE no action;
+  ALTER TABLE "ivmz_home"."payload_locked_documents_rels" ADD CONSTRAINT "payload_locked_documents_rels_media_fk" FOREIGN KEY ("media_id") REFERENCES "ivmz_home"."media"("id") ON DELETE cascade ON UPDATE no action;
+  ALTER TABLE "ivmz_home"."payload_preferences_rels" ADD CONSTRAINT "payload_preferences_rels_parent_fk" FOREIGN KEY ("parent_id") REFERENCES "ivmz_home"."payload_preferences"("id") ON DELETE cascade ON UPDATE no action;
+  ALTER TABLE "ivmz_home"."payload_preferences_rels" ADD CONSTRAINT "payload_preferences_rels_users_fk" FOREIGN KEY ("users_id") REFERENCES "ivmz_home"."users"("id") ON DELETE cascade ON UPDATE no action;
+  CREATE INDEX "users_sessions_order_idx" ON "ivmz_home"."users_sessions" USING btree ("_order");
+  CREATE INDEX "users_sessions_parent_id_idx" ON "ivmz_home"."users_sessions" USING btree ("_parent_id");
+  CREATE INDEX "users_updated_at_idx" ON "ivmz_home"."users" USING btree ("updated_at");
+  CREATE INDEX "users_created_at_idx" ON "ivmz_home"."users" USING btree ("created_at");
+  CREATE UNIQUE INDEX "users_email_idx" ON "ivmz_home"."users" USING btree ("email");
+  CREATE INDEX "media_updated_at_idx" ON "ivmz_home"."media" USING btree ("updated_at");
+  CREATE INDEX "media_created_at_idx" ON "ivmz_home"."media" USING btree ("created_at");
+  CREATE UNIQUE INDEX "media_filename_idx" ON "ivmz_home"."media" USING btree ("filename");
+  CREATE UNIQUE INDEX "payload_kv_key_idx" ON "ivmz_home"."payload_kv" USING btree ("key");
+  CREATE INDEX "payload_locked_documents_global_slug_idx" ON "ivmz_home"."payload_locked_documents" USING btree ("global_slug");
+  CREATE INDEX "payload_locked_documents_updated_at_idx" ON "ivmz_home"."payload_locked_documents" USING btree ("updated_at");
+  CREATE INDEX "payload_locked_documents_created_at_idx" ON "ivmz_home"."payload_locked_documents" USING btree ("created_at");
+  CREATE INDEX "payload_locked_documents_rels_order_idx" ON "ivmz_home"."payload_locked_documents_rels" USING btree ("order");
+  CREATE INDEX "payload_locked_documents_rels_parent_idx" ON "ivmz_home"."payload_locked_documents_rels" USING btree ("parent_id");
+  CREATE INDEX "payload_locked_documents_rels_path_idx" ON "ivmz_home"."payload_locked_documents_rels" USING btree ("path");
+  CREATE INDEX "payload_locked_documents_rels_users_id_idx" ON "ivmz_home"."payload_locked_documents_rels" USING btree ("users_id");
+  CREATE INDEX "payload_locked_documents_rels_media_id_idx" ON "ivmz_home"."payload_locked_documents_rels" USING btree ("media_id");
+  CREATE INDEX "payload_preferences_key_idx" ON "ivmz_home"."payload_preferences" USING btree ("key");
+  CREATE INDEX "payload_preferences_updated_at_idx" ON "ivmz_home"."payload_preferences" USING btree ("updated_at");
+  CREATE INDEX "payload_preferences_created_at_idx" ON "ivmz_home"."payload_preferences" USING btree ("created_at");
+  CREATE INDEX "payload_preferences_rels_order_idx" ON "ivmz_home"."payload_preferences_rels" USING btree ("order");
+  CREATE INDEX "payload_preferences_rels_parent_idx" ON "ivmz_home"."payload_preferences_rels" USING btree ("parent_id");
+  CREATE INDEX "payload_preferences_rels_path_idx" ON "ivmz_home"."payload_preferences_rels" USING btree ("path");
+  CREATE INDEX "payload_preferences_rels_users_id_idx" ON "ivmz_home"."payload_preferences_rels" USING btree ("users_id");
+  CREATE INDEX "payload_migrations_updated_at_idx" ON "ivmz_home"."payload_migrations" USING btree ("updated_at");
+  CREATE INDEX "payload_migrations_created_at_idx" ON "ivmz_home"."payload_migrations" USING btree ("created_at");`)
 }
 
 export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
   await db.execute(sql`
-   DROP TABLE "ivumz_home"."users_sessions" CASCADE;
-  DROP TABLE "ivumz_home"."users" CASCADE;
-  DROP TABLE "ivumz_home"."media" CASCADE;
-  DROP TABLE "ivumz_home"."payload_kv" CASCADE;
-  DROP TABLE "ivumz_home"."payload_locked_documents" CASCADE;
-  DROP TABLE "ivumz_home"."payload_locked_documents_rels" CASCADE;
-  DROP TABLE "ivumz_home"."payload_preferences" CASCADE;
-  DROP TABLE "ivumz_home"."payload_preferences_rels" CASCADE;
-  DROP TABLE "ivumz_home"."payload_migrations" CASCADE;`)
+   DROP TABLE "ivmz_home"."users_sessions" CASCADE;
+  DROP TABLE "ivmz_home"."users" CASCADE;
+  DROP TABLE "ivmz_home"."media" CASCADE;
+  DROP TABLE "ivmz_home"."payload_kv" CASCADE;
+  DROP TABLE "ivmz_home"."payload_locked_documents" CASCADE;
+  DROP TABLE "ivmz_home"."payload_locked_documents_rels" CASCADE;
+  DROP TABLE "ivmz_home"."payload_preferences" CASCADE;
+  DROP TABLE "ivmz_home"."payload_preferences_rels" CASCADE;
+  DROP TABLE "ivmz_home"."payload_migrations" CASCADE;`)
 }
