@@ -8,12 +8,49 @@ export const metadata = createPageMetadata({
   path: '/about',
 })
 
+const identityRows = [
+  ['NAME', 'いゔる。 a.k.a. mizzz（ずーみー）'],
+  ['ROLE', 'Product-minded Full Stack Developer / Creator'],
+  ['STYLE', '設計を理解したうえで手を動かし、小さく公開して、反応と運用から磨き続ける。'],
+] as const
+
+const buildAreas = [
+  {
+    index: '01 / WEB',
+    title: 'Web Product',
+    description:
+      'React / Next.js / TypeScriptを中心に、画面・認証・API・データを一続きで扱います。',
+  },
+  {
+    index: '02 / REALTIME',
+    title: 'Realtime & AI',
+    description:
+      'Realtime AI、音声、Discordなど、操作と応答が連続する体験をプロダクトへ落とし込みます。',
+  },
+  {
+    index: '03 / DATA',
+    title: 'Backend & Data',
+    description: 'API、PostgreSQL、Payload、権限、migrationをフロントから切り離さずに設計します。',
+  },
+  {
+    index: '04 / OPERATE',
+    title: 'Ship & Operate',
+    description: 'Docker、CI、Deploy Preview、運用まで含めて、変更し続けられる状態を作ります。',
+  },
+] as const
+
+const principles = [
+  '完成画面だけではなく、制約・判断・運用まで成果物の一部として扱う。',
+  'まず小さく出し、実際の利用とレビューから改善する。',
+  'アクセシビリティ、セキュリティ、レスポンシブを後付けにしない。',
+] as const
+
 export default function AboutPage() {
   return (
     <main id="main-content" className="route-page">
       <PageHero
         index="ABOUT / 01"
-        title={<>Build across the boundary.</>}
+        title="Build across the boundary."
         description={
           <p>
             UIだけ、APIだけで区切らず、触れる体験からデータ・運用までを一つのプロダクトとして実装します。
@@ -27,18 +64,12 @@ export default function AboutPage() {
         description={<p>Repositoryと現在のHomeで確定している公開Identityだけを掲載します。</p>}
       >
         <div className="profile-lines">
-          <div className="profile-line">
-            <span>NAME</span>
-            <p>いゔる。 a.k.a. mizzz（ずーみー）</p>
-          </div>
-          <div className="profile-line">
-            <span>ROLE</span>
-            <p>Product-minded Full Stack Developer / Creator</p>
-          </div>
-          <div className="profile-line">
-            <span>STYLE</span>
-            <p>設計を理解したうえで手を動かし、小さく公開して、反応と運用から磨き続ける。</p>
-          </div>
+          {identityRows.map(([label, value]) => (
+            <div className="profile-line" key={label}>
+              <span>{label}</span>
+              <p>{value}</p>
+            </div>
+          ))}
         </div>
       </PageSection>
 
@@ -47,49 +78,24 @@ export default function AboutPage() {
         description={<p>Personal Web Platformの正式な公開領域に合わせた開発フィールド。</p>}
       >
         <div className="editorial-columns">
-          <article className="editorial-column">
-            <span>01 / WEB</span>
-            <h3>Web Product</h3>
-            <p>
-              React / Next.js /
-              TypeScriptを中心に、画面・認証・API・データを一続きで扱います。
-            </p>
-          </article>
-          <article className="editorial-column">
-            <span>02 / REALTIME</span>
-            <h3>Realtime &amp; AI</h3>
-            <p>
-              Realtime
-              AI、音声、Discordなど、操作と応答が連続する体験をプロダクトへ落とし込みます。
-            </p>
-          </article>
-          <article className="editorial-column">
-            <span>03 / DATA</span>
-            <h3>Backend &amp; Data</h3>
-            <p>API、PostgreSQL、Payload、権限、migrationをフロントから切り離さずに設計します。</p>
-          </article>
-          <article className="editorial-column">
-            <span>04 / OPERATE</span>
-            <h3>Ship &amp; Operate</h3>
-            <p>Docker、CI、Deploy Preview、運用まで含めて、変更し続けられる状態を作ります。</p>
-          </article>
+          {buildAreas.map((area) => (
+            <article className="editorial-column" key={area.index}>
+              <span>{area.index}</span>
+              <h3>{area.title}</h3>
+              <p>{area.description}</p>
+            </article>
+          ))}
         </div>
       </PageSection>
 
       <PageSection title="Development philosophy">
         <div className="profile-lines">
-          <div className="profile-line">
-            <span>01</span>
-            <p>完成画面だけではなく、制約・判断・運用まで成果物の一部として扱う。</p>
-          </div>
-          <div className="profile-line">
-            <span>02</span>
-            <p>まず小さく出し、実際の利用とレビューから改善する。</p>
-          </div>
-          <div className="profile-line">
-            <span>03</span>
-            <p>アクセシビリティ、セキュリティ、レスポンシブを後付けにしない。</p>
-          </div>
+          {principles.map((principle, index) => (
+            <div className="profile-line" key={principle}>
+              <span>0{index + 1}</span>
+              <p>{principle}</p>
+            </div>
+          ))}
         </div>
       </PageSection>
 

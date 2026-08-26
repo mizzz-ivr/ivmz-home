@@ -18,13 +18,14 @@ const stableFallback = [
 
 export default async function LinksPage() {
   const content = await getSocialLinksListContent()
-  const links = content.state === 'ready' && content.items.length > 0 ? content.items : stableFallback
+  const hasCmsLinks = content.state === 'ready' && content.items.length > 0
+  const links = hasCmsLinks ? content.items : stableFallback
 
   return (
     <main id="main-content" className="route-page">
       <PageHero
         index="LINKS / 07"
-        title={<>Find the live edges.</>}
+        title="Find the live edges."
         description={
           <p>
             Social Links

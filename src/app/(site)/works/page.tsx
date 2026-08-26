@@ -17,7 +17,7 @@ export default async function WorksPage() {
     <main id="main-content" className="route-page">
       <PageHero
         index="WORKS / 02"
-        title={<>Work, with the decisions attached.</>}
+        title="Work, with the decisions attached."
         description={
           <p>
             公開済みの制作物をPayload CMSから取得します。詳細Case Study

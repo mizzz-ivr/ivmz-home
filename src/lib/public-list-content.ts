@@ -6,9 +6,7 @@ import {
   getUpcomingSchedule,
 } from '@/lib/payload-content'
 
-export type PublicListState<T> =
-  | { state: 'ready'; items: T[] }
-  | { state: 'error'; items: [] }
+export type PublicListState<T> = { state: 'ready'; items: T[] } | { state: 'error'; items: [] }
 
 async function loadPublicList<T>(
   label: string,
