@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import '../globals.css'
+import '../responsive-foundation.css'
 import '../reduced-motion.css'
 import { SignatureIntro, SiteHeader } from '@/components/site/SiteExperience'
 import { site } from '@/lib/site'
@@ -29,6 +30,11 @@ const themeBootScript = `(() => {
       : (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
     document.documentElement.dataset.theme = theme;
     document.documentElement.style.colorScheme = theme;
+  } catch (_) {}
+  try {
+    const seen = sessionStorage.getItem('ivmz-signature-seen') === '1';
+    if (seen) document.documentElement.classList.add('ivmz-signature-seen');
+    else sessionStorage.setItem('ivmz-signature-seen', '1');
   } catch (_) {}
 })();`
 
