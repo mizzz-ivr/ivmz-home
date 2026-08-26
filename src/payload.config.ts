@@ -10,7 +10,9 @@ import { Users } from './collections/Users'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
-const allowedOrigins = (process.env.PAYLOAD_ALLOWED_ORIGINS ?? 'http://localhost:3000,https://mizzz.ivrm.jp')
+const allowedOrigins = (
+  process.env.PAYLOAD_ALLOWED_ORIGINS ?? 'http://localhost:3000,https://mizzz.ivrm.jp'
+)
   .split(',')
   .map((origin) => origin.trim())
   .filter(Boolean)
