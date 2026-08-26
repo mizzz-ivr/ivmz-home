@@ -39,7 +39,9 @@ export default function SiteLayout({ children }: Readonly<{ children: React.Reac
         <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
       </head>
       <body>
-        <a className="skip-link" href="#main-content">本文へスキップ</a>
+        <a className="skip-link" href="#main-content">
+          本文へスキップ
+        </a>
         <SignatureIntro />
         <SiteHeader />
         {children}
