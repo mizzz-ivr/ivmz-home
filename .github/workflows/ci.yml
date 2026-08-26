@@ -15,21 +15,21 @@ jobs:
       postgres:
         image: postgres:17-alpine
         env:
-          POSTGRES_DB: ivumz_home
+          POSTGRES_DB: ivmz_home
           POSTGRES_PASSWORD: payload
           POSTGRES_USER: payload
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U payload -d ivumz_home"
+          --health-cmd "pg_isready -U payload -d ivmz_home"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
     env:
-      DATABASE_URL: postgresql://payload:payload@127.0.0.1:5432/ivumz_home
+      DATABASE_URL: postgresql://payload:payload@127.0.0.1:5432/ivmz_home
       PAYLOAD_ALLOWED_ORIGINS: http://127.0.0.1:3000
       PAYLOAD_PUBLIC_SERVER_URL: http://127.0.0.1:3000
-      PAYLOAD_SECRET: ci-only-secret-not-for-production-2026-ivumz-home
+      PAYLOAD_SECRET: ci-only-secret-not-for-production-2026-ivmz-home
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
