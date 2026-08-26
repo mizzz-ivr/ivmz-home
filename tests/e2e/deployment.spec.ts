@@ -8,7 +8,7 @@ test('serves primary content, metadata, robots and sitemap', async ({ page, requ
   await expect(page.getByRole('heading', { level: 1 })).toContainText('いゔる。')
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
     'href',
-    'https://mizzz.ivrm.jp',
+    'https://ivmz.ivrm.jp',
   )
 
   const character = page.getByAltText('mizzzのGitHubアイコンに使用しているオリジナルキャラクター')
@@ -23,11 +23,11 @@ test('serves primary content, metadata, robots and sitemap', async ({ page, requ
   expect(robotsText).toContain('User-Agent: *')
   expect(robotsText).toContain('Disallow: /admin/')
   expect(robotsText).toContain('Disallow: /api/')
-  expect(robotsText).toContain('https://mizzz.ivrm.jp/sitemap.xml')
+  expect(robotsText).toContain('https://ivmz.ivrm.jp/sitemap.xml')
 
   const sitemap = await request.get('/sitemap.xml')
   expect(sitemap.ok()).toBe(true)
-  expect(await sitemap.text()).toContain('<loc>https://mizzz.ivrm.jp</loc>')
+  expect(await sitemap.text()).toContain('<loc>https://ivmz.ivrm.jp</loc>')
 })
 
 test('keeps layered content non-overlapping with reduced motion', async ({ page }) => {
