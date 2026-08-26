@@ -135,11 +135,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section
-        className="section-shell about-section"
-        id="about"
-        aria-labelledby="about-title"
-      >
+      <section className="section-shell about-section" id="about" aria-labelledby="about-title">
         <div className="about-copy">
           <p className="signal-label">03 / ABOUT SNAPSHOT</p>
           <h2 id="about-title">画面の向こう側まで、つくる。</h2>
@@ -271,17 +267,11 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section
-        className="section-shell social-section"
-        id="social"
-        aria-labelledby="social-title"
-      >
+      <section className="section-shell social-section" id="social" aria-labelledby="social-title">
         <div className="section-intro compact-intro">
           <p className="signal-label">07 / SOCIAL SIGNAL</p>
           <h2 id="social-title">Find the live edges.</h2>
-          <p>
-            外部サービスが落ちてもこのサイトは残る。最新活動はリンクを常時fallbackとして持つ。
-          </p>
+          <p>外部サービスが落ちてもこのサイトは残る。最新活動はリンクを常時fallbackとして持つ。</p>
         </div>
         <div className="social-links">
           {home.socials.map((social, index) => (
