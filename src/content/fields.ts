@@ -34,7 +34,7 @@ export function createSlugField(sourceField = 'title'): Field {
         },
       ],
     },
-    validate: (value) => {
+    validate: (value: unknown) => {
       if (typeof value !== 'string' || value.length === 0) return 'Slug is required.'
       return slugPattern.test(value) || 'Use letters, numbers, and single hyphens only.'
     },
