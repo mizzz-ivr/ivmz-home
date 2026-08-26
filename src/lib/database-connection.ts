@@ -4,6 +4,17 @@ const SUPABASE_POOLER_HOST_SUFFIX = '.pooler.supabase.com'
 const SUPABASE_SESSION_PORT = '5432'
 const SUPABASE_TRANSACTION_PORT = '6543'
 
+export function resolveDatabasePoolMode(
+  configuredMode: string | undefined,
+  netlifySiteId: string | undefined,
+): DatabasePoolMode | undefined {
+  if (configuredMode === 'session' || configuredMode === 'transaction') {
+    return configuredMode
+  }
+
+  return netlifySiteId ? 'transaction' : undefined
+}
+
 export function resolveDatabaseConnectionString(
   databaseUrl: string,
   poolMode: string | undefined,
