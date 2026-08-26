@@ -49,10 +49,7 @@ export async function GET() {
   const databaseUrl = process.env.DATABASE_URL ?? ''
   const configuredPoolMode = process.env.PAYLOAD_DATABASE_POOL_MODE
   const netlifyFunctionsRuntime = Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME)
-  const poolMode = resolveDatabasePoolMode(
-    configuredPoolMode,
-    process.env.AWS_LAMBDA_FUNCTION_NAME,
-  )
+  const poolMode = resolveDatabasePoolMode(configuredPoolMode, process.env.AWS_LAMBDA_FUNCTION_NAME)
   const pool = getDatabasePoolConfig(databaseUrl, poolMode)
   let originalPort: string | null = null
   let resolvedPort: string | null = null
