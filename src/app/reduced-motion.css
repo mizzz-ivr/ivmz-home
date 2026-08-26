@@ -1,28 +1,27 @@
 @media (prefers-reduced-motion: reduce) {
-  .about-layers,
-  .writing-stack {
-    display: grid;
-    gap: 16px;
-    height: auto;
-    min-height: 0;
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
   }
 
-  .about-plane,
-  .writing-stack article {
-    position: static;
-    inset: auto;
+  .signature-intro { opacity: 0; visibility: hidden; }
+  .desktop-nav-shell, .desktop-nav-shell:hover, .desktop-nav-shell:focus-within { transition: none; }
+  .hero-pointer-layer { display: none; }
+  .avatar-frame, .depth-plane-back, .selection-mark, .floating-note, .rough-line,
+  .window-main, .window-note, .workbench-cross,
+  .editorial-stack article,
+  .identity-stage:hover .avatar-frame {
+    transform: none !important;
+  }
+  .identity-stage, .about-workbench, .writing-section { perspective: none; transform-style: flat; }
+  .editorial-stack { gap: 12px; }
+  .editorial-stack article:nth-child(1),
+  .editorial-stack article:nth-child(2),
+  .editorial-stack article:nth-child(3) {
     width: 100%;
-    height: auto;
-    min-height: 0;
-  }
-
-  .about-plane {
-    left: auto;
-    right: auto;
-  }
-
-  .writing-stack {
-    max-width: none;
-    margin-left: 0;
+    margin: 0;
   }
 }
