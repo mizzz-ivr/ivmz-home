@@ -8,7 +8,7 @@ test('serves primary content, metadata, robots and sitemap', async ({ page, requ
   await expect(page.getByRole('heading', { level: 1 })).toContainText('いゔる。')
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
     'href',
-    'https://mizzz.ivrm.jp/',
+    'https://mizzz.ivrm.jp',
   )
 
   const character = page.getByAltText('mizzzのGitHubアイコンに使用しているオリジナルキャラクター')
