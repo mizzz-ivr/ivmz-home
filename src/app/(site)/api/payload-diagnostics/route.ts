@@ -1,7 +1,7 @@
 import config from '@payload-config'
 import { getPayload } from 'payload'
 
-import { getDatabasePoolConfig } from '@/lib/database-connection'
+import { getDatabasePoolConfig, resolveDatabasePoolMode } from '@/lib/database-connection'
 
 type SafeError = {
   name?: string
@@ -47,7 +47,8 @@ export const dynamic = 'force-dynamic'
 
 export async function GET() {
   const databaseUrl = process.env.DATABASE_URL ?? ''
-  const poolMode = process.env.PAYLOAD_DATABASE_POOL_MODE
+  const configuredPoolMode = process.env.PAYLOAD_DATABASE_POOL_MODE
+  const poolMode = resolveDatabasePoolMode(configuredPoolMode, process.env.SITE_ID)
   const pool = getDatabasePoolConfig(databaseUrl, poolMode)
   let originalPort: string | null = null
   let resolvedPort: string | null = null
@@ -66,6 +67,8 @@ export async function GET() {
   const runtime = {
     databaseConfigured: databaseUrl.length > 0,
     payloadSecretConfigured: Boolean(process.env.PAYLOAD_SECRET),
+    netlifyRuntime: Boolean(process.env.SITE_ID),
+    configuredPoolMode: configuredPoolMode ?? null,
     poolMode: poolMode ?? null,
     supabasePooler,
     originalPort,
