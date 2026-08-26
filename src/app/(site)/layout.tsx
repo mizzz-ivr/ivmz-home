@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import '../globals.css'
 import '../reduced-motion.css'
+import { SignatureIntro, SiteHeader } from '@/components/site/SiteExperience'
 import { site } from '@/lib/site'
 
 export const metadata: Metadata = {
@@ -20,10 +21,29 @@ export const metadata: Metadata = {
   },
 }
 
+const themeBootScript = `(() => {
+  try {
+    const saved = localStorage.getItem('ivmz-theme');
+    const theme = saved === 'light' || saved === 'dark'
+      ? saved
+      : (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.style.colorScheme = theme;
+  } catch (_) {}
+})();`
+
 export default function SiteLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="ja">
-      <body>{children}</body>
+    <html lang="ja" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
+      </head>
+      <body>
+        <a className="skip-link" href="#main-content">本文へスキップ</a>
+        <SignatureIntro />
+        <SiteHeader />
+        {children}
+      </body>
     </html>
   )
 }
