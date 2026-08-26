@@ -11,6 +11,7 @@ import { Schedule } from './collections/Schedule'
 import { SocialLinks } from './collections/SocialLinks'
 import { Users } from './collections/Users'
 import { Works } from './collections/Works'
+import { getDatabasePoolConfig } from './lib/database-connection'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -21,6 +22,11 @@ const allowedOrigins = (
   .split(',')
   .map((origin) => origin.trim())
   .filter(Boolean)
+
+const databasePool = getDatabasePoolConfig(
+  process.env.DATABASE_URL ?? '',
+  process.env.PAYLOAD_DATABASE_POOL_MODE,
+)
 
 export default buildConfig({
   admin: {
@@ -37,9 +43,7 @@ export default buildConfig({
   db: postgresAdapter({
     disableCreateDatabase: true,
     migrationDir: path.resolve(dirname, 'migrations'),
-    pool: {
-      connectionString: process.env.DATABASE_URL ?? '',
-    },
+    pool: databasePool,
     push: false,
     schemaName: 'ivmz_home',
   }),
