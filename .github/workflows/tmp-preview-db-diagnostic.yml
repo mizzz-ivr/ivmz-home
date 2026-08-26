@@ -11,14 +11,14 @@ jobs:
   diagnose:
     runs-on: ubuntu-latest
     env:
-      DIAGNOSTIC_URL: https://deploy-preview-4--ivmz-home.netlify.app/api/_diagnostics/db
+      DIAGNOSTIC_URL: https://deploy-preview-4--ivmz-home.netlify.app/__diagnostics/db
     steps:
       - name: 最新Deploy Previewの診断routeを待機
         shell: bash
         run: |
           for attempt in {1..30}; do
-            status="$(curl --silent --show-error --output /tmp/db-diagnostic.json --write-out '%{http_code}' "$DIAGNOSTIC_URL" || true)"
-            if [ "$status" = "200" ] || [ "$status" = "503" ]; then
+            status="$(curl --location --max-time 20 --silent --show-error --output /tmp/db-diagnostic.json --write-out '%{http_code}' "$DIAGNOSTIC_URL" || true)"
+            if [ "$status" = "200" ]; then
               cat /tmp/db-diagnostic.json
               exit 0
             fi
