@@ -15,10 +15,7 @@ export function resolveDatabaseConnectionString(
   try {
     const url = new URL(databaseUrl)
 
-    if (
-      !url.hostname.endsWith(SUPABASE_POOLER_HOST_SUFFIX) ||
-      url.port !== SUPABASE_SESSION_PORT
-    ) {
+    if (!url.hostname.endsWith(SUPABASE_POOLER_HOST_SUFFIX) || url.port !== SUPABASE_SESSION_PORT) {
       return databaseUrl
     }
 
