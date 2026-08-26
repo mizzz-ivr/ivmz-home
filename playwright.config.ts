@@ -6,6 +6,7 @@ const baseURL = remoteBaseURL ?? 'http://127.0.0.1:3000'
 export default defineConfig({
   testDir: './tests/e2e',
   retries: remoteBaseURL ? 2 : 0,
+  workers: remoteBaseURL ? 1 : undefined,
   use: { baseURL },
   webServer: remoteBaseURL
     ? undefined
