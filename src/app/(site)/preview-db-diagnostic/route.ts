@@ -27,6 +27,8 @@ export function GET() {
   const username = passwordSeparator >= 0 ? credentialPart.slice(0, passwordSeparator) : ''
   const rawPassword = passwordSeparator >= 0 ? credentialPart.slice(passwordSeparator + 1) : ''
   const hostAndPath = hasCredentialSeparator ? rawDatabaseUrl.slice(lastAt + 1) : ''
+  const hostPort = hostAndPath.split('/', 1)[0] ?? ''
+  const pathAndQuery = hostAndPath.slice(hostPort.length)
 
   const checks = {
     hasDatabaseUrl: true,
@@ -39,9 +41,12 @@ export function GET() {
     usernameOk: username === expectedPoolerUsername,
     hasPassword: rawPassword.length > 0,
     passwordHasUnencodedStructuralCharacters: /[/?#\[\]@]/.test(rawPassword),
-    poolerHostSessionPathOk: /^[A-Za-z0-9.-]+\.pooler\.supabase\.com:5432\/postgres(?:\?|$)/.test(
-      hostAndPath,
-    ),
+    poolerDomainOk: /\.pooler\.supabase\.com(?::\d+)?$/.test(hostPort),
+    directDbHostDetected: /^db\.drazbrcqnjxjuygfxmlz\.supabase\.co(?::\d+)?$/.test(hostPort),
+    sessionPort5432: /:5432$/.test(hostPort),
+    transactionPort6543: /:6543$/.test(hostPort),
+    hasExplicitPort: /:\d+$/.test(hostPort),
+    databasePathOk: /^\/postgres(?:\?|$)/.test(pathAndQuery),
     sslModeLiteralOk: /[?&]sslmode=require(?:&|$)/.test(rawDatabaseUrl),
   }
 
@@ -55,7 +60,9 @@ export function GET() {
     checks.usernameOk &&
     checks.hasPassword &&
     !checks.passwordHasUnencodedStructuralCharacters &&
-    checks.poolerHostSessionPathOk &&
+    checks.poolerDomainOk &&
+    checks.sessionPort5432 &&
+    checks.databasePathOk &&
     checks.sslModeLiteralOk
 
   return Response.json({ ok, ...checks })
