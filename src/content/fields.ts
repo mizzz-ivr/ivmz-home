@@ -59,3 +59,14 @@ export function validateRequiredHttpUrl(value: unknown): true | string {
   if (value === null || value === undefined || value === '') return 'URL is required.'
   return validateOptionalHttpUrl(value)
 }
+
+export function validateIanaTimezone(value: unknown): true | string {
+  if (typeof value !== 'string' || value.length === 0) return 'Timezone is required.'
+
+  try {
+    new Intl.DateTimeFormat('en-US', { timeZone: value }).format(new Date(0))
+    return true
+  } catch {
+    return 'Enter a valid IANA timezone such as Asia/Tokyo.'
+  }
+}
