@@ -11,8 +11,10 @@ export const metadata = createPageMetadata({
 })
 
 const copy = {
-  hero: '公開済みの制作物をPayload CMSから取得します。詳細Case Study routeは次PRでslugへ接続します。',
-  queryError: 'CMS queryに失敗しました。Homeの既存fallbackは維持され、この一覧だけ安全に縮退しています。',
+  hero:
+    '公開済みの制作物をPayload CMSから取得します。詳細Case Study routeは次PRでslugへ接続します。',
+  queryError:
+    'CMS queryに失敗しました。Homeの既存fallbackは維持され、この一覧だけ安全に縮退しています。',
   empty: 'CMSは正常です。公開済みWorksが登録されるまで、このempty stateを表示します。',
 } as const
 
@@ -48,8 +50,12 @@ export default async function WorksPage() {
                   <span>{work.role}</span>
                   <small>{work.stack.join(' · ')}</small>
                   {work.githubUrl && <a href={work.githubUrl}>GitHub ↗</a>}
-                  {!work.githubUrl && work.liveUrl && <a href={work.liveUrl}>Live site ↗</a>}
-                  {!work.githubUrl && !work.liveUrl && <small>Detail route coming next</small>}
+                  {!work.githubUrl && work.liveUrl && (
+                    <a href={work.liveUrl}>Live site ↗</a>
+                  )}
+                  {!work.githubUrl && !work.liveUrl && (
+                    <small>Detail route coming next</small>
+                  )}
                 </div>
               </article>
             ))}
