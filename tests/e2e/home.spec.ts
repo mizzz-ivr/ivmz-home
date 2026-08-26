@@ -46,32 +46,31 @@ test('has no page-level horizontal overflow', async ({ page }) => {
   expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth + 1)
 })
 
-test(
-  'mobile drawer supports keyboard escape and closes after navigation',
-  async ({ page }, testInfo) => {
-    test.skip(testInfo.project.name !== 'mobile-webkit', 'Mobile drawer only')
-    await page.goto('/')
+test('mobile drawer supports keyboard escape and closes after navigation', async ({
+  page,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile-webkit', 'Mobile drawer only')
+  await page.goto('/')
 
-    const trigger = page.getByRole('button', { name: 'メニューを開く' })
-    await trigger.click()
-    const drawer = page.locator('#mobile-navigation')
-    await expect(trigger).toHaveAttribute('aria-expanded', 'true')
-    await expect(drawer).toHaveAttribute('aria-hidden', 'false')
+  const trigger = page.getByRole('button', { name: 'メニューを開く' })
+  await trigger.click()
+  const drawer = page.locator('#mobile-navigation')
+  await expect(trigger).toHaveAttribute('aria-expanded', 'true')
+  await expect(drawer).toHaveAttribute('aria-hidden', 'false')
 
-    await page.keyboard.press('Escape')
-    await expect(page.getByRole('button', { name: 'メニューを開く' })).toHaveAttribute(
-      'aria-expanded',
-      'false',
-    )
+  await page.keyboard.press('Escape')
+  await expect(page.getByRole('button', { name: 'メニューを開く' })).toHaveAttribute(
+    'aria-expanded',
+    'false',
+  )
 
-    await page.getByRole('button', { name: 'メニューを開く' }).click()
-    await drawer.getByRole('link', { name: /WORKS/ }).click()
-    await expect(page.getByRole('button', { name: 'メニューを開く' })).toHaveAttribute(
-      'aria-expanded',
-      'false',
-    )
-  },
-)
+  await page.getByRole('button', { name: 'メニューを開く' }).click()
+  await drawer.getByRole('link', { name: /WORKS/ }).click()
+  await expect(page.getByRole('button', { name: 'メニューを開く' })).toHaveAttribute(
+    'aria-expanded',
+    'false',
+  )
+})
 
 test('reduced motion keeps primary content immediately usable', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
