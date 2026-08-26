@@ -5,7 +5,7 @@ on:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   generate:
@@ -32,6 +32,8 @@ jobs:
       PAYLOAD_SECRET: ci-only-secret-not-for-production-2026-ivmz-home
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
       - uses: pnpm/action-setup@v4
         with:
           version: 10.17.0
@@ -45,11 +47,15 @@ jobs:
       - run: pnpm db:migrate:create payload_content_model_foundation
       - run: pnpm generate:types
       - run: pnpm generate:importmap
-      - uses: actions/upload-artifact@v4
-        with:
-          name: payload-content-model-generated
-          path: |
-            src/migrations
-            src/payload-types.ts
-            src/app/(payload)/admin/importMap.js
-          if-no-files-found: error
+      - name: generated Payload artifactsをfeature branchへcommit
+        shell: bash
+        run: |
+          git add src/migrations src/payload-types.ts 'src/app/(payload)/admin/importMap.js'
+          if git diff --cached --quiet; then
+            echo "Generated artifacts are already up to date."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore: update Payload generated artifacts"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
