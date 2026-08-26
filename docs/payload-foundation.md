@@ -134,19 +134,20 @@ GitHub ActionsではPostgreSQL 17を使用し、以下を検証する。
 
 ## Deploy Previewの現在状態
 
-2026-08-26の調査で、`Netlify Preview Smoke / preview-smoke` の既存public test 6件はPASSし、Payload関連4件のみHTTP 500でFAILしていることを確認した。
+2026-08-26の調査で、`Netlify Preview Smoke / preview-smoke` の既存public test 6件はPASSし、Payload関連4件のみHTTP 500またはDB接続待ちtimeoutでFAILしていることを確認した。
 
 原因はPayload runtimeに必要なDB connectionが存在しないことだった。対応として以下まで実施済み。
 
 - Netlify Deploy Preview scopeへ `PAYLOAD_SECRET` をsecretとして設定
 - Netlify Deploy Preview scopeへ `PAYLOAD_ALLOWED_ORIGINS` を設定
+- Netlify Deploy Preview scopeへ `DATABASE_URL` をsecretとして設定
 - Preview用PostgreSQLに専用schema `ivumz_home` を作成
 - Preview用runtime role `ivumz_home_app` を作成（superuser / CREATEDB / CREATEROLEなし）
 - Repositoryと同じ初期Payload migrationを `ivumz_home` schemaへ適用
 - `payload_migrations` にRepository migrationと一致するmigration stateを記録
 
-残る外部gateはNetlifyへ有効な `DATABASE_URL` をsecretとして設定することだけである。DB credentialの設定操作は現在の接続ツールの安全ゲートで拒否されたため、credentialを迂回・平文保存していない。
+`DATABASE_URL` 登録後のDeploy Previewへ設定を反映させ、`/admin` の正常起動、匿名 `/api/users` の401/403応答、Chromium / mobile WebKitのremote smokeを再確認する。
 
-`DATABASE_URL` が設定されるまではHTTP 500を正常扱いにせず、PRはDraftのまま維持する。
+HTTP 500を正常扱いにするためのテスト緩和は行わない。実Deploy PreviewのPayload runtimeが正常になるまでPRはDraftのまま維持する。
 
 このPhaseではDNS recordを変更しない。
