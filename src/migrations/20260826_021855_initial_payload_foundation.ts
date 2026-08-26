@@ -2,7 +2,9 @@ import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
 
 export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
-   CREATE TABLE "ivumz_home"."users_sessions" (
+  CREATE SCHEMA IF NOT EXISTS "ivumz_home";
+
+  CREATE TABLE "ivumz_home"."users_sessions" (
   	"_order" integer NOT NULL,
   	"_parent_id" integer NOT NULL,
   	"id" varchar PRIMARY KEY NOT NULL,
