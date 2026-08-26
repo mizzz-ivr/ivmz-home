@@ -1,8 +1,10 @@
-# Hosting decision — 2026-08-25
+# Hosting decision — 2026-08-26
 
 ## Goal
 
-Choose a launch host without coupling the application to the current DNS provider. `mizzz.ivrm.jp` should be able to move from Cloudflare DNS to Amazon Route 53 later without a product rewrite.
+Choose a launch host without coupling the application to the current DNS provider. `ivmz.ivrm.jp` should be able to move from Cloudflare DNS to Amazon Route 53 later without a product rewrite.
+
+The Personal Web Platform repository is `mizzz-ivr/ivmz-home`. Identity / contact decisions are documented in `docs/identity-contact.md`.
 
 ## Best launch option: Netlify
 
@@ -22,6 +24,14 @@ Route/DNS (temporary Cloudflare -> future Route 53)
       -> AWS S3 media
       -> Email adapter
 ```
+
+Canonical production host:
+
+```text
+https://ivmz.ivrm.jp
+```
+
+`mizzz.jp` is legacy / old-link compatibility and should redirect to `ivmz.ivrm.jp` for Web traffic.
 
 ## AWS option
 
@@ -49,6 +59,20 @@ This is more operationally involved than Netlify and is not necessary for the fi
 ### App Runner
 
 Do not adopt as a new default. AWS states App Runner stopped accepting new customers on 2026-03-31. Existing eligible accounts are a special case, not the baseline architecture.
+
+## Email boundary
+
+Keep email behind an application adapter.
+
+Current identity-level mail roles:
+
+- General / Personal → `ivmz@ivrm.jp`
+- Person-facing → `ivuru@ivrm.jp`
+- Developer / OSS → `mizzz@ivrm.jp`
+- ivRooom / Team → `contact@ivrm.jp`
+- Security → `security@ivrm.jp`
+
+Cloudflare Email Service / Email Sending SMTP is under evaluation for outbound mail. Do not couple product code directly to Cloudflare-specific primitives; keep provider-specific behavior at the adapter / deployment boundary.
 
 ## Portability rules
 
