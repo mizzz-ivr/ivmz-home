@@ -11,9 +11,9 @@ jobs:
   diagnose:
     runs-on: ubuntu-latest
     env:
-      DIAGNOSTIC_URL: https://6a8e8fef75f0370008657e5a--ivmz-home.netlify.app/preview-db-diagnostic
+      DIAGNOSTIC_URL: https://6a8e941f5203d20008091eb0--ivmz-home.netlify.app/preview-db-diagnostic
     steps:
-      - name: 更新後credentialのDeploy Previewを診断
+      - name: Session pooler更新後のDeploy Previewを診断
         shell: bash
         run: |
           status="$(curl --location --max-time 30 --silent --show-error --output /tmp/db-diagnostic.json --write-out '%{http_code}' "$DIAGNOSTIC_URL" || true)"
