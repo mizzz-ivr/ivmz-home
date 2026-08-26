@@ -19,7 +19,7 @@ Browser
 
 Next.js 16 App Router
   ├─ public pages / RSC
-  ├─ Payload CMS integrated routes
+  ├─ Payload CMS integrated Admin + REST routes
   ├─ contact server endpoint
   └─ feed / sitemap / robots / structured data
 
@@ -50,12 +50,15 @@ The codebase still uses normal `next build` / `next start` semantics and portabl
 
 ## CMS boundary
 
-Target: Payload 3.x integrated into the same Next.js app.
+Payload CMS `3.88.0` is integrated directly into the same Next.js application.
 
-Collections:
+Foundation collections:
 
-- Users
-- Media
+- Users — Payload Auth and Admin identity
+- Media — storage boundary only; production local writes are disabled until cloud storage is configured
+
+Future collections remain separate feature work:
+
 - Works
 - Posts
 - News
@@ -66,17 +69,29 @@ Collections:
 
 Products are Phase 2.
 
+GraphQL is disabled for the foundation because no product requirement currently needs it. The Payload REST API and Admin UI are the supported CMS HTTP surfaces.
+
 ## Persistence
 
-- Database: PostgreSQL behind `DATABASE_URL`; no provider-specific SQL in product code unless justified.
-- Media: Payload S3 storage adapter is preferred because it works from Node-based hosting and maps cleanly to a future AWS architecture.
-- Local development may use local disk or a local S3-compatible service, but production does not rely on ephemeral filesystem writes.
+- Database: PostgreSQL behind `DATABASE_URL`; no provider-specific application SQL is required for Payload.
+- Schema lifecycle: Repository-managed migrations under `src/migrations` are the source of truth.
+- CI: migrations are applied to an ephemeral PostgreSQL 17 service before build.
+- Preview/production: migrations are an explicit deployment gate. `next build` does not run destructive schema changes automatically.
+- Media: local disk is allowed in development only. Production writes stay disabled until a Payload storage adapter is configured.
+- Preferred production media adapter: AWS S3, introduced only when the media-storage PR needs it and managed through Terraform.
 
 ## Security boundary
 
 - No secrets in the public repository.
+- Payload Admin uses the Payload Users/Auth collection; no parallel custom auth is introduced.
+- Passwords require at least 14 characters.
+- Accounts lock for 15 minutes after 5 failed login attempts.
+- API-key authentication is disabled for Admin users.
+- Auth cookies are secure in production and CSRF/CORS origins are allow-listed.
+- Users and Media are not anonymously writable; Media is not anonymously readable in the foundation.
+- GraphQL is disabled and Payload query depth is bounded.
 - Contact recipient is selected server-side from a category allowlist.
-- Rate limiting and bot protection occur before mail dispatch.
+- Rate limiting and bot protection occur before mail dispatch; distributed IP rate limiting remains a hosting-boundary follow-up rather than in-memory serverless state.
 - Security reports route only to `security@ivrm.jp`.
 - Admin/API routes are excluded from public indexing.
 - CSP is defined after the real script/media inventory exists.
