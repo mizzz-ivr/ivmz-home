@@ -30,6 +30,7 @@ export const Users: CollectionConfig = {
       type: 'text',
       hidden: true,
       minLength: 14,
+      virtual: true,
     },
   ],
 }
