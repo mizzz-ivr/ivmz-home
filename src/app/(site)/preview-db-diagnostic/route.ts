@@ -53,6 +53,27 @@ function collectSafeErrorDetails(
   return details
 }
 
+function getConnectionStringSignals() {
+  const rawDatabaseUrl = process.env.DATABASE_URL ?? ''
+  const protocolMatch = rawDatabaseUrl.match(/^(postgresql|postgres):\/\//)
+  const authorityStart = protocolMatch?.[0].length ?? 0
+  const lastAt = rawDatabaseUrl.lastIndexOf('@')
+  const credentialPart = lastAt > authorityStart ? rawDatabaseUrl.slice(authorityStart, lastAt) : ''
+  const passwordSeparator = credentialPart.indexOf(':')
+  const rawPassword = passwordSeparator >= 0 ? credentialPart.slice(passwordSeparator + 1) : ''
+  const hostAndPath = lastAt > authorityStart ? rawDatabaseUrl.slice(lastAt + 1) : ''
+  const hostPort = hostAndPath.split('/', 1)[0] ?? ''
+  const passwordWithoutEncodedOctets = rawPassword.replace(/%[0-9A-Fa-f]{2}/g, '')
+
+  return {
+    passwordNeedsAdditionalPercentEncoding: /[^A-Za-z0-9\-_.!~*'()]/.test(
+      passwordWithoutEncodedOctets,
+    ),
+    poolerHostCharactersOk:
+      /^[A-Za-z0-9.-]+\.pooler\.supabase\.com:5432$/.test(hostPort),
+  }
+}
+
 function diagnosticResponse(error: unknown, stage: string) {
   const details = collectSafeErrorDetails(error)
   const uniqueCodes = [...new Set(details.codes)]
@@ -81,6 +102,7 @@ function diagnosticResponse(error: unknown, stage: string) {
       category,
       codes: uniqueCodes,
       names: uniqueNames,
+      connectionStringSignals: getConnectionStringSignals(),
       signals: {
         mentionsAuthentication: message.includes('authentication'),
         mentionsConnection: message.includes('connect'),
