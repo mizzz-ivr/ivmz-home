@@ -3,7 +3,11 @@ import { recipientFor } from './contact-routing'
 
 describe('recipientFor', () => {
   it('routes general personal work to ivmz', () => {
-    expect(recipientFor('development')).toBe('ivmz@ivrm.jp')
+    expect(recipientFor('personal')).toBe('ivmz@ivrm.jp')
+  })
+
+  it('routes developer work to mizzz', () => {
+    expect(recipientFor('development')).toBe('mizzz@ivrm.jp')
   })
 
   it('routes ivRooom contact to the team mailbox', () => {
