@@ -48,11 +48,11 @@ describe('resolveDatabaseConnectionString', () => {
 })
 
 describe('getDatabasePoolConfig', () => {
-  it('transaction poolerではserverless runtimeのapplication poolを1接続に制限する', () => {
+  it('transaction poolerではPayload初期化後のquery用接続枠を確保する', () => {
     expect(getDatabasePoolConfig(sessionPoolerUrl, 'transaction')).toEqual({
       connectionString:
         'postgresql://ivmz_home_app.example:password@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres?sslmode=require',
-      max: 1,
+      max: 5,
     })
   })
 
