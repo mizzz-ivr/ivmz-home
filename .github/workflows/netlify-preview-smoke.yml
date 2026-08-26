@@ -3,23 +3,57 @@ name: Netlify Preview Smoke
 on:
   pull_request:
     branches: [main]
+  push:
+    branches-ignore: [main]
 
 permissions:
   contents: read
+  pull-requests: read
   statuses: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 
 jobs:
+  resolve-preview:
+    runs-on: ubuntu-latest
+    outputs:
+      head_sha: ${{ steps.preview.outputs.head_sha }}
+      pr_number: ${{ steps.preview.outputs.pr_number }}
+    steps:
+      - name: Deploy Preview targetを解決
+        id: preview
+        env:
+          EVENT_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          head_sha="${EVENT_HEAD_SHA:-$GITHUB_SHA}"
+          pr_number="$EVENT_PR_NUMBER"
+
+          if [[ -z "$pr_number" ]]; then
+            pr_number="$(
+              curl --fail --silent --show-error \
+                --header "Authorization: Bearer $GH_TOKEN" \
+                --header "Accept: application/vnd.github+json" \
+                "https://api.github.com/repos/$GITHUB_REPOSITORY/commits/$head_sha/pulls" \
+                | jq -r '[.[] | select(.state == "open")][0].number // empty'
+            )"
+          fi
+
+          echo "head_sha=$head_sha" >> "$GITHUB_OUTPUT"
+          echo "pr_number=$pr_number" >> "$GITHUB_OUTPUT"
+
   preview-smoke:
-    if: github.event.pull_request.head.repo.full_name == github.repository
+    needs: resolve-preview
+    if: needs.resolve-preview.outputs.pr_number != ''
     runs-on: ubuntu-latest
     env:
-      E2E_BASE_URL: https://deploy-preview-${{ github.event.pull_request.number }}--ivmz-home.netlify.app
+      E2E_BASE_URL: https://deploy-preview-${{ needs.resolve-preview.outputs.pr_number }}--ivmz-home.netlify.app
       NETLIFY_STATUS_CONTEXT: netlify/ivmz-home/deploy-preview
-      PREVIEW_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      PREVIEW_HEAD_SHA: ${{ needs.resolve-preview.outputs.head_sha }}
       GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
