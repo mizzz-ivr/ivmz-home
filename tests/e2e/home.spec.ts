@@ -29,7 +29,7 @@ test('toggles and persists the visual theme', async ({ page }) => {
   const before = await root.getAttribute('data-theme')
   expect(['dark', 'light']).toContain(before)
 
-  await page.getByRole('button', { name: /テーマを.+へ切り替える/ }).click()
+  await page.getByRole('button', { name: 'テーマを切り替える' }).click()
   const after = await root.getAttribute('data-theme')
   expect(after).not.toBe(before)
 
