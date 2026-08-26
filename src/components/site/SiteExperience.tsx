@@ -62,9 +62,15 @@ export function SignatureIntro() {
   }, [])
 
   return (
-    <div className={`signature-intro${skip ? ' signature-intro-skip' : ''}`} aria-hidden="true">
+    <div
+      className={`signature-intro${skip ? ' signature-intro-skip' : ''}`}
+      aria-hidden="true"
+    >
       <svg viewBox="0 0 220 76" role="presentation">
-        <path className="signature-path" d="M12 54 C28 17 35 22 31 52 C29 69 46 63 57 42 C71 15 65 62 80 58 C95 54 102 29 106 24 C106 44 101 64 119 57 C137 50 140 24 151 22 C158 29 145 58 165 56 C184 55 194 42 207 28" />
+        <path
+          className="signature-path"
+          d="M12 54 C28 17 35 22 31 52 C29 69 46 63 57 42 C71 15 65 62 80 58 C95 54 102 29 106 24 C106 44 101 64 119 57 C137 50 140 24 151 22 C158 29 145 58 165 56 C184 55 194 42 207 28"
+        />
         <path className="signature-slash" d="M158 66 L208 66" />
       </svg>
       <span>ivmz / signal</span>
@@ -119,7 +125,9 @@ export function SiteHeader() {
       <header className="signal-header" aria-label="Primary navigation">
         <div className="desktop-nav-shell">
           <a className="brand-mark" href="#top" aria-label="ivmz home" aria-current="page">
-            <span className="brand-glyph" aria-hidden="true">i/</span>
+            <span className="brand-glyph" aria-hidden="true">
+              i/
+            </span>
             <span className="brand-word">ivmz</span>
           </a>
           <nav className="desktop-nav" aria-label="Desktop navigation">
@@ -128,14 +136,18 @@ export function SiteHeader() {
                 {label}
               </a>
             ))}
-            <span className="nav-coming" aria-disabled="true" title="Coming Soon">STORE <small>SOON</small></span>
+            <span className="nav-coming" aria-disabled="true" title="Coming Soon">
+              STORE <small>SOON</small>
+            </span>
           </nav>
           <ThemeToggle compact />
         </div>
 
         <div className="mobile-nav-shell">
           <a className="brand-mark" href="#top" aria-label="ivmz home" aria-current="page">
-            <span className="brand-glyph" aria-hidden="true">i/</span>
+            <span className="brand-glyph" aria-hidden="true">
+              i/
+            </span>
             <span className="brand-word">ivmz</span>
           </a>
           <div className="mobile-actions">
@@ -156,7 +168,11 @@ export function SiteHeader() {
         </div>
       </header>
 
-      <div className={`drawer-backdrop${open ? ' is-open' : ''}`} aria-hidden="true" onClick={closeDrawer} />
+      <div
+        className={`drawer-backdrop${open ? ' is-open' : ''}`}
+        aria-hidden="true"
+        onClick={closeDrawer}
+      />
       <div
         ref={drawerRef}
         id="mobile-navigation"
@@ -165,17 +181,34 @@ export function SiteHeader() {
       >
         <div className="drawer-topline">
           <span>NAV / 001</span>
-          <button type="button" onClick={() => { closeDrawer(); triggerRef.current?.focus() }} aria-label="メニューを閉じる">CLOSE</button>
+          <button
+            type="button"
+            onClick={() => {
+              closeDrawer()
+              triggerRef.current?.focus()
+            }}
+            aria-label="メニューを閉じる"
+          >
+            CLOSE
+          </button>
         </div>
         <nav aria-label="Mobile navigation">
           {navigation.map(([label, href], index) => (
             <a key={label} href={href} onClick={closeDrawer} tabIndex={open ? 0 : -1}>
-              <span>0{index + 1}</span>{label}
+              <span>0{index + 1}</span>
+              {label}
             </a>
           ))}
-          <span className="drawer-coming"><span>08</span>STORE <small>COMING SOON</small></span>
+          <span className="drawer-coming">
+            <span>08</span>
+            STORE <small>COMING SOON</small>
+          </span>
         </nav>
-        <p>いゔる。 a.k.a. mizzz（ずーみー）<br />Personal Web Platform</p>
+        <p>
+          いゔる。 a.k.a. mizzz（ずーみー）
+          <br />
+          Personal Web Platform
+        </p>
       </div>
     </>
   )
