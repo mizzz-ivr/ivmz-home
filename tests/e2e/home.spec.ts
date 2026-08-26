@@ -37,13 +37,36 @@ test('toggles and persists the visual theme', async ({ page }) => {
   await expect(root).toHaveAttribute('data-theme', after ?? 'dark')
 })
 
-test('has no page-level horizontal overflow', async ({ page }) => {
+test('stays overflow-free at every required responsive width', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'chromium', 'Responsive width matrix runs in Chromium')
+
+  for (const width of [320, 375, 390, 768, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 900 })
+    await page.goto('/')
+
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+    const dimensions = await page.evaluate(() => ({
+      scrollWidth: document.documentElement.scrollWidth,
+      clientWidth: document.documentElement.clientWidth,
+    }))
+    expect(dimensions.scrollWidth, `horizontal overflow at ${width}px`).toBeLessThanOrEqual(
+      dimensions.clientWidth + 1,
+    )
+  }
+})
+
+test('desktop navigation expands for keyboard focus', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'chromium', 'Desktop keyboard behavior only')
+  await page.setViewportSize({ width: 1280, height: 900 })
   await page.goto('/')
-  const dimensions = await page.evaluate(() => ({
-    scrollWidth: document.documentElement.scrollWidth,
-    clientWidth: document.documentElement.clientWidth,
-  }))
-  expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth + 1)
+
+  const shell = page.locator('.desktop-nav-shell')
+  const homeLink = page.getByRole('navigation', { name: 'Desktop navigation' }).getByRole('link', {
+    name: 'HOME',
+  })
+  await homeLink.focus()
+  await expect(homeLink).toBeFocused()
+  await expect.poll(async () => (await shell.boundingBox())?.width ?? 0).toBeGreaterThan(500)
 })
 
 test('mobile drawer supports keyboard escape and closes after navigation', async ({
