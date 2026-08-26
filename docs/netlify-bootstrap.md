@@ -1,6 +1,6 @@
 # Netlify bootstrap
 
-Status: Repository connected; Deploy Preview validation in progress — 2026-08-26
+Status: Repository connected; Deploy Preview gate GREEN — 2026-08-26
 
 ## Repository security baseline
 
@@ -57,23 +57,34 @@ The application remains portable:
 
 ## Deploy Preview acceptance gate
 
-A Deploy Preview is acceptable only when all of the following pass:
+The Deploy Preview gate is GREEN.
 
-- dependency install uses the committed lockfile successfully
-- `next build` succeeds
-- App Router renders normally
-- SSR/RSC primary DOM content is available without WebGL
-- `next/image` renders the canonical character asset
-- metadata is present
-- `/robots.txt` responds correctly
-- `/sitemap.xml` responds correctly
-- static assets load
-- responsive baseline is usable on mobile widths
-- `prefers-reduced-motion: reduce` produces non-overlapping content
-- server-side routes used by the foundation are compatible
-- no secret is exposed in client assets or deploy logs
+Validated against the real PR #3 Netlify preview URL with Playwright from GitHub Actions:
 
-The `feat/netlify-bootstrap` branch and PR #3 are used to validate Deploy Preview behavior after Git binding. PR #3 stays Draft until this gate passes.
+- Deploy Preview alias: `https://deploy-preview-3--ivumz-home.netlify.app`
+- initial validated Deploy ID: `6a8e37d64834840009c2e2ef`
+- framework: `next`
+- runtime: `nodejs24.x`
+- Netlify Next.js integration: `@netlify/plugin-nextjs@5.15.13`
+- plugin state: `success`
+- Next.js Server Handler deployed successfully
+- Edge Functions: none
+- remote Playwright result: `6 passed`
+- desktop browser: Chromium
+- mobile baseline: iPhone 13 / WebKit
+
+The remote smoke verifies:
+
+- root response and primary SSR/RSC DOM content
+- identity heading and primary navigation
+- canonical metadata (`https://mizzz.ivrm.jp`)
+- canonical character image loads through `next/image`
+- `/robots.txt`
+- `/sitemap.xml`
+- responsive mobile rendering baseline
+- `prefers-reduced-motion: reduce` switches About/Writing layered content to static non-overlapping layout
+
+The Playwright configuration keeps local development portable: `E2E_BASE_URL` enables remote deployment smoke, while normal local runs continue to use `pnpm dev` on localhost. Netlify-specific preview URL construction is isolated to `.github/workflows/netlify-preview-smoke.yml` and is not used by application page logic.
 
 `mizzz.ivrm.jp` DNS changes happen only after the Netlify deployment baseline is healthy; DNS changes never precede the working Netlify project.
 
@@ -90,4 +101,4 @@ The `feat/netlify-bootstrap` branch and PR #3 are used to validate Deploy Previe
 - Runtime: Node.js 24
 - Edge Functions: none
 
-This netlify.app deployment is an infrastructure baseline only. `https://mizzz.ivrm.jp` is not changed or pointed at Netlify until the Preview smoke gate is complete.
+This netlify.app deployment is an infrastructure baseline only. `https://mizzz.ivrm.jp` remains unchanged until the merged Netlify bootstrap revision is confirmed healthy in production.
