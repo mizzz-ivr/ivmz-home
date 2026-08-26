@@ -2,7 +2,11 @@ import { describe, expect, it } from 'vitest'
 import { recipientFor } from './contact-routing'
 
 describe('recipientFor', () => {
-  it('routes personal work to mizzz', () => {
+  it('routes general personal work to ivmz', () => {
+    expect(recipientFor('personal')).toBe('ivmz@ivrm.jp')
+  })
+
+  it('routes developer work to mizzz', () => {
     expect(recipientFor('development')).toBe('mizzz@ivrm.jp')
   })
 

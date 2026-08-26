@@ -1,61 +1,64 @@
-# Architecture
+# アーキテクチャ
 
-## Decision
+## 決定事項
 
-Start as a **single Next.js application**. Site UI, Payload Admin/API, and contact endpoints stay in one deployable unit until a concrete scaling or security reason requires separation.
+初期構成は **単一のNext.jsアプリケーション** とする。サイトUI、Payload Admin/API、問い合わせ用エンドポイントは、具体的なスケーリング要件またはセキュリティ要件によって分離が必要になるまで、1つのデプロイ単位に維持する。
 
-The application must be deployable on a standard Node.js-compatible Next.js host. Hosting-specific APIs are adapters at the boundary, not application primitives.
+アプリケーションは標準的なNode.js互換のNext.jsホストへデプロイ可能な構成とする。ホスティング固有APIは境界のアダプターとして扱い、アプリケーションの基本機能そのものにはしない。
 
-## Runtime layers
+## ランタイム層
 
 ```text
 Browser
-  ├─ SSR/RSC DOM content (always usable)
-  ├─ CSS depth / transforms (baseline enhancement)
-  └─ lazy client islands
-       ├─ GSAP + ScrollTrigger (scroll choreography)
-       ├─ Motion (micro-interactions)
-       └─ R3F / Drei (only if a focal scene truly benefits)
+  ├─ SSR/RSC DOMコンテンツ（常に利用可能）
+  ├─ CSS depth / transform（基本的な視覚拡張）
+  └─ 遅延読み込みするclient island
+       ├─ GSAP + ScrollTrigger（スクロール演出）
+       ├─ Motion（マイクロインタラクション）
+       └─ R3F / Drei（重要シーンで本当に必要な場合のみ）
 
 Next.js 16 App Router
-  ├─ public pages / RSC
-  ├─ Payload CMS integrated routes
-  ├─ contact server endpoint
+  ├─ 公開ページ / RSC
+  ├─ Payload CMS統合Admin + REST route
+  ├─ 問い合わせserver endpoint
   └─ feed / sitemap / robots / structured data
 
 Portable services
-  ├─ PostgreSQL via DATABASE_URL
-  ├─ object storage adapter (preferred: AWS S3)
-  ├─ email adapter (preferred AWS path: SES)
-  └─ anti-abuse/rate-limit adapter selected with hosting
+  ├─ DATABASE_URL経由のPostgreSQL
+  ├─ object storage adapter（第一候補: AWS S3）
+  ├─ email adapter（AWS採用時の第一候補: SES）
+  └─ hosting境界で選択するanti-abuse / rate-limit adapter
 ```
 
-## No Cloudflare runtime coupling
+## Cloudflare runtimeへ依存しない
 
-Cloudflare may remain the DNS provider temporarily, but the application does not depend on:
+Cloudflareは当面DNS providerとして残る可能性があるが、アプリケーションは以下へ依存しない。
 
 - Workers
 - D1
-- R2 native bindings
-- Turnstile as an irreplaceable application primitive
+- R2 native binding
+- 置き換え不能なアプリケーション基盤としてのTurnstile
 - Cloudflare Email Sending
 
-This avoids building a runtime that must be rewritten when DNS and infrastructure move toward AWS.
+これにより、DNSやインフラを将来AWS側へ移行しても、application runtimeそのものを書き直さずに済む構成を維持する。
 
-## Hosting boundary
+## Hosting境界
 
-Launch recommendation is Netlify because its current Next.js runtime is a closer fit for Next.js 16 feature usage than AWS Amplify's currently documented support through Next.js 15.
+Launch時の第一候補はNetlifyとする。現時点のNext.js runtimeは、AWS Amplifyが公式に記載しているNext.js 15までの対応範囲より、プロジェクトで利用するNext.js 16の機能に適合しているためである。
 
-The codebase still uses normal `next build` / `next start` semantics and portable environment variables so a later AWS container deployment is feasible.
+コードベースは通常の `next build` / `next start` とportableな環境変数を使用し、将来AWS上のcontainer deploymentへ移行できる余地を維持する。
 
-## CMS boundary
+## CMS境界
 
-Target: Payload 3.x integrated into the same Next.js app.
+Payload CMS `3.88.0` を同一Next.jsアプリケーションへ直接統合する。
 
-Collections:
+Foundationで導入するcollection:
 
-- Users
-- Media
+- Users — Payload AuthおよびAdmin identity
+- Media — storage境界のみ。cloud storage設定まではproductionのlocal writeを無効化
+
+将来のcollectionは別featureとして実装する。
+
 - Works
 - Posts
 - News
@@ -64,27 +67,40 @@ Collections:
 - Contacts
 - SiteSettings
 
-Products are Phase 2.
+ProductsはPhase 2とする。
 
-## Persistence
+Foundation時点では具体的なproduct要件がないためGraphQLは無効化する。CMSのHTTP surfaceはPayload REST APIとAdmin UIを採用する。
 
-- Database: PostgreSQL behind `DATABASE_URL`; no provider-specific SQL in product code unless justified.
-- Media: Payload S3 storage adapter is preferred because it works from Node-based hosting and maps cleanly to a future AWS architecture.
-- Local development may use local disk or a local S3-compatible service, but production does not rely on ephemeral filesystem writes.
+## 永続化
 
-## Security boundary
+- Database: `DATABASE_URL` の背後にPostgreSQLを置く。Payload利用のために特定provider固有のapplication SQLを要求しない。
+- PostgreSQL schema: Payload管理tableは専用schema `ivmz_home` へ固定し、共有clusterを利用する場合でも `public` や他applicationのtableと名前空間を分離する。これはPostgreSQL標準機能とPayload Postgres adapterの `schemaName` を利用するもので、特定providerへは依存しない。
+- Schema lifecycle: `src/migrations` 配下のRepository管理migrationをSource of Truthとする。
+- CI: ephemeral PostgreSQL 17 serviceへmigrationを適用してからbuildする。
+- Preview / Production: migrationは明示的なdeployment gateとする。`next build` から破壊的なschema変更を自動実行しない。
+- Media: local diskはdevelopmentのみ許可する。Payload storage adapterを設定するまではproduction writeを無効化する。
+- Production media adapterの第一候補はAWS S3。media-storage PRで必要になった時点で導入し、AWS resourceはTerraformで管理する。
 
-- No secrets in the public repository.
-- Contact recipient is selected server-side from a category allowlist.
-- Rate limiting and bot protection occur before mail dispatch.
-- Security reports route only to `security@ivrm.jp`.
-- Admin/API routes are excluded from public indexing.
-- CSP is defined after the real script/media inventory exists.
+## セキュリティ境界
+
+- Secretをpublic repositoryへ保存しない。
+- Payload AdminはPayload Users/Auth collectionを使用し、並行する独自Authを作らない。
+- Passwordは14文字以上を必須とする。
+- Login失敗5回で15分間accountをlockする。
+- Admin userのAPI key認証は無効化する。
+- ProductionのAuth cookieはSecureとし、CSRF/CORS originはallow-listで制限する。
+- UsersとMediaは匿名writeを許可しない。FoundationではMediaの匿名readも許可しない。
+- GraphQLを無効化し、Payload query depthに上限を設ける。
+- Contactの配送先はcategory allow-listからserver-sideで決定する。
+- Rate limitとbot protectionはmail送信前に適用する。分散IP rate limitはserverlessのin-memory stateではなく、hosting境界の後続実装とする。
+- Security reportの配送先は `security@ivrm.jp` のみとする。
+- Admin/API routeはpublic indexing対象外とする。
+- CSPは実際に利用するscript/media inventoryが確定してから定義する。
 
 ## Performance budget
 
-- LCP identity copy is SSR DOM.
-- The canonical character image is an optimized image asset, not Canvas text or a 3D object requirement.
-- WebGL is never required for navigation or content discovery.
-- Prefer CSS transforms for depth scenes.
-- External social feeds are server-cached and fail open to static links.
+- LCP対象のidentity copyはSSR DOMとして出力する。
+- Canonical character imageは最適化したimage assetとし、Canvas textや3D objectを必須条件にしない。
+- Navigationやcontent discoveryにWebGLを必須としない。
+- Depth表現はCSS transformを優先する。
+- 外部SNS feedはserver-side cacheし、障害時はstatic linkへfallbackする。

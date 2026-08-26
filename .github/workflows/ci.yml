@@ -11,6 +11,25 @@ permissions:
 jobs:
   quality:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: ivmz_home
+          POSTGRES_PASSWORD: payload
+          POSTGRES_USER: payload
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U payload -d ivmz_home"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://payload:payload@127.0.0.1:5432/ivmz_home
+      PAYLOAD_ALLOWED_ORIGINS: http://127.0.0.1:3000
+      PAYLOAD_PUBLIC_SERVER_URL: http://127.0.0.1:3000
+      PAYLOAD_SECRET: ci-only-secret-not-for-production-2026-ivmz-home
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -20,9 +39,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
+          cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm format:check
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
+      - run: pnpm db:migrate
+      - run: pnpm generate:types
+      - run: pnpm generate:importmap
+      - name: 生成済みPayload成果物がコミットされていることを確認
+        shell: bash
+        run: git diff --exit-code -- src/payload-types.ts 'src/app/(payload)/admin/importMap.js'
       - run: pnpm build

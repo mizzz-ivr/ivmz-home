@@ -12,7 +12,7 @@ jobs:
     if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     env:
-      E2E_BASE_URL: https://deploy-preview-${{ github.event.pull_request.number }}--ivumz-home.netlify.app
+      E2E_BASE_URL: https://deploy-preview-${{ github.event.pull_request.number }}--ivmz-home.netlify.app
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -25,7 +25,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium webkit
-      - name: Wait for Deploy Preview
+      - name: Deploy Previewの起動を待機
         shell: bash
         run: |
           for attempt in {1..20}; do
@@ -34,7 +34,7 @@ jobs:
             fi
             sleep 15
           done
-          echo "Deploy Preview did not become reachable: $E2E_BASE_URL"
+          echo "Deploy Previewへ接続できませんでした: $E2E_BASE_URL"
           exit 1
-      - name: Run remote Playwright smoke
+      - name: 実Deploy Previewに対するPlaywright smokeを実行
         run: pnpm test:e2e
