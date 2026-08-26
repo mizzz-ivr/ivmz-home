@@ -5,7 +5,12 @@ import { buildConfig } from 'payload'
 import sharp from 'sharp'
 
 import { Media } from './collections/Media'
+import { News } from './collections/News'
+import { Posts } from './collections/Posts'
+import { Schedule } from './collections/Schedule'
+import { SocialLinks } from './collections/SocialLinks'
 import { Users } from './collections/Users'
+import { Works } from './collections/Works'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -24,7 +29,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media],
+  collections: [Users, Media, Works, Posts, News, Schedule, SocialLinks],
   cors: {
     origins: allowedOrigins,
   },
