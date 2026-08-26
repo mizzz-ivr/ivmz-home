@@ -25,7 +25,7 @@ Route/DNS（当面Cloudflare -> 将来Route 53）
 
 ## Payload + PostgreSQL deployment gate
 
-Payload `3.88.0` は `@payloadcms/db-postgres` と `DATABASE_URL` を使用する。
+Payload `3.88.0` は `@payloadcms/db-postgres` と `DATABASE_URL` を使用する。Payload管理tableはPostgreSQL schema `ivumz_home` に分離する。
 
 Foundationで必要なruntime variable:
 
@@ -44,6 +44,17 @@ Foundationで必要なruntime variable:
 `pnpm build` からproduction migrationを**自動実行しない**。Netlify buildやretryのたびに暗黙のschema変更が発生する設計を避けるためである。
 
 CIではGitHub Actions上にephemeral PostgreSQL 17 serviceを起動し、Next.js build前に同一のRepository migrationを適用する。
+
+## Preview database境界
+
+FoundationのDeploy Previewでは、既存PostgreSQL clusterを利用する場合もapplication専用の `ivumz_home` schemaとruntime role `ivumz_home_app` で分離する。
+
+- Payload側は `schemaName: 'ivumz_home'` を使用する
+- `public` schemaへPayload tableを作成しない
+- Preview用runtime roleへsuperuser / CREATEDB / CREATEROLEを付与しない
+- Repository migrationとPayload migration stateを一致させる
+- Previewで使用する接続先はProduction providerの恒久決定とはみなさない
+- `DATABASE_URL` はNetlify secretとして管理し、RepositoryやNotionへcredentialを記録しない
 
 ## Media storage gate
 

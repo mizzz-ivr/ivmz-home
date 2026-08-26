@@ -14,6 +14,7 @@
 - `/api` 配下のPayload REST route
 - Users/Auth collection
 - Media collection
+- PostgreSQL専用schema `ivumz_home`
 - 生成済み `src/payload-types.ts`
 - 生成済みAdmin import map
 - Repository管理の初期PostgreSQL migration
@@ -39,6 +40,17 @@
 | `PAYLOAD_PUBLIC_SERVER_URL` | 推奨 | hosting環境で明示的なPayload server originが必要な場合に使用 |
 
 S3関連variableは次のmedia-storage phase向けに `.env.example` へ予約しているが、Foundationでは使用しない。
+
+## PostgreSQL schema境界
+
+Payload管理tableはPostgreSQL標準の専用schema `ivumz_home` に固定する。
+
+- Payload Postgres adapterの `schemaName: 'ivumz_home'` を使用する
+- `public` schemaへPayload tableを作成しない
+- Local / CI / Preview / Productionで同じlogical schema名を使用する
+- PostgreSQL provider自体は `DATABASE_URL` の背後で交換可能に保つ
+
+共有database clusterをPreviewで使用する場合も、このschema境界によって他applicationのtableと混在させない。
 
 ## Local database lifecycle
 
@@ -84,6 +96,7 @@ Admin認証はPayload標準Authのみを使用する。
 - Password最小長: 14文字
 - Login失敗5回で15分間lock
 - Admin API keyは無効
+- Password validation fieldはvirtualで、平文password列をdatabaseへ作らない
 - Payloadがcookie-based Admin authをサポートする範囲でtoken responseを抑制
 - Production cookieはSecure
 - CSRF/CORSは設定済みoriginのみ許可
@@ -119,10 +132,21 @@ GitHub ActionsではPostgreSQL 17を使用し、以下を検証する。
 
 既存Netlify remote Playwright jobをdeployment gateとして維持し、`/admin` と匿名 `/api/users` accessの検証を追加している。
 
-## 外部環境の状態
+## Deploy Previewの現在状態
 
-2026-08-26の再確認時点で、Netlify project `ivumz-home` の環境変数は未設定である。このためDeploy PreviewではPayload runtimeに必要な `DATABASE_URL` と `PAYLOAD_SECRET` が存在せず、`/admin` と `/api/users` がHTTP 500になっている。
+2026-08-26の調査で、`Netlify Preview Smoke / preview-smoke` の既存public test 6件はPASSし、Payload関連4件のみHTTP 500でFAILしていることを確認した。
 
-Deploy PreviewをGREENにする前に、Preview用PostgreSQL接続先、`PAYLOAD_SECRET`、`PAYLOAD_ALLOWED_ORIGINS`、必要に応じて `PAYLOAD_PUBLIC_SERVER_URL` をNetlify runtimeへ設定し、対象databaseへRepository migrationを明示適用する。
+原因はPayload runtimeに必要なDB connectionが存在しないことだった。対応として以下まで実施済み。
+
+- Netlify Deploy Preview scopeへ `PAYLOAD_SECRET` をsecretとして設定
+- Netlify Deploy Preview scopeへ `PAYLOAD_ALLOWED_ORIGINS` を設定
+- Preview用PostgreSQLに専用schema `ivumz_home` を作成
+- Preview用runtime role `ivumz_home_app` を作成（superuser / CREATEDB / CREATEROLEなし）
+- Repositoryと同じ初期Payload migrationを `ivumz_home` schemaへ適用
+- `payload_migrations` にRepository migrationと一致するmigration stateを記録
+
+残る外部gateはNetlifyへ有効な `DATABASE_URL` をsecretとして設定することだけである。DB credentialの設定操作は現在の接続ツールの安全ゲートで拒否されたため、credentialを迂回・平文保存していない。
+
+`DATABASE_URL` が設定されるまではHTTP 500を正常扱いにせず、PRはDraftのまま維持する。
 
 このPhaseではDNS recordを変更しない。
