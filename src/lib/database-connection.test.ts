@@ -1,9 +1,27 @@
 import { describe, expect, it } from 'vitest'
 
-import { getDatabasePoolConfig, resolveDatabaseConnectionString } from './database-connection'
+import {
+  getDatabasePoolConfig,
+  resolveDatabaseConnectionString,
+  resolveDatabasePoolMode,
+} from './database-connection'
 
 const sessionPoolerUrl =
   'postgresql://ivmz_home_app.example:password@aws-1-ap-northeast-1.pooler.supabase.com:5432/postgres?sslmode=require'
+
+describe('resolveDatabasePoolMode', () => {
+  it('Netlify Functionsではtransaction modeを既定にする', () => {
+    expect(resolveDatabasePoolMode(undefined, 'site-id')).toBe('transaction')
+  })
+
+  it('明示したsession modeを優先する', () => {
+    expect(resolveDatabasePoolMode('session', 'site-id')).toBe('session')
+  })
+
+  it('Netlify外かつ未設定ではmodeを追加しない', () => {
+    expect(resolveDatabasePoolMode(undefined, undefined)).toBeUndefined()
+  })
+})
 
 describe('resolveDatabaseConnectionString', () => {
   it('Supabase session poolerをtransaction modeへ切り替える', () => {
