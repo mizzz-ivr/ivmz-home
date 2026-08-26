@@ -25,7 +25,7 @@ const allowedOrigins = (
 
 const databasePoolMode = resolveDatabasePoolMode(
   process.env.PAYLOAD_DATABASE_POOL_MODE,
-  process.env.SITE_ID,
+  process.env.AWS_LAMBDA_FUNCTION_NAME,
 )
 const databasePool = getDatabasePoolConfig(process.env.DATABASE_URL ?? '', databasePoolMode)
 
