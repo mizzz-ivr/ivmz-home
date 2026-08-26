@@ -1,12 +1,12 @@
 export const site = {
   name: 'いゔる。 a.k.a. mizzz（ずーみー）',
   shortName: 'mizzz',
-  repository: 'mizzz-ivr/ivumz-home',
-  url: 'https://mizzz.ivrm.jp',
+  repository: 'mizzz-ivr/ivmz-home',
+  url: 'https://ivmz.ivrm.jp',
   communityUrl: 'https://ivrm.jp',
   githubUrl: 'https://github.com/mizzz-ivr',
   githubAvatarUrl: 'https://avatars.githubusercontent.com/u/86910433?v=4',
-  contactEmail: 'mizzz@ivrm.jp',
+  contactEmail: 'ivmz@ivrm.jp',
   securityEmail: 'security@ivrm.jp',
   teamEmail: 'contact@ivrm.jp',
   description:
