@@ -78,6 +78,12 @@ describe('structured data', () => {
     )
   })
 
+  it('treats an internal canonical with a trailing slash as the same page', () => {
+    expect(
+      hasExternalCanonical('/blog/internal-post', 'https://ivmz.ivrm.jp/blog/internal-post/'),
+    ).toBe(false)
+  })
+
   it('keeps malformed canonical CMS values on the safe internal fallback', () => {
     expect(hasExternalCanonical('/blog/post', 'not a url')).toBe(false)
   })
