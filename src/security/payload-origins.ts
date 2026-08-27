@@ -6,6 +6,8 @@ export type PayloadOriginEnvironment = {
   CONTEXT?: string
   DEPLOY_PRIME_URL?: string
   PAYLOAD_ALLOWED_ORIGINS?: string
+  PAYLOAD_BUILD_CONTEXT?: string
+  PAYLOAD_BUILD_ORIGIN?: string
 }
 
 function normalizeOrigin(value: string): string | undefined {
@@ -42,18 +44,23 @@ function currentPayloadOriginEnvironment(): PayloadOriginEnvironment {
     CONTEXT: process.env.CONTEXT,
     DEPLOY_PRIME_URL: process.env.DEPLOY_PRIME_URL,
     PAYLOAD_ALLOWED_ORIGINS: process.env.PAYLOAD_ALLOWED_ORIGINS,
+    PAYLOAD_BUILD_CONTEXT: process.env.PAYLOAD_BUILD_CONTEXT,
+    PAYLOAD_BUILD_ORIGIN: process.env.PAYLOAD_BUILD_ORIGIN,
   }
 }
 
 export function resolvePayloadAllowedOrigins(
   env: PayloadOriginEnvironment = currentPayloadOriginEnvironment(),
 ): string[] {
-  if (env.CONTEXT === 'production') {
+  const context = env.PAYLOAD_BUILD_CONTEXT || env.CONTEXT
+
+  if (context === 'production') {
     return [PAYLOAD_PRODUCTION_ORIGIN]
   }
 
-  if (env.CONTEXT === 'deploy-preview' || env.CONTEXT === 'branch-deploy') {
-    const deployOrigin = env.DEPLOY_PRIME_URL ? normalizeOrigin(env.DEPLOY_PRIME_URL) : undefined
+  if (context === 'deploy-preview' || context === 'branch-deploy') {
+    const deployOriginSource = env.PAYLOAD_BUILD_ORIGIN || env.DEPLOY_PRIME_URL
+    const deployOrigin = deployOriginSource ? normalizeOrigin(deployOriginSource) : undefined
 
     if (deployOrigin) {
       return [deployOrigin]
