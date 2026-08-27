@@ -62,12 +62,7 @@ export function resolvePayloadAllowedOrigins(
     const deployOriginSource = env.PAYLOAD_BUILD_ORIGIN || env.DEPLOY_PRIME_URL
     const deployOrigin = deployOriginSource ? normalizeOrigin(deployOriginSource) : undefined
 
-    if (deployOrigin) {
-      return [deployOrigin]
-    }
-
-    const fallbackOrigins = configuredOrigins(env.PAYLOAD_ALLOWED_ORIGINS)
-    return fallbackOrigins.length > 0 ? fallbackOrigins : [PAYLOAD_PRODUCTION_ORIGIN]
+    return deployOrigin ? [deployOrigin] : []
   }
 
   const explicitOrigins = configuredOrigins(env.PAYLOAD_ALLOWED_ORIGINS)
