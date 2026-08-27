@@ -51,14 +51,14 @@ describe('resolvePayloadAllowedOrigins', () => {
     ).toEqual(['https://security-issue-17--ivmz-home.netlify.app'])
   })
 
-  it('Preview URLを解決できない場合は明示allowlistへfail closedする', () => {
+  it('Preview originを解決できない場合は他contextを信頼せずfail closedする', () => {
     expect(
       resolvePayloadAllowedOrigins({
         CONTEXT: 'deploy-preview',
         DEPLOY_PRIME_URL: 'not-a-url',
-        PAYLOAD_ALLOWED_ORIGINS: 'https://preview.example.com',
+        PAYLOAD_ALLOWED_ORIGINS: PAYLOAD_PRODUCTION_ORIGIN,
       }),
-    ).toEqual(['https://preview.example.com'])
+    ).toEqual([])
   })
 
   it('local/CIでは明示allowlistを正規化・重複排除する', () => {
