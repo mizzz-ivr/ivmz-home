@@ -37,8 +37,16 @@ function configuredOrigins(value: string | undefined): string[] {
   ]
 }
 
+function currentPayloadOriginEnvironment(): PayloadOriginEnvironment {
+  return {
+    CONTEXT: process.env.CONTEXT,
+    DEPLOY_PRIME_URL: process.env.DEPLOY_PRIME_URL,
+    PAYLOAD_ALLOWED_ORIGINS: process.env.PAYLOAD_ALLOWED_ORIGINS,
+  }
+}
+
 export function resolvePayloadAllowedOrigins(
-  env: PayloadOriginEnvironment = process.env,
+  env: PayloadOriginEnvironment = currentPayloadOriginEnvironment(),
 ): string[] {
   if (env.CONTEXT === 'production') {
     return [PAYLOAD_PRODUCTION_ORIGIN]
