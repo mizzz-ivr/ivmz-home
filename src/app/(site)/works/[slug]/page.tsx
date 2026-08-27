@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { StructuredData } from '@/components/seo/StructuredData'
@@ -44,9 +43,9 @@ export default async function WorkDetailPage({ params }: DetailPageProps) {
   return (
     <main id="main-content" className="route-page detail-page">
       <StructuredData data={createWorkStructuredData(work)} />
-      <Link className="detail-back-link" href="/works">
+      <a className="detail-back-link" href="/works">
         <span aria-hidden="true">←</span> All works
-      </Link>
+      </a>
       <PageHero
         index="WORK / DETAIL"
         title={work.title}
