@@ -44,12 +44,6 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Print exact Prettier diff (temporary)
-        shell: bash
-        run: |
-          pnpm exec prettier --write tests/e2e/dynamic-routes.spec.ts
-          git diff -- tests/e2e/dynamic-routes.spec.ts
-          git checkout -- tests/e2e/dynamic-routes.spec.ts
       - run: pnpm format:check
       - run: pnpm lint
       - run: pnpm typecheck
