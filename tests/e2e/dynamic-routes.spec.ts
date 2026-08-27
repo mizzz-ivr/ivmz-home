@@ -95,9 +95,10 @@ test('keeps a representative dynamic route overflow-free at every supported widt
   const path = work ? `/works/${encodeURIComponent(work.slug)}` : '/works/__ivmz-responsive-404__'
   const expectedStatus = work ? 200 : 404
 
+  await gotoExpected(page, path, expectedStatus)
+
   for (const width of responsiveWidths) {
     await page.setViewportSize({ width, height: 900 })
-    await gotoExpected(page, path, expectedStatus)
     const dimensions = await page.evaluate(() => ({
       scrollWidth: document.documentElement.scrollWidth,
       clientWidth: document.documentElement.clientWidth,
