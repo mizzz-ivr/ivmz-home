@@ -30,7 +30,11 @@ async function navigationDiagnostic(response: Response | null) {
   ].join(' ')
 }
 
-async function assertExpectedStatus(response: Response | null, label: string, expectedStatus: number) {
+async function assertExpectedStatus(
+  response: Response | null,
+  label: string,
+  expectedStatus: number,
+) {
   const status = response?.status()
   if (status !== expectedStatus) {
     expect(status, `${label}: ${await navigationDiagnostic(response)}`).toBe(expectedStatus)
