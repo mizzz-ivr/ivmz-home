@@ -1,5 +1,4 @@
 import Image from 'next/image'
-import Link from 'next/link'
 import { HeroPointerSignal } from '@/components/site/SiteExperience'
 import { getHomeViewModel } from '@/lib/home-content'
 import { site } from '@/lib/site'
@@ -27,12 +26,12 @@ export default async function HomePage() {
             アイデアを、触れて、使えて、育てられるプロダクトへ。
           </p>
           <div className="hero-actions">
-            <Link className="action-link action-primary" href="/works">
+            <a className="action-link action-primary" href="/works">
               Selected Works <span aria-hidden="true">↗</span>
-            </Link>
-            <Link className="action-link" href="/contact">
+            </a>
+            <a className="action-link" href="/contact">
               Contact <span aria-hidden="true">→</span>
-            </Link>
+            </a>
           </div>
           <div className="hero-status" aria-label="Current focus">
             <span>
@@ -89,9 +88,9 @@ export default async function HomePage() {
             Decisions included.
           </h2>
           <p>完成画面だけではなく、役割・制約・技術・運用までCase Studyとして見せる。</p>
-          <Link className="snapshot-destination" href="/works">
+          <a className="snapshot-destination" href="/works">
             View all Works →
-          </Link>
+          </a>
         </div>
         <div className="works-rail">
           {home.works.map((work, index) => (
@@ -151,9 +150,9 @@ export default async function HomePage() {
           <p>
             コード・UI・インフラを別々の成果物として扱わず、「人が使い続けられるか」を境界に考えるのが自分の開発スタイルです。
           </p>
-          <Link className="snapshot-destination" href="/about">
+          <a className="snapshot-destination" href="/about">
             More about me →
-          </Link>
+          </a>
         </div>
         <div className="about-workbench" aria-label="Development workbench fragments">
           <div className="workbench-window window-main">
@@ -195,9 +194,9 @@ export default async function HomePage() {
             <br />
             reusable knowledge.
           </h2>
-          <Link className="snapshot-destination" href="/blog">
+          <a className="snapshot-destination" href="/blog">
             View all Writing →
-          </Link>
+          </a>
         </div>
         <div className="editorial-stack">
           {home.writing.map((item, index) => (
@@ -226,9 +225,9 @@ export default async function HomePage() {
         <div className="section-intro compact-intro">
           <p className="signal-label">05 / NEWS &amp; ACTIVITY</p>
           <h2 id="activity-title">What is moving now.</h2>
-          <Link className="snapshot-destination" href="/news">
+          <a className="snapshot-destination" href="/news">
             View all News →
-          </Link>
+          </a>
         </div>
         <div className="activity-stream">
           {home.activity.map((item) => (
@@ -263,9 +262,9 @@ export default async function HomePage() {
             not a private calendar.
           </h2>
           <p>イベント・公開・リリースなど、外部へ見せてよい予定だけを扱います。</p>
-          <Link className="snapshot-destination" href="/schedule">
+          <a className="snapshot-destination" href="/schedule">
             Open full Schedule →
-          </Link>
+          </a>
         </div>
         <div className="timeline-rail" role="list">
           {home.schedule.map((item, index) => (
@@ -287,9 +286,9 @@ export default async function HomePage() {
           <p className="signal-label">07 / SOCIAL SIGNAL</p>
           <h2 id="social-title">Find the live edges.</h2>
           <p>外部サービスが落ちてもこのサイトは残る。最新活動はリンクを常時fallbackとして持つ。</p>
-          <Link className="snapshot-destination" href="/links">
+          <a className="snapshot-destination" href="/links">
             Open Links →
-          </Link>
+          </a>
         </div>
         <div className="social-links">
           {home.socials.map((social, index) => (
@@ -323,22 +322,12 @@ export default async function HomePage() {
           </p>
         </div>
         <div className="contact-routes">
-          <Link href="/contact">
+          <a href="/contact">
             <span>CONTACT / ROUTING</span>
             <strong>Open contact destination</strong>
             <b aria-hidden="true">→</b>
-          </Link>
+          </a>
         </div>
-        <footer className="site-footer">
-          <span>© 2026 ivmz</span>
-          <span>Canonical / ivmz.ivrm.jp</span>
-          <span>
-            <Link href="/legal/privacy">PRIVACY</Link>
-            {' / '}
-            <Link href="/legal/terms">TERMS</Link>
-          </span>
-          <a href="#top">BACK TO TOP ↑</a>
-        </footer>
       </section>
     </main>
   )
