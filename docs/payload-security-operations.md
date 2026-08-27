@@ -18,11 +18,17 @@ Secret値そのものはRepository、Issue、PR、CI log、Notionへ記載しな
 
 Payload標準のaccount lockoutを維持したまま、Netlify code-based rate limitingを前段へ追加する。
 
-- 対象: Payload `users` auth系POST endpoint
+今回のP1 protectionはcredential stuffing / password sprayingの主入口であるPayload login endpointへ絞る。
+
+- 対象: `/api/users/login`
 - limit: 10 requests / 60 seconds / domain + client IP
 - 超過時: HTTP 429
 - memory-only limiterは使用しない
 - Deploy Preview smokeで存在しないprobe accountを使い、実環境で429を確認する
+
+Netlifyのcode-based rate limitingはpath targetingが基本なので、Edge Function側でHTTP method条件へ依存せずlogin path単位で設定する。Payload login routeの正規利用はPOSTであり、IP + domain aggregationのため別clientのlogin枠を共有しない。
+
+`forgot-password` / `reset-password` / `unlock` / `refresh-token` / `verify`は同じrate-limit ruleへ安易にまとめず、実際のabuse modelとNetlify側のcode-based rule budgetを確認した上で必要なendpointだけを追加する。
 
 rate limit probeでは実在Adminのemail/passwordを使用しない。
 
@@ -85,5 +91,5 @@ Deploy Preview / Branch DeployがProductionと同じ`DATABASE_URL`を共有す�
 - Users / drafts / versions / mutationsがanonymousへ漏れない
 - error responseへsecret / connection string / stack traceを漏らさない
 - Public page / Payload Adminにsecurity headersが付く
-- Deploy Previewでauth rate limitが429を返す
+- Deploy Previewでlogin rate limitが429を返す
 - 正規Admin login / logoutと既存CMS運用を壊さない
