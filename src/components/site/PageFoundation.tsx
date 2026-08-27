@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import type { ReactNode } from 'react'
 
 type PageHeroProps = {
@@ -75,9 +74,9 @@ export function PageCTA({
         <h2>{title}</h2>
         <p>{body}</p>
       </div>
-      <Link className="action-link action-primary" href={href}>
+      <a className="action-link action-primary" href={href}>
         {label} <span aria-hidden="true">→</span>
-      </Link>
+      </a>
     </aside>
   )
 }

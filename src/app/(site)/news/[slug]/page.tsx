@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { StructuredData } from '@/components/seo/StructuredData'
@@ -56,9 +55,9 @@ export default async function NewsDetailPage({ params }: DetailPageProps) {
           publishedAt: item.publishedAt,
         })}
       />
-      <Link className="detail-back-link" href="/news">
+      <a className="detail-back-link" href="/news">
         <span aria-hidden="true">←</span> All news
-      </Link>
+      </a>
       <PageHero
         index="NEWS / DETAIL"
         title={item.title}

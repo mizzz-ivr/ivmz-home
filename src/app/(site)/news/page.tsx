@@ -1,5 +1,3 @@
-import Link from 'next/link'
-
 import { EmptyState, PageCTA, PageHero, PageSection } from '@/components/site/PageFoundation'
 import { createPageMetadata } from '@/lib/metadata'
 import { getNewsListContent } from '@/lib/public-list-content'
@@ -59,7 +57,7 @@ export default async function NewsPage() {
                       ? new Intl.DateTimeFormat('ja-JP').format(new Date(item.publishedAt))
                       : 'PUBLISHED'}
                   </span>
-                  <Link href={`/news/${encodeURIComponent(item.slug)}`}>Read update →</Link>
+                  <a href={`/news/${encodeURIComponent(item.slug)}`}>Read update →</a>
                   {item.externalUrl && (
                     <a href={item.externalUrl} target="_blank" rel="noreferrer">
                       Open source ↗
