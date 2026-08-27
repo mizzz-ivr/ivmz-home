@@ -45,11 +45,11 @@ test('toggles and persists the visual theme across routes', async ({ page }) => 
 test('stays overflow-free at every required responsive width', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'chromium', 'Responsive width matrix runs in Chromium')
 
+  await gotoExpected(page, '/')
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+
   for (const width of [320, 375, 390, 768, 1024, 1440]) {
     await page.setViewportSize({ width, height: 900 })
-    await gotoExpected(page, '/')
-
-    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
     const dimensions = await page.evaluate(() => ({
       scrollWidth: document.documentElement.scrollWidth,
       clientWidth: document.documentElement.clientWidth,
