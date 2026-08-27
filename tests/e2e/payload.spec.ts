@@ -1,5 +1,7 @@
 import { expect, test, type APIResponse } from '@playwright/test'
 
+import { gotoExpected } from './navigation'
+
 const publicCollections = ['works', 'posts', 'news', 'schedule', 'social-links'] as const
 const draftEnabledCollections = ['works', 'posts', 'news'] as const
 
@@ -11,9 +13,8 @@ async function responseDiagnostic(response: APIResponse) {
 }
 
 test('保護されたPayload Adminの入口を表示できる', async ({ page }) => {
-  const response = await page.goto('/admin')
+  await gotoExpected(page, '/admin')
 
-  expect(response?.ok()).toBe(true)
   await expect(page).toHaveURL(/\/admin\/(login|create-first-user)(?:\?.*)?$/)
 })
 
