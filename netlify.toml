@@ -1,0 +1,8 @@
+[[redirects]]
+  from = "/api/users/login"
+  to = "/api/users/login"
+
+  [redirects.rate_limit]
+    window_limit = 10
+    window_size = 60
+    aggregate_by = ["ip", "domain"]
