@@ -1,5 +1,7 @@
 import { expect, test, type APIRequestContext } from '@playwright/test'
 
+import { gotoExpected, reloadExpected } from './navigation'
+
 type PublicDoc = {
   title: string
   slug: string
@@ -45,7 +47,7 @@ test('connects published list items to detail routes with h1, reload and metadat
 }) => {
   for (const route of detailRoutes) {
     const doc = await firstPublishedDoc(request, route.collection)
-    await page.goto(route.listPath)
+    await gotoExpected(page, route.listPath)
 
     if (!doc) {
       await expect(page.getByText(route.emptyHeading, { exact: true })).toBeVisible()
@@ -69,20 +71,17 @@ test('connects published list items to detail routes with h1, reload and metadat
       `${doc.title} | mizzz`,
     )
 
-    const direct = await page.goto(detailPath)
-    expect(direct?.ok(), detailPath).toBe(true)
+    await gotoExpected(page, detailPath)
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(doc.title)
 
-    const reload = await page.reload()
-    expect(reload?.ok(), `${detailPath} reload`).toBe(true)
+    await reloadExpected(page, detailPath)
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(doc.title)
   }
 })
 
 test('returns the same non-leaking 404 for unknown dynamic slugs', async ({ page }) => {
   for (const route of ['/works', '/blog', '/news']) {
-    const response = await page.goto(`${route}/__ivmz-definitely-not-published__`)
-    expect(response?.status(), route).toBe(404)
+    await gotoExpected(page, `${route}/__ivmz-definitely-not-published__`, 404)
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Signal not found.')
     await expect(page.getByText(/draftの存在有無も公開routeからは区別しません/)).toBeVisible()
   }
@@ -94,10 +93,11 @@ test('keeps a representative dynamic route overflow-free at every supported widt
 }) => {
   const work = await firstPublishedDoc(request, 'works')
   const path = work ? `/works/${encodeURIComponent(work.slug)}` : '/works/__ivmz-responsive-404__'
+  const expectedStatus = work ? 200 : 404
 
   for (const width of responsiveWidths) {
     await page.setViewportSize({ width, height: 900 })
-    await page.goto(path)
+    await gotoExpected(page, path, expectedStatus)
     const dimensions = await page.evaluate(() => ({
       scrollWidth: document.documentElement.scrollWidth,
       clientWidth: document.documentElement.clientWidth,
