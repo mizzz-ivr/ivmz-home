@@ -22,6 +22,26 @@ describe('resolvePayloadAllowedOrigins', () => {
     ).toEqual(['https://deploy-preview-17--ivmz-home.netlify.app'])
   })
 
+  it('Netlify Function runtimeではbuild時に固定したPreview originを使う', () => {
+    expect(
+      resolvePayloadAllowedOrigins({
+        PAYLOAD_ALLOWED_ORIGINS: PAYLOAD_PRODUCTION_ORIGIN,
+        PAYLOAD_BUILD_CONTEXT: 'deploy-preview',
+        PAYLOAD_BUILD_ORIGIN: 'https://deploy-preview-19--ivmz-home.netlify.app/some/path',
+      }),
+    ).toEqual(['https://deploy-preview-19--ivmz-home.netlify.app'])
+  })
+
+  it('build時のProduction contextはruntime fallbackより優先する', () => {
+    expect(
+      resolvePayloadAllowedOrigins({
+        PAYLOAD_ALLOWED_ORIGINS: 'http://localhost:3000,https://attacker.invalid',
+        PAYLOAD_BUILD_CONTEXT: 'production',
+        PAYLOAD_BUILD_ORIGIN: 'https://unexpected.example.com',
+      }),
+    ).toEqual([PAYLOAD_PRODUCTION_ORIGIN])
+  })
+
   it('Branch DeployでもDEPLOY_PRIME_URLを優先する', () => {
     expect(
       resolvePayloadAllowedOrigins({
