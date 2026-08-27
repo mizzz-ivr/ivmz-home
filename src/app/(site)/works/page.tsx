@@ -1,5 +1,3 @@
-import Link from 'next/link'
-
 import { EmptyState, PageCTA, PageHero, PageSection } from '@/components/site/PageFoundation'
 import { createPageMetadata } from '@/lib/metadata'
 import { getWorksListContent } from '@/lib/public-list-content'
@@ -50,7 +48,7 @@ export default async function WorksPage() {
                 <div className="content-row-meta">
                   <span>{work.role}</span>
                   <small>{work.stack.join(' · ')}</small>
-                  <Link href={`/works/${encodeURIComponent(work.slug)}`}>View case study →</Link>
+                  <a href={`/works/${encodeURIComponent(work.slug)}`}>View case study →</a>
                   {work.githubUrl && (
                     <a href={work.githubUrl} target="_blank" rel="noreferrer">
                       GitHub ↗
