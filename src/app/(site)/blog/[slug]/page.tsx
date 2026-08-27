@@ -2,10 +2,11 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
+import { StructuredData } from '@/components/seo/StructuredData'
 import { PageCTA, PageHero, PageSection } from '@/components/site/PageFoundation'
 import { createPageMetadata } from '@/lib/metadata'
 import { getPublishedPostBySlug } from '@/lib/payload-content'
-import { site } from '@/lib/site'
+import { hasExternalCanonical, createBlogStructuredData } from '@/lib/structured-data'
 
 export const revalidate = 300
 
@@ -18,26 +19,6 @@ function formatDate(value?: string | null) {
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return 'Published'
   return new Intl.DateTimeFormat('ja-JP', { dateStyle: 'long' }).format(date)
-}
-
-function normalizePathname(pathname: string) {
-  const normalized = pathname.replace(/\/+$/, '')
-  return normalized || '/'
-}
-
-function hasAlternateCanonical(path: string, canonicalUrl?: string | null) {
-  if (!canonicalUrl) return false
-
-  try {
-    const canonical = new URL(canonicalUrl)
-    const internal = new URL(path, site.url)
-    return (
-      canonical.origin !== internal.origin ||
-      normalizePathname(canonical.pathname) !== normalizePathname(internal.pathname)
-    )
-  } catch {
-    return false
-  }
 }
 
 export async function generateMetadata({ params }: DetailPageProps): Promise<Metadata> {
@@ -60,10 +41,11 @@ export default async function BlogDetailPage({ params }: DetailPageProps) {
   if (!post) notFound()
 
   const path = `/blog/${encodeURIComponent(post.slug)}`
-  const externalCanonical = hasAlternateCanonical(path, post.canonicalUrl)
+  const externalCanonical = hasExternalCanonical(path, post.canonicalUrl)
 
   return (
     <main id="main-content" className="route-page detail-page">
+      <StructuredData data={createBlogStructuredData(post)} />
       <Link className="detail-back-link" href="/blog">
         <span aria-hidden="true">←</span> All writing
       </Link>
