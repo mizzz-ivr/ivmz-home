@@ -1,7 +1,11 @@
 import type { MetadataRoute } from 'next'
 
 import { resolveCanonicalUrl } from '@/lib/metadata'
-import { getNewsListContent, getPostsListContent, getWorksListContent } from '@/lib/public-list-content'
+import {
+  getNewsListContent,
+  getPostsListContent,
+  getWorksListContent,
+} from '@/lib/public-list-content'
 import { site } from '@/lib/site'
 
 export const revalidate = 300

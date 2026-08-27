@@ -73,7 +73,10 @@ export default async function BlogDetailPage({ params }: DetailPageProps) {
         description={<p>{post.excerpt}</p>}
         signal="WRITING / KNOWLEDGE"
       />
-      <PageSection title="Article profile" description={<p>公開日時・category・tagsをまとめます。</p>}>
+      <PageSection
+        title="Article profile"
+        description={<p>公開日時・category・tagsをまとめます。</p>}
+      >
         <dl className="detail-facts">
           <div>
             <dt>Category</dt>
@@ -113,7 +116,8 @@ export default async function BlogDetailPage({ params }: DetailPageProps) {
         {externalCanonical && post.canonicalUrl ? (
           <div className="external-publication">
             <p>
-              このページはサイト内の安定した導線とtaxonomyを保持するsummary pageです。本文の正本は外部公開先にあります。
+              このページはサイト内の安定した導線とtaxonomyを保持するsummary
+              pageです。本文の正本は外部公開先にあります。
             </p>
             <a href={post.canonicalUrl} target="_blank" rel="noreferrer">
               Read canonical article <span aria-hidden="true">↗</span>

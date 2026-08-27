@@ -69,7 +69,9 @@ export default async function WorkDetailPage({ params }: DetailPageProps) {
           </div>
           <div>
             <dt>Media</dt>
-            <dd>{mediaCount > 0 ? `${mediaCount} asset${mediaCount === 1 ? '' : 's'}` : 'None'}</dd>
+            <dd>
+              {mediaCount > 0 ? `${mediaCount} asset${mediaCount === 1 ? '' : 's'}` : 'None'}
+            </dd>
           </div>
         </dl>
       </PageSection>
@@ -80,7 +82,10 @@ export default async function WorkDetailPage({ params }: DetailPageProps) {
           ))}
         </ul>
       </PageSection>
-      <PageSection title="Highlights" description={<p>実装・設計上の要点を短く追えるようにします。</p>}>
+      <PageSection
+        title="Highlights"
+        description={<p>実装・設計上の要点を短く追えるようにします。</p>}
+      >
         {work.highlights && work.highlights.length > 0 ? (
           <ul className="detail-list">
             {work.highlights.map((highlight) => (
@@ -93,7 +98,10 @@ export default async function WorkDetailPage({ params }: DetailPageProps) {
           </EmptyState>
         )}
       </PageSection>
-      <PageSection title="Case study" description={<p>CMS上のCase Study本文を安全なテキストとして表示します。</p>}>
+      <PageSection
+        title="Case study"
+        description={<p>CMS上のCase Study本文を安全なテキストとして表示します。</p>}
+      >
         {work.caseStudy ? (
           <div className="detail-prose">
             <p>{work.caseStudy}</p>
@@ -105,7 +113,10 @@ export default async function WorkDetailPage({ params }: DetailPageProps) {
         )}
       </PageSection>
       {(work.githubUrl || work.liveUrl) && (
-        <PageSection title="Links" description={<p>内部Case Studyとは別の外部destinationです。</p>}>
+        <PageSection
+          title="Links"
+          description={<p>内部Case Studyとは別の外部destinationです。</p>}
+        >
           <div className="detail-actions">
             {work.githubUrl && (
               <a href={work.githubUrl} target="_blank" rel="noreferrer">

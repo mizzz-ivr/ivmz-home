@@ -120,7 +120,11 @@ test('adds published internal detail routes to sitemap without indexing external
     if (!doc) continue
 
     const internalUrl = new URL(route.path(doc.slug), 'https://ivmz.ivrm.jp').toString()
-    if (route.collection === 'posts' && doc.canonicalUrl && new URL(doc.canonicalUrl).toString() !== internalUrl) {
+    if (
+      route.collection === 'posts' &&
+      doc.canonicalUrl &&
+      new URL(doc.canonicalUrl).toString() !== internalUrl
+    ) {
       expect(xml).not.toContain(`<loc>${internalUrl}</loc>`)
     } else {
       expect(xml).toContain(`<loc>${internalUrl}</loc>`)
