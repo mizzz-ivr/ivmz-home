@@ -1,7 +1,11 @@
 import type { CollectionConfig } from 'payload'
 
 import { contentMutationAccess, publicScheduleOrAuthenticated } from '@/content/access'
-import { validateIanaTimezone, validateOptionalHttpUrl } from '@/content/fields'
+import {
+  validateIanaTimezone,
+  validateOptionalHttpUrl,
+  validateScheduleEndAt,
+} from '@/content/fields'
 
 export const Schedule: CollectionConfig = {
   slug: 'schedule',
@@ -55,10 +59,12 @@ export const Schedule: CollectionConfig = {
         {
           name: 'endAt',
           type: 'date',
+          validate: (value, { siblingData }) => validateScheduleEndAt(value, siblingData?.startAt),
           admin: {
             date: {
               pickerAppearance: 'dayAndTime',
             },
+            description: 'Optional. Must be at or after the start time.',
           },
         },
         {

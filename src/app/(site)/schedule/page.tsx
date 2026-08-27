@@ -1,6 +1,7 @@
 import { EmptyState, PageCTA, PageHero, PageSection } from '@/components/site/PageFoundation'
 import { createPageMetadata } from '@/lib/metadata'
 import { getScheduleListContent } from '@/lib/public-list-content'
+import { formatPublicDateTime } from '@/lib/public-content-safety'
 
 export const revalidate = 300
 
@@ -10,16 +11,12 @@ export const metadata = createPageMetadata({
   path: '/schedule',
 })
 
-function formatSchedule(startAt: string, timezone: string) {
-  try {
-    return new Intl.DateTimeFormat('ja-JP', {
-      dateStyle: 'medium',
-      timeStyle: 'short',
-      timeZone: timezone,
-    }).format(new Date(startAt))
-  } catch {
-    return new Date(startAt).toISOString()
-  }
+function formatScheduleRange(startAt: string, endAt: string | null | undefined, timezone: string) {
+  const start = formatPublicDateTime(startAt, timezone)
+  if (!start) return 'Schedule time unavailable'
+
+  const end = endAt ? formatPublicDateTime(endAt, timezone) : null
+  return end ? `${start} – ${end}` : start
 }
 
 export default async function SchedulePage() {
@@ -57,7 +54,8 @@ export default async function SchedulePage() {
                   <p>{item.description || 'Public schedule item.'}</p>
                 </div>
                 <div className="content-row-meta">
-                  <span>{formatSchedule(item.startAt, item.timezone)}</span>
+                  <span>{formatScheduleRange(item.startAt, item.endAt, item.timezone)}</span>
+                  <small>{item.timezone}</small>
                   {item.location && <small>{item.location}</small>}
                   {item.url && <a href={item.url}>Open details ↗</a>}
                 </div>

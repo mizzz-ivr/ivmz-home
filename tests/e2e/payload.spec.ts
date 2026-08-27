@@ -48,6 +48,24 @@ test('draft-enabled Contentは匿名queryでもdraftを返さない', async ({ r
   }
 })
 
+test('private Scheduleとdisabled Social Linkは匿名queryへ漏れない', async ({ request }) => {
+  const scheduleResponse = await request.get(
+    '/api/schedule?where[visibility][equals]=private&limit=1&depth=0',
+  )
+  expect(scheduleResponse.status(), await responseDiagnostic(scheduleResponse)).toBe(200)
+  const schedulePayload = JSON.parse(
+    await scheduleResponse.body().then((body) => body.toString('utf8')),
+  )
+  expect(schedulePayload.docs).toEqual([])
+
+  const socialResponse = await request.get(
+    '/api/social-links?where[enabled][equals]=false&limit=1&depth=0',
+  )
+  expect(socialResponse.status(), await responseDiagnostic(socialResponse)).toBe(200)
+  const socialPayload = JSON.parse(await socialResponse.body().then((body) => body.toString('utf8')))
+  expect(socialPayload.docs).toEqual([])
+})
+
 test('匿名ユーザーはContent collectionを作成できない', async ({ request }) => {
   for (const collection of publicCollections) {
     const response = await request.post(`/api/${collection}`, {

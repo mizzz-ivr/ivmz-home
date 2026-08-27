@@ -18,8 +18,7 @@ const stableFallback = [
 
 export default async function LinksPage() {
   const content = await getSocialLinksListContent()
-  const hasCmsLinks = content.state === 'ready' && content.items.length > 0
-  const links = hasCmsLinks ? content.items : stableFallback
+  const links = content.state === 'error' ? stableFallback : content.items
 
   return (
     <main id="main-content" className="route-page">
@@ -29,8 +28,7 @@ export default async function LinksPage() {
         description={
           <p>
             Social Links
-            Collectionを正本として使い、外部サービス取得に依存せずプロフィールへのstable
-            linkを残します。
+            Collectionを正本として使い、CMS障害時だけRepositoryで確定したstable linkへ縮退します。
           </p>
         }
         signal="SOCIAL / EXTERNAL"
@@ -46,19 +44,21 @@ export default async function LinksPage() {
         )}
         {content.state === 'ready' && content.items.length === 0 && (
           <EmptyState title="No CMS links are published yet.">
-            CMSは正常です。stable fallbackを下に表示しています。
+            CMSは正常です。enabledなSocial Linkがない状態をそのまま公開します。
           </EmptyState>
         )}
-        <div className="link-directory">
-          {links.map((link, index) => (
-            <a href={link.url} key={`${link.platform}-${link.url}`}>
-              <span>0{index + 1}</span>
-              <strong>{link.platform}</strong>
-              <small>{link.handle ?? link.platform}</small>
-              <b aria-hidden="true">↗</b>
-            </a>
-          ))}
-        </div>
+        {links.length > 0 && (
+          <div className="link-directory">
+            {links.map((link, index) => (
+              <a href={link.url} key={`${link.platform}-${link.url}`}>
+                <span>0{index + 1}</span>
+                <strong>{link.platform}</strong>
+                <small>{link.handle ?? link.platform}</small>
+                <b aria-hidden="true">↗</b>
+              </a>
+            ))}
+          </div>
+        )}
       </PageSection>
     </main>
   )

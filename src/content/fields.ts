@@ -70,3 +70,17 @@ export function validateIanaTimezone(value: unknown): true | string {
     return 'Enter a valid IANA timezone such as Asia/Tokyo.'
   }
 }
+
+export function validateScheduleEndAt(value: unknown, startAt: unknown): true | string {
+  if (value === null || value === undefined || value === '') return true
+  if (typeof value !== 'string') return 'Enter a valid end date and time.'
+
+  const end = new Date(value)
+  if (Number.isNaN(end.getTime())) return 'Enter a valid end date and time.'
+
+  if (typeof startAt !== 'string' || startAt.length === 0) return true
+  const start = new Date(startAt)
+  if (Number.isNaN(start.getTime())) return true
+
+  return end.getTime() >= start.getTime() || 'End must be at or after start.'
+}
