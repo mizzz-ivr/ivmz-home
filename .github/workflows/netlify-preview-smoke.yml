@@ -3,6 +3,10 @@ name: Netlify Preview Smoke
 on:
   pull_request:
     branches: [main]
+    # PR title edits alone must not trigger a new Preview/Smoke run.
+    # During iteration, use [skip netlify]; remove it only after CI is green,
+    # then create the final validation commit to get one exact-head Preview.
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: read
