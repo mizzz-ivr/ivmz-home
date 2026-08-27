@@ -43,14 +43,14 @@ async function assertExpectedStatus(
 
 export async function gotoExpected(page: Page, url: string, expectedStatus = 200) {
   await paceRemoteNavigation(page)
-  const response = await page.goto(url, { waitUntil: 'domcontentloaded' })
+  const response = await page.goto(url, { waitUntil: 'commit' })
   await assertExpectedStatus(response, url, expectedStatus)
   return response
 }
 
 export async function reloadExpected(page: Page, label: string, expectedStatus = 200) {
   await paceRemoteNavigation(page)
-  const response = await page.reload({ waitUntil: 'domcontentloaded' })
+  const response = await page.reload({ waitUntil: 'commit' })
   await assertExpectedStatus(response, `${label} reload`, expectedStatus)
   return response
 }
