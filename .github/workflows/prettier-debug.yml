@@ -25,3 +25,5 @@ jobs:
         run: |
           pnpm exec prettier --write tests/e2e/dynamic-routes.spec.ts
           git diff -- tests/e2e/dynamic-routes.spec.ts
+
+# Temporary diagnostic only; remove after capturing the formatter diff.
