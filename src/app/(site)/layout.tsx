@@ -5,6 +5,7 @@ import '../reduced-motion.css'
 import './pages.css'
 import { StructuredData } from '@/components/seo/StructuredData'
 import { SignatureIntro, SiteHeader } from '@/components/site/SiteExperience'
+import { SiteFooter } from '@/components/site/SiteFooter'
 import { createSiteStructuredData } from '@/lib/structured-data'
 import { site } from '@/lib/site'
 
@@ -55,6 +56,7 @@ export default function SiteLayout({ children }: Readonly<{ children: React.Reac
         <SignatureIntro />
         <SiteHeader />
         {children}
+        <SiteFooter />
       </body>
     </html>
   )
