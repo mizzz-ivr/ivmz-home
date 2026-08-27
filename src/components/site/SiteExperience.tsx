@@ -1,15 +1,17 @@
 'use client'
 
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 
 const navigation = [
-  ['HOME', '#top'],
-  ['ABOUT', '#about'],
-  ['WORKS', '#works'],
-  ['BLOG', '#writing'],
-  ['NEWS', '#activity'],
-  ['SCHEDULE', '#schedule'],
-  ['CONTACT', '#contact'],
+  ['HOME', '/'],
+  ['ABOUT', '/about'],
+  ['WORKS', '/works'],
+  ['BLOG', '/blog'],
+  ['NEWS', '/news'],
+  ['SCHEDULE', '/schedule'],
+  ['CONTACT', '/contact'],
 ] as const
 
 type Theme = 'dark' | 'light'
@@ -58,7 +60,12 @@ export function SignatureIntro() {
   )
 }
 
+function isCurrentRoute(pathname: string, href: string) {
+  return href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`)
+}
+
 export function SiteHeader() {
+  const pathname = usePathname()
   const [open, setOpen] = useState(false)
   const triggerRef = useRef<HTMLButtonElement>(null)
   const drawerRef = useRef<HTMLDivElement>(null)
@@ -99,22 +106,32 @@ export function SiteHeader() {
   }, [open])
 
   const closeDrawer = () => setOpen(false)
+  const homeCurrent = pathname === '/'
 
   return (
     <>
       <header className="signal-header" aria-label="Primary navigation">
         <div className="desktop-nav-shell">
-          <a className="brand-mark" href="#top" aria-label="ivmz home" aria-current="page">
+          <Link
+            className="brand-mark"
+            href="/"
+            aria-label="ivmz home"
+            aria-current={homeCurrent ? 'page' : undefined}
+          >
             <span className="brand-glyph" aria-hidden="true">
               i/
             </span>
             <span className="brand-word">ivmz</span>
-          </a>
+          </Link>
           <nav className="desktop-nav" aria-label="Desktop navigation">
             {navigation.map(([label, href]) => (
-              <a key={label} href={href} aria-current={label === 'HOME' ? 'page' : undefined}>
+              <Link
+                key={label}
+                href={href}
+                aria-current={isCurrentRoute(pathname, href) ? 'page' : undefined}
+              >
                 {label}
-              </a>
+              </Link>
             ))}
             <span className="nav-coming" aria-disabled="true" title="Coming Soon">
               STORE <small>SOON</small>
@@ -124,12 +141,18 @@ export function SiteHeader() {
         </div>
 
         <div className="mobile-nav-shell">
-          <a className="brand-mark" href="#top" aria-label="ivmz home" aria-current="page">
+          <Link
+            className="brand-mark"
+            href="/"
+            aria-label="ivmz home"
+            aria-current={homeCurrent ? 'page' : undefined}
+            onClick={closeDrawer}
+          >
             <span className="brand-glyph" aria-hidden="true">
               i/
             </span>
             <span className="brand-word">ivmz</span>
-          </a>
+          </Link>
           <div className="mobile-actions">
             <ThemeToggle compact />
             <button
@@ -174,10 +197,16 @@ export function SiteHeader() {
         </div>
         <nav aria-label="Mobile navigation">
           {navigation.map(([label, href], index) => (
-            <a key={label} href={href} onClick={closeDrawer} tabIndex={open ? 0 : -1}>
+            <Link
+              key={label}
+              href={href}
+              onClick={closeDrawer}
+              tabIndex={open ? 0 : -1}
+              aria-current={isCurrentRoute(pathname, href) ? 'page' : undefined}
+            >
               <span>0{index + 1}</span>
               {label}
-            </a>
+            </Link>
           ))}
           <span className="drawer-coming">
             <span>08</span>

@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import '../globals.css'
 import '../responsive-foundation.css'
 import '../reduced-motion.css'
+import './pages.css'
 import { SignatureIntro, SiteHeader } from '@/components/site/SiteExperience'
 import { site } from '@/lib/site'
 

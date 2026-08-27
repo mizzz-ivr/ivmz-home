@@ -31,6 +31,16 @@ export type HomeViewModel = {
   socials: Array<{ label: string; handle: string; href: string }>
 }
 
+type HomePayloadResults = {
+  worksResult: Awaited<ReturnType<typeof getPublishedWorks>>
+  postsResult: Awaited<ReturnType<typeof getLatestPosts>>
+  newsResult: Awaited<ReturnType<typeof getLatestNews>>
+  scheduleResult: Awaited<ReturnType<typeof getUpcomingSchedule>>
+  socialsResult: Awaited<ReturnType<typeof getEnabledSocialLinks>>
+}
+
+const HOME_PAYLOAD_TIMEOUT_MS = 4_000
+
 const staticHomeViewModel: HomeViewModel = {
   works: [
     {
@@ -149,22 +159,53 @@ function formatScheduleMeta(startAt: string, timezone: string, location?: string
   return location ? `${formatted} · ${location}` : formatted
 }
 
+async function loadHomePayloadResults(): Promise<HomePayloadResults> {
+  // Keep the Home request deliberately low-concurrency. Payload initialization can retain
+  // a connection, so firing every collection query at once unnecessarily consumes the
+  // small serverless application pool and makes cold/warm transitions less predictable.
+  const worksResult = await getPublishedWorks()
+  const postsResult = await getLatestPosts()
+  const newsResult = await getLatestNews()
+  const scheduleResult = await getUpcomingSchedule()
+  const socialsResult = await getEnabledSocialLinks()
+
+  return {
+    worksResult,
+    postsResult,
+    newsResult,
+    scheduleResult,
+    socialsResult,
+  }
+}
+
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error(`Home Payload query timeout after ${timeoutMs}ms`))
+    }, timeoutMs)
+
+    promise.then(
+      (value) => {
+        clearTimeout(timeout)
+        resolve(value)
+      },
+      (error) => {
+        clearTimeout(timeout)
+        reject(error)
+      },
+    )
+  })
+}
+
 /**
  * Home presentation stays bound to this view-model adapter rather than Payload itself.
- * Empty collections use the intentional static baseline; query failures are logged and
- * fall back for the whole Home model so an unavailable CMS cannot break the landing page.
+ * Empty collections use the intentional static baseline; query failures or an unexpectedly
+ * slow CMS fall back for the whole Home model so an unavailable CMS cannot break the landing page.
  */
 export async function getHomeViewModel(): Promise<HomeViewModel> {
   try {
-    const [worksResult, postsResult, newsResult, scheduleResult, socialsResult] = await Promise.all(
-      [
-        getPublishedWorks(),
-        getLatestPosts(),
-        getLatestNews(),
-        getUpcomingSchedule(),
-        getEnabledSocialLinks(),
-      ],
-    )
+    const { worksResult, postsResult, newsResult, scheduleResult, socialsResult } =
+      await withTimeout(loadHomePayloadResults(), HOME_PAYLOAD_TIMEOUT_MS)
 
     return {
       capabilities: staticHomeViewModel.capabilities,
@@ -216,7 +257,10 @@ export async function getHomeViewModel(): Promise<HomeViewModel> {
           : staticHomeViewModel.socials,
     }
   } catch (error) {
-    console.error('[home-content] Payload query failed; using the static Home fallback.', error)
+    console.error(
+      '[home-content] Payload query failed or timed out; using the static Home fallback.',
+      error,
+    )
     return staticHomeViewModel
   }
 }

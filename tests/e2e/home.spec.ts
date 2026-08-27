@@ -23,7 +23,7 @@ test('renders the complete home experience without animation gates', async ({ pa
   }
 })
 
-test('toggles and persists the visual theme', async ({ page }) => {
+test('toggles and persists the visual theme across routes', async ({ page }) => {
   await page.goto('/')
   const root = page.locator('html')
   const before = await root.getAttribute('data-theme')
@@ -32,6 +32,9 @@ test('toggles and persists the visual theme', async ({ page }) => {
   await page.getByRole('button', { name: 'テーマを切り替える' }).click()
   const after = await root.getAttribute('data-theme')
   expect(after).not.toBe(before)
+
+  await page.goto('/about')
+  await expect(root).toHaveAttribute('data-theme', after ?? 'dark')
 
   await page.reload()
   await expect(root).toHaveAttribute('data-theme', after ?? 'dark')
@@ -69,7 +72,7 @@ test('desktop navigation expands for keyboard focus', async ({ page }, testInfo)
   await expect.poll(async () => (await shell.boundingBox())?.width ?? 0).toBeGreaterThan(500)
 })
 
-test('mobile drawer supports keyboard escape and closes after navigation', async ({
+test('mobile drawer supports keyboard escape and closes after route navigation', async ({
   page,
 }, testInfo) => {
   test.skip(testInfo.project.name !== 'mobile-webkit', 'Mobile drawer only')
@@ -95,7 +98,7 @@ test('mobile drawer supports keyboard escape and closes after navigation', async
   await drawer.getByRole('link', { name: /WORKS/ }).click()
   await expect(trigger).toHaveAccessibleName('メニューを開く')
   await expect(trigger).toHaveAttribute('aria-expanded', 'false')
-  await expect(page).toHaveURL(/#works$/)
+  await expect(page).toHaveURL(/\/works$/)
 })
 
 test('reduced motion keeps primary content immediately usable', async ({ page }) => {

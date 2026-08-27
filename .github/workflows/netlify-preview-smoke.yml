@@ -3,16 +3,58 @@ name: Netlify Preview Smoke
 on:
   pull_request:
     branches: [main]
+  push:
+    branches-ignore: [main]
 
 permissions:
   contents: read
+  pull-requests: read
+  statuses: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
 
 jobs:
+  resolve-preview:
+    runs-on: ubuntu-latest
+    outputs:
+      head_sha: ${{ steps.preview.outputs.head_sha }}
+      pr_number: ${{ steps.preview.outputs.pr_number }}
+    steps:
+      - name: Deploy Preview targetを解決
+        id: preview
+        env:
+          EVENT_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          head_sha="${EVENT_HEAD_SHA:-$GITHUB_SHA}"
+          pr_number="$EVENT_PR_NUMBER"
+
+          if [[ -z "$pr_number" ]]; then
+            pr_number="$(
+              curl --fail --silent --show-error \
+                --header "Authorization: Bearer $GH_TOKEN" \
+                --header "Accept: application/vnd.github+json" \
+                "https://api.github.com/repos/$GITHUB_REPOSITORY/commits/$head_sha/pulls" \
+                | jq -r '[.[] | select(.state == "open")][0].number // empty'
+            )"
+          fi
+
+          echo "head_sha=$head_sha" >> "$GITHUB_OUTPUT"
+          echo "pr_number=$pr_number" >> "$GITHUB_OUTPUT"
+
   preview-smoke:
-    if: github.event.pull_request.head.repo.full_name == github.repository
+    needs: resolve-preview
+    if: needs.resolve-preview.outputs.pr_number != ''
     runs-on: ubuntu-latest
     env:
-      E2E_BASE_URL: https://deploy-preview-${{ github.event.pull_request.number }}--ivmz-home.netlify.app
+      E2E_BASE_URL: https://deploy-preview-${{ needs.resolve-preview.outputs.pr_number }}--ivmz-home.netlify.app
+      NETLIFY_STATUS_CONTEXT: netlify/ivmz-home/deploy-preview
+      PREVIEW_HEAD_SHA: ${{ needs.resolve-preview.outputs.head_sha }}
+      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -25,16 +67,73 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium webkit
-      - name: Deploy Previewの起動を待機
+      - name: 対象commitのDeploy Preview完了を待機
         shell: bash
         run: |
-          for attempt in {1..20}; do
-            if curl --fail --silent --show-error --location --head "$E2E_BASE_URL" >/dev/null; then
-              exit 0
+          for attempt in {1..40}; do
+            state="$(
+              curl --fail --silent --show-error \
+                --header "Authorization: Bearer $GH_TOKEN" \
+                --header "Accept: application/vnd.github+json" \
+                "https://api.github.com/repos/$GITHUB_REPOSITORY/commits/$PREVIEW_HEAD_SHA/status" \
+                | jq -r --arg context "$NETLIFY_STATUS_CONTEXT" \
+                  '[.statuses[] | select(.context == $context)][0].state // "missing"'
+            )"
+
+            case "$state" in
+              success)
+                break
+                ;;
+              failure|error)
+                echo "Deploy Previewが失敗しました: commit=$PREVIEW_HEAD_SHA state=$state"
+                exit 1
+                ;;
+            esac
+
+            if [[ "$attempt" -eq 40 ]]; then
+              echo "対象commitのDeploy Preview完了を確認できませんでした: commit=$PREVIEW_HEAD_SHA state=$state"
+              exit 1
             fi
+
             sleep 15
           done
-          echo "Deploy Previewへ接続できませんでした: $E2E_BASE_URL"
-          exit 1
+
+          curl --fail --silent --show-error --location --head "$E2E_BASE_URL" >/dev/null
+      - name: Payload public API preflight
+        shell: bash
+        run: |
+          response_file="$(mktemp)"
+          set +e
+          status="$(
+            curl --silent --show-error --location \
+              --connect-timeout 10 \
+              --max-time 60 \
+              --output "$response_file" \
+              --write-out '%{http_code}' \
+              "$E2E_BASE_URL/api/works?limit=1"
+          )"
+          curl_exit=$?
+          set -e
+
+          if [[ "$curl_exit" -ne 0 ]]; then
+            echo "Payload public API preflight request failed: curl_exit=$curl_exit status=$status"
+            head -c 2000 "$response_file" || true
+            echo
+            exit "$curl_exit"
+          fi
+
+          if [[ "$status" != "200" ]]; then
+            echo "Payload public API preflight failed: status=$status"
+            head -c 2000 "$response_file" || true
+            echo
+            exit 1
+          fi
+
+          if ! jq -e '.docs | type == "array"' "$response_file" >/dev/null; then
+            echo "Payload public API preflight returned an unexpected response shape"
+            head -c 2000 "$response_file" || true
+            echo
+            exit 1
+          fi
       - name: 実Deploy Previewに対するPlaywright smokeを実行
         run: pnpm test:e2e

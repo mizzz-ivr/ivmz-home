@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import Link from 'next/link'
 import { HeroPointerSignal } from '@/components/site/SiteExperience'
 import { getHomeViewModel } from '@/lib/home-content'
 import { site } from '@/lib/site'
@@ -26,12 +27,12 @@ export default async function HomePage() {
             アイデアを、触れて、使えて、育てられるプロダクトへ。
           </p>
           <div className="hero-actions">
-            <a className="action-link action-primary" href="#works">
+            <Link className="action-link action-primary" href="/works">
               Selected Works <span aria-hidden="true">↗</span>
-            </a>
-            <a className="action-link" href="#contact">
+            </Link>
+            <Link className="action-link" href="/contact">
               Contact <span aria-hidden="true">→</span>
-            </a>
+            </Link>
           </div>
           <div className="hero-status" aria-label="Current focus">
             <span>
@@ -88,6 +89,9 @@ export default async function HomePage() {
             Decisions included.
           </h2>
           <p>完成画面だけではなく、役割・制約・技術・運用までCase Studyとして見せる。</p>
+          <Link className="snapshot-destination" href="/works">
+            View all Works →
+          </Link>
         </div>
         <div className="works-rail">
           {home.works.map((work, index) => (
@@ -147,9 +151,9 @@ export default async function HomePage() {
           <p>
             コード・UI・インフラを別々の成果物として扱わず、「人が使い続けられるか」を境界に考えるのが自分の開発スタイルです。
           </p>
-          <a className="text-link" href={site.githubUrl}>
-            Explore GitHub activity <span aria-hidden="true">↗</span>
-          </a>
+          <Link className="snapshot-destination" href="/about">
+            More about me →
+          </Link>
         </div>
         <div className="about-workbench" aria-label="Development workbench fragments">
           <div className="workbench-window window-main">
@@ -191,6 +195,9 @@ export default async function HomePage() {
             <br />
             reusable knowledge.
           </h2>
+          <Link className="snapshot-destination" href="/blog">
+            View all Writing →
+          </Link>
         </div>
         <div className="editorial-stack">
           {home.writing.map((item, index) => (
@@ -217,8 +224,11 @@ export default async function HomePage() {
         aria-labelledby="activity-title"
       >
         <div className="section-intro compact-intro">
-          <p className="signal-label">05 / NEWS & ACTIVITY</p>
+          <p className="signal-label">05 / NEWS &amp; ACTIVITY</p>
           <h2 id="activity-title">What is moving now.</h2>
+          <Link className="snapshot-destination" href="/news">
+            View all News →
+          </Link>
         </div>
         <div className="activity-stream">
           {home.activity.map((item) => (
@@ -253,6 +263,9 @@ export default async function HomePage() {
             not a private calendar.
           </h2>
           <p>イベント・公開・リリースなど、外部へ見せてよい予定だけを扱います。</p>
+          <Link className="snapshot-destination" href="/schedule">
+            Open full Schedule →
+          </Link>
         </div>
         <div className="timeline-rail" role="list">
           {home.schedule.map((item, index) => (
@@ -274,6 +287,9 @@ export default async function HomePage() {
           <p className="signal-label">07 / SOCIAL SIGNAL</p>
           <h2 id="social-title">Find the live edges.</h2>
           <p>外部サービスが落ちてもこのサイトは残る。最新活動はリンクを常時fallbackとして持つ。</p>
+          <Link className="snapshot-destination" href="/links">
+            Open Links →
+          </Link>
         </div>
         <div className="social-links">
           {home.socials.map((social, index) => (
@@ -303,34 +319,24 @@ export default async function HomePage() {
             people can use.
           </h2>
           <p>
-            開発相談、仕事、コラボ、取材など。用途ごとのIdentityを保ちつつ、ここを入口にします。
+            開発相談、仕事、コラボ、取材など。配送先を選ばせず、Contactを一つの正式destinationへ整理します。
           </p>
         </div>
         <div className="contact-routes">
-          <a href={`mailto:${site.contactEmail}`}>
-            <span>GENERAL / PERSONAL</span>
-            <strong>{site.contactEmail}</strong>
-            <b aria-hidden="true">↗</b>
-          </a>
-          <a href={`mailto:${site.developerEmail}`}>
-            <span>DEVELOPMENT / OSS</span>
-            <strong>{site.developerEmail}</strong>
-            <b aria-hidden="true">↗</b>
-          </a>
-          <a href={`mailto:${site.teamEmail}`}>
-            <span>IVROOOM / TEAM</span>
-            <strong>{site.teamEmail}</strong>
-            <b aria-hidden="true">↗</b>
-          </a>
-          <a href={`mailto:${site.securityEmail}`}>
-            <span>SECURITY</span>
-            <strong>{site.securityEmail}</strong>
-            <b aria-hidden="true">↗</b>
-          </a>
+          <Link href="/contact">
+            <span>CONTACT / ROUTING</span>
+            <strong>Open contact destination</strong>
+            <b aria-hidden="true">→</b>
+          </Link>
         </div>
         <footer className="site-footer">
           <span>© 2026 ivmz</span>
           <span>Canonical / ivmz.ivrm.jp</span>
+          <span>
+            <Link href="/legal/privacy">PRIVACY</Link>
+            {' / '}
+            <Link href="/legal/terms">TERMS</Link>
+          </span>
           <a href="#top">BACK TO TOP ↑</a>
         </footer>
       </section>

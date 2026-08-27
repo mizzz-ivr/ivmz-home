@@ -1,8 +1,31 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Response } from '@playwright/test'
+
+async function navigationDiagnostic(response: Response | null): Promise<string> {
+  if (!response) {
+    return 'navigation returned no response'
+  }
+
+  const headers = response.headers()
+  let body = ''
+
+  try {
+    body = (await response.text()).slice(0, 2_000)
+  } catch (error) {
+    body = `body unavailable: ${String(error)}`
+  }
+
+  return [
+    `status=${response.status()}`,
+    `url=${response.url()}`,
+    `content-type=${headers['content-type'] ?? 'unknown'}`,
+    `cache-status=${headers['netlify-vary'] ?? headers['x-nf-cache'] ?? 'unknown'}`,
+    `body=${body}`,
+  ].join(' ')
+}
 
 test('serves primary content, metadata, robots and sitemap', async ({ page, request }) => {
   const response = await page.goto('/')
-  expect(response?.ok()).toBe(true)
+  expect(response?.ok(), await navigationDiagnostic(response)).toBe(true)
 
   await expect(page).toHaveTitle(/いゔる。/)
   await expect(page.getByRole('heading', { level: 1 })).toContainText('いゔる。')
@@ -27,7 +50,7 @@ test('serves primary content, metadata, robots and sitemap', async ({ page, requ
 
   const sitemap = await request.get('/sitemap.xml')
   expect(sitemap.ok()).toBe(true)
-  expect(await sitemap.text()).toContain('<loc>https://ivmz.ivrm.jp</loc>')
+  expect(await sitemap.text()).toContain('<loc>https://ivmz.ivrm.jp/</loc>')
 })
 
 test('keeps layered content readable with reduced motion', async ({ page }) => {
