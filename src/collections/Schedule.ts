@@ -70,7 +70,6 @@ export const Schedule: CollectionConfig = {
             date: {
               pickerAppearance: 'dayAndTime',
             },
-            description: 'Optional. Must be at or after the start time.',
           },
         },
         {
