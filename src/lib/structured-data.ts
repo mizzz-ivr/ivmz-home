@@ -19,9 +19,20 @@ function internalUrl(path: string) {
   return new URL(path, site.url).toString()
 }
 
+function normalizePathname(pathname: string) {
+  const normalized = pathname.replace(/\/+$/, '')
+  return normalized || '/'
+}
+
 export function hasExternalCanonical(path: string, canonicalUrl?: string | null) {
   if (!canonicalUrl) return false
-  return resolveCanonicalUrl(path, canonicalUrl) !== internalUrl(path)
+
+  const canonical = new URL(resolveCanonicalUrl(path, canonicalUrl))
+  const internal = new URL(path, site.url)
+  return (
+    canonical.origin !== internal.origin ||
+    normalizePathname(canonical.pathname) !== normalizePathname(internal.pathname)
+  )
 }
 
 export function serializeStructuredData(data: StructuredDataValue) {
@@ -72,7 +83,6 @@ export function createWorkStructuredData(work: {
   slug: string
   title: string
   summary: string
-  role?: string | null
   stack?: string[] | null
   publishedAt?: string | null
   githubUrl?: string | null
@@ -92,7 +102,6 @@ export function createWorkStructuredData(work: {
     creator: { '@id': personId },
     isPartOf: { '@id': websiteId },
     keywords: work.stack && work.stack.length > 0 ? work.stack : undefined,
-    contributor: work.role ? [{ '@type': 'Person', '@id': personId, roleName: work.role }] : undefined,
     sameAs: sameAs.length > 0 ? sameAs : undefined,
   }
 }
