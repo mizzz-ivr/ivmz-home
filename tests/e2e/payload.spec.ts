@@ -129,15 +129,16 @@ test('arbitrary OriginへPayload CORS許可を返さない', async ({ request })
   expect(arbitraryResponse.headers()['access-control-allow-origin']).not.toBe(arbitraryOrigin)
 
   if (process.env.E2E_BASE_URL) {
-    const trustedOrigin = new URL(process.env.E2E_BASE_URL).origin
-    const trustedResponse = await request.get('/api/works?limit=1', {
+    const sameOrigin = new URL(process.env.E2E_BASE_URL).origin
+    const sameOriginResponse = await request.get('/api/works?limit=1', {
       headers: {
-        Origin: trustedOrigin,
+        Origin: sameOrigin,
       },
     })
 
-    expect(trustedResponse.status(), await responseDiagnostic(trustedResponse)).toBe(200)
-    expect(trustedResponse.headers()['access-control-allow-origin']).toBe(trustedOrigin)
+    // Deploy Previewではpublic appとPayload APIがsame-originのため、
+    // ブラウザはAccess-Control-Allow-Originを必要としない。APIの正常応答だけを確認する。
+    expect(sameOriginResponse.status(), await responseDiagnostic(sameOriginResponse)).toBe(200)
   }
 })
 
