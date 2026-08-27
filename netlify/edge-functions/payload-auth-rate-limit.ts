@@ -3,15 +3,7 @@ export default function payloadAuthRateLimit() {
 }
 
 export const config = {
-  path: [
-    '/api/users/login',
-    '/api/users/forgot-password',
-    '/api/users/reset-password',
-    '/api/users/unlock',
-    '/api/users/refresh-token',
-    '/api/users/verify/*',
-  ],
-  method: 'POST',
+  path: '/api/users/login',
   rateLimit: {
     windowLimit: 10,
     windowSize: 60,
