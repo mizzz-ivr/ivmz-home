@@ -32,6 +32,39 @@
 
 The signature scroll choreography may visually combine adjacent pieces, but URLs, headings and primary content remain semantic DOM.
 
+## Navigation model
+
+The public site uses Next.js App Router for routing, SSR/ISR, metadata, and Payload-backed content, but public route changes intentionally use native document navigation.
+
+- `/about`, `/works`, `/blog`, `/news`, `/schedule`, `/contact`, `/links`, and `/legal/*` are independent public routes.
+- Internal links between public routes use plain `<a href>` rather than `next/link`.
+- Route changes therefore create a new document request instead of Next.js client-side SPA navigation.
+- Same-page anchors such as Home section scroll and footer Back to Top remain normal fragment navigation.
+- Direct navigation and reload must remain valid for every public route.
+- Theme preference is restored before paint from `localStorage` on every document.
+- Signature Intro is shown only for the first document in a browser session; subsequent document navigations suppress it via the existing `sessionStorage` marker.
+
+This keeps the deployment/runtime benefits of Next.js while making the visitor-facing navigation behavior explicitly MPA-like.
+
+## Shared site footer
+
+The footer belongs to `src/app/(site)/layout.tsx`, not to an individual Home section.
+
+It must therefore appear exactly once on every public site route and provide stable navigation to:
+
+- Home
+- About
+- Works
+- Blog
+- News
+- Schedule
+- Contact
+- Links
+- Privacy
+- Terms
+
+The Home Contact section remains content/CTA only; it must not contain a second local footer.
+
 ## Identity presentation
 
 The site canonical is `ivmz.ivrm.jp` and the unified personal identity slug is `ivmz`.
