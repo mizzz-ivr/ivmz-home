@@ -1,4 +1,6 @@
-export function createPublishedSlugWhere(slug: string) {
+import type { Where } from 'payload'
+
+export function createPublishedSlugWhere(slug: string): Where {
   return {
     and: [
       {
