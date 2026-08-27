@@ -26,11 +26,7 @@ export default async function LinksPage() {
         index="LINKS / 07"
         title="Find the live edges."
         description={
-          <p>
-            Social Links
-            Collectionを正本として使い、CMS障害時だけRepositoryで確定したstable
-            linkへ縮退します。
-          </p>
+          <p>Social Links Collectionを正本とし、CMS障害時だけstable fallbackへ縮退します。</p>
         }
         signal="SOCIAL / EXTERNAL"
       />

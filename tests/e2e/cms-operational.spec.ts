@@ -35,9 +35,10 @@ test('Schedule page respects public visibility and renders timezone plus optiona
   page,
   request,
 }) => {
+  const now = encodeURIComponent(new Date().toISOString())
   const items = await publicDocs<PublicSchedule>(
     request,
-    '/api/schedule?limit=1&depth=0&sort=startAt',
+    `/api/schedule?where[startAt][greater_than_equal]=${now}&limit=1&depth=0&sort=startAt`,
   )
 
   await gotoExpected(page, '/schedule')
