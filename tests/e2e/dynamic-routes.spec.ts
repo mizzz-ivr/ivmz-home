@@ -1,9 +1,4 @@
-import {
-  expect,
-  test,
-  type APIRequestContext,
-  type Page,
-} from '@playwright/test'
+import { expect, test, type APIRequestContext, type Page } from '@playwright/test'
 
 import { gotoExpected, reloadExpected } from './navigation'
 
@@ -48,10 +43,7 @@ const detailRoutes = [
 const responsiveWidths = [320, 375, 390, 768, 1024, 1440] as const
 const publicApiTransportAttempts = process.env.E2E_BASE_URL ? 2 : 1
 
-async function requestPublicCollection(
-  request: APIRequestContext,
-  collection: string,
-) {
+async function requestPublicCollection(request: APIRequestContext, collection: string) {
   let lastTransportError: unknown
 
   for (let attempt = 1; attempt <= publicApiTransportAttempts; attempt += 1) {
