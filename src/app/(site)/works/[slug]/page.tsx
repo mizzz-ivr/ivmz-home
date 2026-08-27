@@ -75,7 +75,10 @@ export default async function WorkDetailPage({ params }: DetailPageProps) {
           </div>
         </dl>
       </PageSection>
-      <PageSection title="Technology" description={<p>この制作物で使っている主要スタック。</p>}>
+      <PageSection
+        title="Technology"
+        description={<p>この制作物で使っている主要スタック。</p>}
+      >
         <ul className="detail-tags" aria-label="Technology stack">
           {work.stack.map((technology) => (
             <li key={technology}>{technology}</li>
