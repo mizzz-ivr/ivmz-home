@@ -25,6 +25,14 @@ describe('public site shell', () => {
     }
   })
 
+  it('keeps the intentional native-link lint exception scoped to the public site', () => {
+    const eslintConfig = readFileSync(resolve(root, 'eslint.config.mjs'), 'utf8')
+
+    expect(eslintConfig).toContain("'src/app/(site)/**/*.tsx'")
+    expect(eslintConfig).toContain("'src/components/site/**/*.tsx'")
+    expect(eslintConfig).toContain("'@next/next/no-html-link-for-pages': 'off'")
+  })
+
   it('renders the shared footer from the public site layout', () => {
     const layout = readFileSync(resolve(publicSiteRoot, 'layout.tsx'), 'utf8')
     const home = readFileSync(resolve(publicSiteRoot, 'page.tsx'), 'utf8')
