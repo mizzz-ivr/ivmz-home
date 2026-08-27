@@ -49,14 +49,12 @@ export default async function NewsDetailPage({ params }: DetailPageProps) {
   return (
     <main id="main-content" className="route-page detail-page">
       <StructuredData
-        data={
-          createNewsStructuredData({
-            slug: item.slug,
-            title: item.title,
-            description,
-            publishedAt: item.publishedAt,
-          })
-        }
+        data={createNewsStructuredData({
+          slug: item.slug,
+          title: item.title,
+          description,
+          publishedAt: item.publishedAt,
+        })}
       />
       <Link className="detail-back-link" href="/news">
         <span aria-hidden="true">←</span> All news
