@@ -43,10 +43,7 @@ async function assertExpectedStatus(
   }
 }
 
-async function withTransientNavigationRetry<T>(
-  page: Page,
-  navigate: () => Promise<T>,
-): Promise<T> {
+async function withTransientNavigationRetry<T>(page: Page, navigate: () => Promise<T>): Promise<T> {
   let lastError: unknown
 
   for (let attempt = 1; attempt <= remoteNavigationAttempts; attempt += 1) {
@@ -62,11 +59,7 @@ async function withTransientNavigationRetry<T>(
   throw lastError
 }
 
-export async function gotoExpected(
-  page: Page,
-  url: string,
-  expectedStatus = 200,
-) {
+export async function gotoExpected(page: Page, url: string, expectedStatus = 200) {
   const response = await withTransientNavigationRetry(page, () =>
     page.goto(url, { waitUntil: 'commit', timeout: remoteNavigationTimeoutMs }),
   )
@@ -74,11 +67,7 @@ export async function gotoExpected(
   return response
 }
 
-export async function reloadExpected(
-  page: Page,
-  label: string,
-  expectedStatus = 200,
-) {
+export async function reloadExpected(page: Page, label: string, expectedStatus = 200) {
   const response = await withTransientNavigationRetry(page, () =>
     page.reload({ waitUntil: 'commit', timeout: remoteNavigationTimeoutMs }),
   )
