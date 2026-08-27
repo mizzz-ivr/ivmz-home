@@ -1,7 +1,9 @@
 import { expect, test } from '@playwright/test'
 
+import { gotoExpected, reloadExpected } from './navigation'
+
 test('renders the complete home experience without animation gates', async ({ page }) => {
-  await page.goto('/')
+  await gotoExpected(page, '/')
 
   await expect(page.getByRole('heading', { level: 1 })).toContainText('いゔる。')
   await expect(page.getByRole('link', { name: 'Selected Works' })).toBeVisible()
@@ -24,30 +26,31 @@ test('renders the complete home experience without animation gates', async ({ pa
 })
 
 test('toggles and persists the visual theme across routes', async ({ page }) => {
-  await page.goto('/')
+  await gotoExpected(page, '/')
   const root = page.locator('html')
+  await expect(root).toHaveAttribute('data-theme', /^(dark|light)$/)
   const before = await root.getAttribute('data-theme')
-  expect(['dark', 'light']).toContain(before)
+  expect(before === 'dark' || before === 'light').toBe(true)
 
   await page.getByRole('button', { name: 'テーマを切り替える' }).click()
-  const after = await root.getAttribute('data-theme')
-  expect(after).not.toBe(before)
+  const expectedAfter = before === 'dark' ? 'light' : 'dark'
+  await expect(root).toHaveAttribute('data-theme', expectedAfter)
 
-  await page.goto('/about')
-  await expect(root).toHaveAttribute('data-theme', after ?? 'dark')
+  await gotoExpected(page, '/about')
+  await expect(root).toHaveAttribute('data-theme', expectedAfter)
 
-  await page.reload()
-  await expect(root).toHaveAttribute('data-theme', after ?? 'dark')
+  await reloadExpected(page, '/about')
+  await expect(root).toHaveAttribute('data-theme', expectedAfter)
 })
 
 test('stays overflow-free at every required responsive width', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'chromium', 'Responsive width matrix runs in Chromium')
 
+  await gotoExpected(page, '/')
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+
   for (const width of [320, 375, 390, 768, 1024, 1440]) {
     await page.setViewportSize({ width, height: 900 })
-    await page.goto('/')
-
-    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
     const dimensions = await page.evaluate(() => ({
       scrollWidth: document.documentElement.scrollWidth,
       clientWidth: document.documentElement.clientWidth,
@@ -61,7 +64,7 @@ test('stays overflow-free at every required responsive width', async ({ page }, 
 test('desktop navigation expands for keyboard focus', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'chromium', 'Desktop keyboard behavior only')
   await page.setViewportSize({ width: 1280, height: 900 })
-  await page.goto('/')
+  await gotoExpected(page, '/')
 
   const shell = page.locator('.desktop-nav-shell')
   const homeLink = page.getByRole('navigation', { name: 'Desktop navigation' }).getByRole('link', {
@@ -76,7 +79,7 @@ test('mobile drawer supports keyboard escape and closes after route navigation',
   page,
 }, testInfo) => {
   test.skip(testInfo.project.name !== 'mobile-webkit', 'Mobile drawer only')
-  await page.goto('/')
+  await gotoExpected(page, '/')
 
   const trigger = page.locator('button[aria-controls="mobile-navigation"]')
   const drawer = page.locator('#mobile-navigation')
@@ -103,7 +106,7 @@ test('mobile drawer supports keyboard escape and closes after route navigation',
 
 test('reduced motion keeps primary content immediately usable', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
-  await page.goto('/')
+  await gotoExpected(page, '/')
 
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
   await expect(page.getByRole('link', { name: 'Selected Works' })).toBeVisible()

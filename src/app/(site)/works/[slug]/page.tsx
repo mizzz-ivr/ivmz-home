@@ -2,9 +2,11 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
+import { StructuredData } from '@/components/seo/StructuredData'
 import { EmptyState, PageCTA, PageHero, PageSection } from '@/components/site/PageFoundation'
 import { createPageMetadata } from '@/lib/metadata'
 import { getPublishedWorkBySlug } from '@/lib/payload-content'
+import { createWorkStructuredData } from '@/lib/structured-data'
 
 export const revalidate = 300
 
@@ -41,6 +43,7 @@ export default async function WorkDetailPage({ params }: DetailPageProps) {
 
   return (
     <main id="main-content" className="route-page detail-page">
+      <StructuredData data={createWorkStructuredData(work)} />
       <Link className="detail-back-link" href="/works">
         <span aria-hidden="true">←</span> All works
       </Link>

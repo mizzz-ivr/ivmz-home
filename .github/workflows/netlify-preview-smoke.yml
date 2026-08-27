@@ -3,8 +3,10 @@ name: Netlify Preview Smoke
 on:
   pull_request:
     branches: [main]
-  push:
-    branches-ignore: [main]
+    # PR title edits alone must not trigger a new Preview/Smoke run.
+    # During iteration, use [skip netlify]; remove it only after CI is green,
+    # then create the final validation commit to get one exact-head Preview.
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: read
@@ -12,11 +14,12 @@ permissions:
   statuses: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  group: ${{ github.workflow }}-pr-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
   resolve-preview:
+    if: ${{ !contains(github.event.pull_request.title, '[skip netlify]') && !contains(github.event.pull_request.title, '[skip ci]') }}
     runs-on: ubuntu-latest
     outputs:
       head_sha: ${{ steps.preview.outputs.head_sha }}
@@ -24,31 +27,13 @@ jobs:
     steps:
       - name: Deploy Preview targetを解決
         id: preview
-        env:
-          EVENT_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
-          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          head_sha="${EVENT_HEAD_SHA:-$GITHUB_SHA}"
-          pr_number="$EVENT_PR_NUMBER"
-
-          if [[ -z "$pr_number" ]]; then
-            pr_number="$(
-              curl --fail --silent --show-error \
-                --header "Authorization: Bearer $GH_TOKEN" \
-                --header "Accept: application/vnd.github+json" \
-                "https://api.github.com/repos/$GITHUB_REPOSITORY/commits/$head_sha/pulls" \
-                | jq -r '[.[] | select(.state == "open")][0].number // empty'
-            )"
-          fi
-
-          echo "head_sha=$head_sha" >> "$GITHUB_OUTPUT"
-          echo "pr_number=$pr_number" >> "$GITHUB_OUTPUT"
+          echo "head_sha=${{ github.event.pull_request.head.sha }}" >> "$GITHUB_OUTPUT"
+          echo "pr_number=${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT"
 
   preview-smoke:
     needs: resolve-preview
-    if: needs.resolve-preview.outputs.pr_number != ''
     runs-on: ubuntu-latest
     env:
       E2E_BASE_URL: https://deploy-preview-${{ needs.resolve-preview.outputs.pr_number }}--ivmz-home.netlify.app

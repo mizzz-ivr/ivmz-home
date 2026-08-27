@@ -1,12 +1,12 @@
 import type { MetadataRoute } from 'next'
 
-import { resolveCanonicalUrl } from '@/lib/metadata'
 import {
   getNewsListContent,
   getPostsListContent,
   getWorksListContent,
 } from '@/lib/public-list-content'
 import { site } from '@/lib/site'
+import { hasExternalCanonical } from '@/lib/structured-data'
 
 export const revalidate = 300
 
@@ -47,11 +47,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   for (const post of posts.items) {
     const path = `/blog/${encodeURIComponent(post.slug)}`
-    const internalCanonical = new URL(path, site.url).toString()
-    if (resolveCanonicalUrl(path, post.canonicalUrl) !== internalCanonical) continue
+    if (hasExternalCanonical(path, post.canonicalUrl)) continue
 
     entries.push({
-      url: internalCanonical,
+      url: new URL(path, site.url).toString(),
       lastModified: post.publishedAt ?? post.updatedAt,
       changeFrequency: 'monthly',
       priority: 0.6,
