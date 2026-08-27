@@ -49,10 +49,11 @@ test('marks the current route in desktop and mobile navigation', async ({ page }
 test('keeps route pages overflow-free at the supported widths', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'chromium', 'Responsive route matrix runs in Chromium')
 
-  for (const width of responsiveWidths) {
-    await page.setViewportSize({ width, height: 900 })
-    for (const route of routes) {
-      await gotoExpected(page, route)
+  for (const route of routes) {
+    await gotoExpected(page, route)
+
+    for (const width of responsiveWidths) {
+      await page.setViewportSize({ width, height: 900 })
       const dimensions = await page.evaluate(() => ({
         scrollWidth: document.documentElement.scrollWidth,
         clientWidth: document.documentElement.clientWidth,
