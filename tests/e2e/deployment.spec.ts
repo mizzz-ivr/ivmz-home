@@ -2,7 +2,10 @@ import { expect, test } from '@playwright/test'
 
 import { gotoExpected } from './navigation'
 
-test('serves primary content, metadata, robots and sitemap', async ({ page, request }) => {
+test('serves primary content, metadata, structured data, robots and sitemap', async ({
+  page,
+  request,
+}) => {
   await gotoExpected(page, '/')
 
   await expect(page).toHaveTitle(/いゔる。/)
@@ -10,6 +13,22 @@ test('serves primary content, metadata, robots and sitemap', async ({ page, requ
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
     'href',
     'https://ivmz.ivrm.jp',
+  )
+
+  const structuredData = await page.locator('script[type="application/ld+json"]').allTextContents()
+  const schemas = structuredData.map((value) => JSON.parse(value)) as Array<{
+    '@graph'?: Array<{ '@type'?: string; url?: string; sameAs?: string[] }>
+  }>
+  const siteGraph = schemas.flatMap((schema) => schema['@graph'] ?? [])
+  expect(siteGraph).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({ '@type': 'WebSite', url: 'https://ivmz.ivrm.jp' }),
+      expect.objectContaining({
+        '@type': 'Person',
+        url: 'https://ivmz.ivrm.jp',
+        sameAs: ['https://github.com/mizzz-ivr'],
+      }),
+    ]),
   )
 
   const character = page.getByAltText('mizzzのGitHubアイコンに使用しているオリジナルキャラクター')
