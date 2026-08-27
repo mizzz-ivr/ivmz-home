@@ -28,7 +28,8 @@ export default async function LinksPage() {
         description={
           <p>
             Social Links
-            Collectionを正本として使い、CMS障害時だけRepositoryで確定したstable linkへ縮退します。
+            Collectionを正本として使い、CMS障害時だけRepositoryで確定したstable
+            linkへ縮退します。
           </p>
         }
         signal="SOCIAL / EXTERNAL"

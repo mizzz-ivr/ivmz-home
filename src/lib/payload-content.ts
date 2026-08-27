@@ -4,10 +4,7 @@ import { getPayload } from 'payload'
 
 import type { News, Post, Schedule, SocialLink, Work } from '@/payload-types'
 import { createPublishedSlugWhere } from '@/lib/payload-detail-query'
-import {
-  normalizePublicHttpUrl,
-  normalizePublicStringArray,
-} from '@/lib/public-content-safety'
+import { normalizePublicHttpUrl, normalizePublicStringArray } from '@/lib/public-content-safety'
 
 const getContentPayload = cache(() => getPayload({ config: configPromise }))
 

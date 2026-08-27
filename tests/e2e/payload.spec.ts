@@ -62,7 +62,9 @@ test('private Scheduleとdisabled Social Linkは匿名queryへ漏れない', asy
     '/api/social-links?where[enabled][equals]=false&limit=1&depth=0',
   )
   expect(socialResponse.status(), await responseDiagnostic(socialResponse)).toBe(200)
-  const socialPayload = JSON.parse(await socialResponse.body().then((body) => body.toString('utf8')))
+  const socialPayload = JSON.parse(
+    await socialResponse.body().then((body) => body.toString('utf8')),
+  )
   expect(socialPayload.docs).toEqual([])
 })
 
