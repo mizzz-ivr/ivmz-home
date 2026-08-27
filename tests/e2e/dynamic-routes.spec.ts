@@ -48,7 +48,10 @@ const detailRoutes = [
 const responsiveWidths = [320, 375, 390, 768, 1024, 1440] as const
 const publicApiTransportAttempts = process.env.E2E_BASE_URL ? 2 : 1
 
-async function requestPublicCollection(request: APIRequestContext, collection: string) {
+async function requestPublicCollection(
+  request: APIRequestContext,
+  collection: string,
+) {
   let lastTransportError: unknown
 
   for (let attempt = 1; attempt <= publicApiTransportAttempts; attempt += 1) {
@@ -131,7 +134,10 @@ test('connects published list items to detail routes with h1, reload, metadata a
     if (externalCanonicalPost) {
       expect(detailSchema).toBeUndefined()
     } else {
-      expect(detailSchema).toMatchObject({ '@type': route.schemaType, url: internalUrl })
+      expect(detailSchema).toMatchObject({
+        '@type': route.schemaType,
+        url: internalUrl,
+      })
     }
 
     await gotoExpected(page, detailPath)
