@@ -1,16 +1,8 @@
-import {
-  expect,
-  test,
-  type APIRequestContext,
-  type APIResponse,
-} from '@playwright/test'
+import { expect, test, type APIRequestContext, type APIResponse } from '@playwright/test'
 
 import { gotoExpected } from './navigation'
 
-async function getStatus200(
-  request: APIRequestContext,
-  path: string,
-): Promise<APIResponse> {
+async function getStatus200(request: APIRequestContext, path: string): Promise<APIResponse> {
   let lastError: unknown
 
   for (let attempt = 1; attempt <= 3; attempt += 1) {
