@@ -55,7 +55,9 @@ async function firstPublishedDoc(request: APIRequestContext, collection: string)
 
   for (let attempt = 1; attempt <= publicApiTransportAttempts; attempt += 1) {
     try {
-      response = await request.get(`/api/${collection}?limit=1&depth=0`, { timeout: 8_000 })
+      response = await request.get(`/api/${collection}?limit=1&depth=0`, {
+        timeout: 8_000,
+      })
       break
     } catch (error) {
       lastTransportError = error
