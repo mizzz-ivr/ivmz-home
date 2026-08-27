@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test'
 
+import { gotoExpected, reloadExpected } from './navigation'
+
 const routes = [
   '/about',
   '/works',
@@ -16,18 +18,16 @@ const responsiveWidths = [320, 375, 390, 768, 1024, 1440] as const
 
 test('serves every static/list route directly and after reload', async ({ page }) => {
   for (const route of routes) {
-    const response = await page.goto(route)
-    expect(response?.ok(), route).toBe(true)
+    await gotoExpected(page, route)
     await expect(page.getByRole('heading', { level: 1 }), route).toBeVisible()
 
-    const reload = await page.reload()
-    expect(reload?.ok(), `${route} reload`).toBe(true)
+    await reloadExpected(page, route)
     await expect(page.getByRole('heading', { level: 1 }), route).toBeVisible()
   }
 })
 
 test('marks the current route in desktop and mobile navigation', async ({ page }, testInfo) => {
-  await page.goto('/works')
+  await gotoExpected(page, '/works')
 
   if (testInfo.project.name === 'chromium') {
     await page.setViewportSize({ width: 1280, height: 900 })
@@ -52,7 +52,7 @@ test('keeps route pages overflow-free at the supported widths', async ({ page },
   for (const width of responsiveWidths) {
     await page.setViewportSize({ width, height: 900 })
     for (const route of routes) {
-      await page.goto(route)
+      await gotoExpected(page, route)
       const dimensions = await page.evaluate(() => ({
         scrollWidth: document.documentElement.scrollWidth,
         clientWidth: document.documentElement.clientWidth,
