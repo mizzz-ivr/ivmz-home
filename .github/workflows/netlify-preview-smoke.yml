@@ -122,10 +122,8 @@ jobs:
       - name: Payload auth rate limitが429を返すことを確認
         shell: bash
         run: |
-          # Netlifyのrate limitはclient IPをaggregation keyに含む。
-          # GitHub-hosted runner上でcurlを毎回別processとして起動すると、cloud egress/NATにより
-          # 同一clientとして観測される保証がないため、1本のHTTP/2 connectionで連続probeする。
-          # Deploy ready直後のedge enforcementへ短いgrace periodも置く。
+          # Netlifyはcode-based rate limitをdeploy post-processingで検証する。
+          # Deploy ready直後の反映差を吸収してから、同一HTTP/2 sessionで連続probeする。
           sleep 15
 
           node <<'NODE'
