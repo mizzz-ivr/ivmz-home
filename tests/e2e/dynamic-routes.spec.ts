@@ -1,4 +1,10 @@
-import { expect, test, type APIRequestContext, type Page } from '@playwright/test'
+import {
+  expect,
+  test,
+  type APIRequestContext,
+  type APIResponse,
+  type Page,
+} from '@playwright/test'
 
 import { gotoExpected, reloadExpected } from './navigation'
 
@@ -41,9 +47,26 @@ const detailRoutes = [
 ] as const
 
 const responsiveWidths = [320, 375, 390, 768, 1024, 1440] as const
+const publicApiTransportAttempts = process.env.E2E_BASE_URL ? 2 : 1
 
 async function firstPublishedDoc(request: APIRequestContext, collection: string) {
-  const response = await request.get(`/api/${collection}?limit=1&depth=0`)
+  let response: APIResponse | undefined
+  let lastTransportError: unknown
+
+  for (let attempt = 1; attempt <= publicApiTransportAttempts; attempt += 1) {
+    try {
+      response = await request.get(`/api/${collection}?limit=1&depth=0`, { timeout: 8_000 })
+      break
+    } catch (error) {
+      lastTransportError = error
+      if (attempt === publicApiTransportAttempts) throw error
+      await new Promise((resolve) => setTimeout(resolve, 500))
+    }
+  }
+
+  if (!response) throw lastTransportError
+
+  // Do not retry HTTP failures: a non-200 response is an application/platform acceptance failure.
   expect(response.status(), collection).toBe(200)
   const payload = (await response.json()) as { docs: PublicDoc[] }
   return payload.docs[0] ?? null
