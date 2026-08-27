@@ -1,6 +1,5 @@
 'use client'
 
-import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 
@@ -112,7 +111,7 @@ export function SiteHeader() {
     <>
       <header className="signal-header" aria-label="Primary navigation">
         <div className="desktop-nav-shell">
-          <Link
+          <a
             className="brand-mark"
             href="/"
             aria-label="ivmz home"
@@ -122,16 +121,16 @@ export function SiteHeader() {
               i/
             </span>
             <span className="brand-word">ivmz</span>
-          </Link>
+          </a>
           <nav className="desktop-nav" aria-label="Desktop navigation">
             {navigation.map(([label, href]) => (
-              <Link
+              <a
                 key={label}
                 href={href}
                 aria-current={isCurrentRoute(pathname, href) ? 'page' : undefined}
               >
                 {label}
-              </Link>
+              </a>
             ))}
             <span className="nav-coming" aria-disabled="true" title="Coming Soon">
               STORE <small>SOON</small>
@@ -141,7 +140,7 @@ export function SiteHeader() {
         </div>
 
         <div className="mobile-nav-shell">
-          <Link
+          <a
             className="brand-mark"
             href="/"
             aria-label="ivmz home"
@@ -152,7 +151,7 @@ export function SiteHeader() {
               i/
             </span>
             <span className="brand-word">ivmz</span>
-          </Link>
+          </a>
           <div className="mobile-actions">
             <ThemeToggle compact />
             <button
@@ -197,7 +196,7 @@ export function SiteHeader() {
         </div>
         <nav aria-label="Mobile navigation">
           {navigation.map(([label, href], index) => (
-            <Link
+            <a
               key={label}
               href={href}
               onClick={closeDrawer}
@@ -206,7 +205,7 @@ export function SiteHeader() {
             >
               <span>0{index + 1}</span>
               {label}
-            </Link>
+            </a>
           ))}
           <span className="drawer-coming">
             <span>08</span>
