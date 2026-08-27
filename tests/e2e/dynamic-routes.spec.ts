@@ -1,4 +1,4 @@
-import { expect, test, type APIRequestContext } from '@playwright/test'
+import { expect, test, type APIRequestContext, type Page } from '@playwright/test'
 
 import { gotoExpected, reloadExpected } from './navigation'
 
@@ -8,6 +8,11 @@ type PublicDoc = {
   canonicalUrl?: string | null
 }
 
+type JsonLdDocument = {
+  '@type'?: string
+  url?: string
+}
+
 const detailRoutes = [
   {
     collection: 'works',
@@ -15,6 +20,7 @@ const detailRoutes = [
     path: (slug: string) => `/works/${encodeURIComponent(slug)}`,
     primaryLabel: 'View case study',
     emptyHeading: 'No published works yet.',
+    schemaType: 'CreativeWork',
   },
   {
     collection: 'posts',
@@ -22,6 +28,7 @@ const detailRoutes = [
     path: (slug: string) => `/blog/${encodeURIComponent(slug)}`,
     primaryLabel: 'Read details',
     emptyHeading: 'No published posts yet.',
+    schemaType: 'BlogPosting',
   },
   {
     collection: 'news',
@@ -29,6 +36,7 @@ const detailRoutes = [
     path: (slug: string) => `/news/${encodeURIComponent(slug)}`,
     primaryLabel: 'Read update',
     emptyHeading: 'No published news yet.',
+    schemaType: 'Article',
   },
 ] as const
 
@@ -41,7 +49,20 @@ async function firstPublishedDoc(request: APIRequestContext, collection: string)
   return payload.docs[0] ?? null
 }
 
-test('connects published list items to detail routes with h1, reload and metadata', async ({
+async function detailStructuredData(page: Page) {
+  const values = await page.locator('script[type="application/ld+json"]').allTextContents()
+  return values.map((value) => JSON.parse(value) as JsonLdDocument)
+}
+
+function normalizedCanonical(value: string) {
+  const url = new URL(value)
+  url.hash = ''
+  url.search = ''
+  url.pathname = url.pathname.replace(/\/+$/, '') || '/'
+  return url.toString()
+}
+
+test('connects published list items to detail routes with h1, reload, metadata and structured data', async ({
   page,
   request,
 }) => {
@@ -58,18 +79,32 @@ test('connects published list items to detail routes with h1, reload and metadat
     await row.getByRole('link', { name: new RegExp(route.primaryLabel, 'i') }).click()
 
     const detailPath = route.path(doc.slug)
+    const internalUrl = new URL(detailPath, 'https://ivmz.ivrm.jp').toString()
     expect(new URL(page.url()).pathname).toBe(detailPath)
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(doc.title)
 
     const expectedCanonical =
       route.collection === 'posts' && doc.canonicalUrl
         ? new URL(doc.canonicalUrl).toString()
-        : new URL(detailPath, 'https://ivmz.ivrm.jp').toString()
+        : internalUrl
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', expectedCanonical)
     await expect(page.locator('meta[property="og:title"]')).toHaveAttribute(
       'content',
       `${doc.title} | mizzz`,
     )
+
+    const schemas = await detailStructuredData(page)
+    const detailSchema = schemas.find((schema) => schema['@type'] === route.schemaType)
+    const externalCanonicalPost =
+      route.collection === 'posts' &&
+      doc.canonicalUrl &&
+      normalizedCanonical(doc.canonicalUrl) !== normalizedCanonical(internalUrl)
+
+    if (externalCanonicalPost) {
+      expect(detailSchema).toBeUndefined()
+    } else {
+      expect(detailSchema).toMatchObject({ '@type': route.schemaType, url: internalUrl })
+    }
 
     await gotoExpected(page, detailPath)
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(doc.title)
@@ -124,7 +159,7 @@ test('adds published internal detail routes to sitemap without indexing external
     if (
       route.collection === 'posts' &&
       doc.canonicalUrl &&
-      new URL(doc.canonicalUrl).toString() !== internalUrl
+      normalizedCanonical(doc.canonicalUrl) !== normalizedCanonical(internalUrl)
     ) {
       expect(xml).not.toContain(`<loc>${internalUrl}</loc>`)
     } else {
