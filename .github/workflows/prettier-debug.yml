@@ -1,0 +1,27 @@
+name: Prettier Debug (temporary)
+
+on:
+  push:
+    branches:
+      - feat/issue-7-seo-structured-data
+
+permissions:
+  contents: read
+
+jobs:
+  diff:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Print exact Prettier diff
+        run: |
+          pnpm exec prettier --write tests/e2e/dynamic-routes.spec.ts
+          git diff -- tests/e2e/dynamic-routes.spec.ts
