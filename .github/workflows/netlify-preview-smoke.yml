@@ -51,7 +51,6 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps chromium webkit
       - name: 対象commitのDeploy Preview完了を待機
         shell: bash
         run: |
@@ -120,5 +119,79 @@ jobs:
             echo
             exit 1
           fi
+      - run: pnpm exec playwright install --with-deps chromium webkit
       - name: 実Deploy Previewに対するPlaywright smokeを実行
         run: pnpm test:e2e
+      - name: Payload auth rate limitが429を返すことを確認
+        shell: bash
+        run: |
+          # Netlifyはcode-based rate limitをdeploy post-processingで検証する。
+          # 10 requests / 60 secondsの設定に対して、同一HTTP/2 sessionから
+          # 余裕を持った上限まで連続probeし、実際の429をacceptance gateにする。
+          sleep 15
+
+          node <<'NODE'
+          const http2 = require('node:http2')
+
+          const baseURL = new URL(process.env.E2E_BASE_URL)
+          const origin = baseURL.origin
+          const path = '/api/users/login'
+          const body = JSON.stringify({
+            email: 'netlify-rate-limit-probe@example.invalid',
+            password: 'not-a-real-credential-2026',
+          })
+          const expectedStatuses = new Set([400, 401, 403])
+          const maxAttempts = 30
+          const session = http2.connect(origin)
+
+          const requestLogin = () =>
+            new Promise((resolve, reject) => {
+              let status
+              const request = session.request({
+                ':method': 'POST',
+                ':path': path,
+                accept: 'application/json',
+                'content-type': 'application/json',
+                'content-length': Buffer.byteLength(body),
+                origin,
+              })
+
+              request.on('response', (headers) => {
+                status = Number(headers[':status'])
+                request.resume()
+              })
+              request.on('error', reject)
+              request.on('end', () => resolve(status))
+              request.end(body)
+            })
+
+          const run = async () => {
+            for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+              const status = await requestLogin()
+              console.log(`Payload auth rate limit probe: attempt=${attempt} status=${status}`)
+
+              if (status === 429) {
+                console.log(`Payload auth rate limit returned 429: attempt=${attempt}`)
+                return
+              }
+
+              if (!expectedStatuses.has(status)) {
+                throw new Error(
+                  `Payload auth rate limit probe returned an unexpected status: attempt=${attempt} status=${status}`,
+                )
+              }
+            }
+
+            throw new Error(
+              `Payload auth rate limit did not return 429 within ${maxAttempts} same-connection requests`,
+            )
+          }
+
+          run()
+            .then(() => session.close())
+            .catch((error) => {
+              session.destroy()
+              console.error(error instanceof Error ? error.message : error)
+              process.exit(1)
+            })
+          NODE

@@ -12,16 +12,12 @@ import { SocialLinks } from './collections/SocialLinks'
 import { Users } from './collections/Users'
 import { Works } from './collections/Works'
 import { getDatabasePoolConfig, resolveDatabasePoolMode } from './lib/database-connection'
+import { resolvePayloadAllowedOrigins } from './security/payload-origins'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
-const allowedOrigins = (
-  process.env.PAYLOAD_ALLOWED_ORIGINS ?? 'http://localhost:3000,https://ivmz.ivrm.jp'
-)
-  .split(',')
-  .map((origin) => origin.trim())
-  .filter(Boolean)
+const allowedOrigins = resolvePayloadAllowedOrigins()
 
 const databasePoolMode = resolveDatabasePoolMode(
   process.env.PAYLOAD_DATABASE_POOL_MODE,
