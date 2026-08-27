@@ -69,16 +69,11 @@ export default async function WorkDetailPage({ params }: DetailPageProps) {
           </div>
           <div>
             <dt>Media</dt>
-            <dd>
-              {mediaCount > 0 ? `${mediaCount} asset${mediaCount === 1 ? '' : 's'}` : 'None'}
-            </dd>
+            <dd>{mediaCount > 0 ? `${mediaCount} asset${mediaCount === 1 ? '' : 's'}` : 'None'}</dd>
           </div>
         </dl>
       </PageSection>
-      <PageSection
-        title="Technology"
-        description={<p>この制作物で使っている主要スタック。</p>}
-      >
+      <PageSection title="Technology" description={<p>この制作物で使っている主要スタック。</p>}>
         <ul className="detail-tags" aria-label="Technology stack">
           {work.stack.map((technology) => (
             <li key={technology}>{technology}</li>
@@ -116,10 +111,7 @@ export default async function WorkDetailPage({ params }: DetailPageProps) {
         )}
       </PageSection>
       {(work.githubUrl || work.liveUrl) && (
-        <PageSection
-          title="Links"
-          description={<p>内部Case Studyとは別の外部destinationです。</p>}
-        >
+        <PageSection title="Links" description={<p>内部Case Studyとは別の外部destinationです。</p>}>
           <div className="detail-actions">
             {work.githubUrl && (
               <a href={work.githubUrl} target="_blank" rel="noreferrer">
