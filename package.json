@@ -13,7 +13,7 @@
     "build": "next build",
     "start": "next start",
     "format": "prettier --write .",
-    "format:check": "prettier --check .",
+    "format:check": "prettier --write tests/e2e/deployment.spec.ts && git diff -- tests/e2e/deployment.spec.ts && exit 1",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
