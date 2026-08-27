@@ -1,6 +1,14 @@
 import { withPayload } from '@payloadcms/next/withPayload'
 import type { NextConfig } from 'next'
 
+const payloadBuildContext = process.env.CONTEXT ?? ''
+const payloadBuildOrigin =
+  payloadBuildContext === 'production'
+    ? 'https://ivmz.ivrm.jp'
+    : payloadBuildContext === 'deploy-preview' || payloadBuildContext === 'branch-deploy'
+      ? (process.env.DEPLOY_PRIME_URL ?? '')
+      : ''
+
 const securityHeaders = [
   {
     key: 'Strict-Transport-Security',
@@ -29,6 +37,13 @@ const securityHeaders = [
 ]
 
 const nextConfig: NextConfig = {
+  env: {
+    // Netlify exposes CONTEXT / DEPLOY_PRIME_URL while building but not to the
+    // Next serverless function runtime. These values are public deployment metadata,
+    // so freeze them into the server bundle for Payload's runtime CORS/CSRF config.
+    PAYLOAD_BUILD_CONTEXT: payloadBuildContext,
+    PAYLOAD_BUILD_ORIGIN: payloadBuildOrigin,
+  },
   poweredByHeader: false,
   reactStrictMode: true,
   headers: async () => [
