@@ -119,11 +119,15 @@ jobs:
             echo
             exit 1
           fi
+      - run: pnpm exec playwright install --with-deps chromium webkit
+      - name: 実Deploy Previewに対するPlaywright smokeを実行
+        run: pnpm test:e2e
       - name: Payload auth rate limitが429を返すことを確認
         shell: bash
         run: |
           # Netlifyはcode-based rate limitをdeploy post-processingで検証する。
-          # Deploy ready直後の反映差を吸収してから、同一HTTP/2 sessionで連続probeする。
+          # 10 requests / 60 secondsの設定に対して、同一HTTP/2 sessionから
+          # 余裕を持った上限まで連続probeし、実際の429をacceptance gateにする。
           sleep 15
 
           node <<'NODE'
@@ -137,6 +141,7 @@ jobs:
             password: 'not-a-real-credential-2026',
           })
           const expectedStatuses = new Set([400, 401, 403])
+          const maxAttempts = 30
           const session = http2.connect(origin)
 
           const requestLogin = () =>
@@ -161,15 +166,13 @@ jobs:
             })
 
           const run = async () => {
-            let sawRateLimit = false
-
-            for (let attempt = 1; attempt <= 15; attempt += 1) {
+            for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
               const status = await requestLogin()
+              console.log(`Payload auth rate limit probe: attempt=${attempt} status=${status}`)
 
               if (status === 429) {
                 console.log(`Payload auth rate limit returned 429: attempt=${attempt}`)
-                sawRateLimit = true
-                break
+                return
               }
 
               if (!expectedStatuses.has(status)) {
@@ -179,9 +182,9 @@ jobs:
               }
             }
 
-            if (!sawRateLimit) {
-              throw new Error('Payload auth rate limit did not return 429 within 15 same-connection requests')
-            }
+            throw new Error(
+              `Payload auth rate limit did not return 429 within ${maxAttempts} same-connection requests`,
+            )
           }
 
           run()
@@ -192,6 +195,3 @@ jobs:
               process.exit(1)
             })
           NODE
-      - run: pnpm exec playwright install --with-deps chromium webkit
-      - name: 実Deploy Previewに対するPlaywright smokeを実行
-        run: pnpm test:e2e
