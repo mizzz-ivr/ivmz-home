@@ -44,12 +44,6 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Formatter diagnostic
-        shell: bash
-        run: |
-          pnpm exec prettier --write tests/e2e/navigation.ts
-          git diff -- tests/e2e/navigation.ts
-          exit 1
       - run: pnpm format:check
       - run: pnpm lint
       - run: pnpm typecheck
