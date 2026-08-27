@@ -7,6 +7,11 @@ import {
   validateScheduleEndAt,
 } from '@/content/fields'
 
+function getScheduleStartAt(siblingData: unknown): unknown {
+  if (siblingData === null || typeof siblingData !== 'object') return undefined
+  return 'startAt' in siblingData ? (siblingData as Record<string, unknown>).startAt : undefined
+}
+
 export const Schedule: CollectionConfig = {
   slug: 'schedule',
   admin: {
@@ -59,7 +64,8 @@ export const Schedule: CollectionConfig = {
         {
           name: 'endAt',
           type: 'date',
-          validate: (value, { siblingData }) => validateScheduleEndAt(value, siblingData?.startAt),
+          validate: (value, { siblingData }) =>
+            validateScheduleEndAt(value, getScheduleStartAt(siblingData)),
           admin: {
             date: {
               pickerAppearance: 'dayAndTime',
