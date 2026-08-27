@@ -2,6 +2,8 @@ import configPromise from '@payload-config'
 import { cache } from 'react'
 import { getPayload } from 'payload'
 
+import { createPublishedSlugWhere } from '@/lib/payload-detail-query'
+
 const getContentPayload = cache(() => getPayload({ config: configPromise }))
 
 export async function getPublishedWorks(limit = 3) {
@@ -57,6 +59,48 @@ export async function getLatestNews(limit = 3) {
     },
   })
 }
+
+export const getPublishedWorkBySlug = cache(async (slug: string) => {
+  const payload = await getContentPayload()
+  const result = await payload.find({
+    collection: 'works',
+    depth: 0,
+    draft: false,
+    limit: 1,
+    overrideAccess: false,
+    where: createPublishedSlugWhere(slug),
+  })
+
+  return result.docs[0] ?? null
+})
+
+export const getPublishedPostBySlug = cache(async (slug: string) => {
+  const payload = await getContentPayload()
+  const result = await payload.find({
+    collection: 'posts',
+    depth: 0,
+    draft: false,
+    limit: 1,
+    overrideAccess: false,
+    where: createPublishedSlugWhere(slug),
+  })
+
+  return result.docs[0] ?? null
+})
+
+export const getPublishedNewsBySlug = cache(async (slug: string) => {
+  const payload = await getContentPayload()
+  const result = await payload.find({
+    collection: 'news',
+    depth: 0,
+    draft: false,
+    limit: 1,
+    overrideAccess: false,
+    where: createPublishedSlugWhere(slug),
+  })
+
+  return result.docs[0] ?? null
+})
 
 export async function getUpcomingSchedule(limit = 3, now = new Date()) {
   const payload = await getContentPayload()

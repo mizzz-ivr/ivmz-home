@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 import { EmptyState, PageCTA, PageHero, PageSection } from '@/components/site/PageFoundation'
 import { createPageMetadata } from '@/lib/metadata'
 import { getWorksListContent } from '@/lib/public-list-content'
@@ -11,7 +13,7 @@ export const metadata = createPageMetadata({
 })
 
 const copy = {
-  hero: '公開済みの制作物をPayload CMSから取得します。詳細Case Study routeは次PRでslugへ接続します。',
+  hero: '公開済みの制作物をPayload CMSから取得し、各Case Study detailへ接続します。',
   queryError:
     'CMS queryに失敗しました。Homeの既存fallbackは維持され、この一覧だけ安全に縮退しています。',
   empty: 'CMSは正常です。公開済みWorksが登録されるまで、このempty stateを表示します。',
@@ -48,9 +50,17 @@ export default async function WorksPage() {
                 <div className="content-row-meta">
                   <span>{work.role}</span>
                   <small>{work.stack.join(' · ')}</small>
-                  {work.githubUrl && <a href={work.githubUrl}>GitHub ↗</a>}
-                  {!work.githubUrl && work.liveUrl && <a href={work.liveUrl}>Live site ↗</a>}
-                  {!work.githubUrl && !work.liveUrl && <small>Detail route coming next</small>}
+                  <Link href={`/works/${encodeURIComponent(work.slug)}`}>View case study →</Link>
+                  {work.githubUrl && (
+                    <a href={work.githubUrl} target="_blank" rel="noreferrer">
+                      GitHub ↗
+                    </a>
+                  )}
+                  {work.liveUrl && (
+                    <a href={work.liveUrl} target="_blank" rel="noreferrer">
+                      Live site ↗
+                    </a>
+                  )}
                 </div>
               </article>
             ))}
