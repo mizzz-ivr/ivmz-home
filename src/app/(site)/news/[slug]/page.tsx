@@ -2,9 +2,11 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
+import { StructuredData } from '@/components/seo/StructuredData'
 import { PageCTA, PageHero, PageSection } from '@/components/site/PageFoundation'
 import { createPageMetadata } from '@/lib/metadata'
 import { getPublishedNewsBySlug } from '@/lib/payload-content'
+import { createNewsStructuredData } from '@/lib/structured-data'
 
 export const revalidate = 300
 
@@ -42,15 +44,27 @@ export default async function NewsDetailPage({ params }: DetailPageProps) {
   const item = await getPublishedNewsBySlug(slug)
   if (!item) notFound()
 
+  const description = compact(item.body)
+
   return (
     <main id="main-content" className="route-page detail-page">
+      <StructuredData
+        data={
+          createNewsStructuredData({
+            slug: item.slug,
+            title: item.title,
+            description,
+            publishedAt: item.publishedAt,
+          })
+        }
+      />
       <Link className="detail-back-link" href="/news">
         <span aria-hidden="true">←</span> All news
       </Link>
       <PageHero
         index="NEWS / DETAIL"
         title={item.title}
-        description={<p>{compact(item.body)}</p>}
+        description={<p>{description}</p>}
         signal="ACTIVITY / RELEASE"
       />
       <PageSection title="Update profile" description={<p>公開済みNewsのtypeと公開日。</p>}>
