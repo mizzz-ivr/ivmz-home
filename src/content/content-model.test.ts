@@ -17,6 +17,7 @@ import {
   validateIanaTimezone,
   validateOptionalHttpUrl,
   validateRequiredHttpUrl,
+  validateScheduleEndAt,
 } from '@/content/fields'
 
 const collections = [Works, Posts, News, Schedule, SocialLinks]
@@ -116,6 +117,16 @@ describe('field validation', () => {
     expect(validateIanaTimezone('America/New_York')).toBe(true)
     expect(validateIanaTimezone('Tokyo')).not.toBe(true)
     expect(validateIanaTimezone('')).not.toBe(true)
+  })
+
+  it('keeps schedule end time at or after start time', () => {
+    const startAt = '2026-08-27T10:00:00.000Z'
+
+    expect(validateScheduleEndAt('', startAt)).toBe(true)
+    expect(validateScheduleEndAt('2026-08-27T10:00:00.000Z', startAt)).toBe(true)
+    expect(validateScheduleEndAt('2026-08-27T11:00:00.000Z', startAt)).toBe(true)
+    expect(validateScheduleEndAt('2026-08-27T09:59:59.000Z', startAt)).not.toBe(true)
+    expect(validateScheduleEndAt('not-a-date', startAt)).not.toBe(true)
   })
 })
 

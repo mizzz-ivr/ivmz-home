@@ -5,6 +5,7 @@ import {
   getPublishedWorks,
   getUpcomingSchedule,
 } from '@/lib/payload-content'
+import { compactPublicText, formatPublicDateTime } from '@/lib/public-content-safety'
 
 export type HomeWork = {
   title: string
@@ -138,24 +139,8 @@ function uppercaseLabel(value: string): string {
   return value.replaceAll('-', ' ').toUpperCase()
 }
 
-function compactText(value: string, maxLength = 180): string {
-  const compact = value.replace(/\s+/g, ' ').trim()
-  return compact.length > maxLength ? `${compact.slice(0, maxLength - 1)}…` : compact
-}
-
 function formatScheduleMeta(startAt: string, timezone: string, location?: string | null): string {
-  let formatted: string
-
-  try {
-    formatted = new Intl.DateTimeFormat('ja-JP', {
-      dateStyle: 'medium',
-      timeStyle: 'short',
-      timeZone: timezone,
-    }).format(new Date(startAt))
-  } catch {
-    formatted = new Date(startAt).toISOString()
-  }
-
+  const formatted = formatPublicDateTime(startAt, timezone) ?? 'Schedule time unavailable'
   return location ? `${formatted} · ${location}` : formatted
 }
 
@@ -199,8 +184,9 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T
 
 /**
  * Home presentation stays bound to this view-model adapter rather than Payload itself.
- * Empty collections use the intentional static baseline; query failures or an unexpectedly
- * slow CMS fall back for the whole Home model so an unavailable CMS cannot break the landing page.
+ * A successful empty CMS result remains empty so publish/unpublish/visibility is authoritative.
+ * Query failures or an unexpectedly slow CMS fall back for the whole Home model so an unavailable
+ * CMS cannot break the landing page.
  */
 export async function getHomeViewModel(): Promise<HomeViewModel> {
   try {
@@ -209,52 +195,37 @@ export async function getHomeViewModel(): Promise<HomeViewModel> {
 
     return {
       capabilities: staticHomeViewModel.capabilities,
-      works:
-        worksResult.docs.length > 0
-          ? worksResult.docs.map((work) => ({
-              title: work.title,
-              summary: work.summary,
-              role: work.role,
-              stack: work.stack.join(' · '),
-              href: work.githubUrl ?? work.liveUrl ?? '#works',
-              signal: uppercaseLabel(work.projectStatus),
-            }))
-          : staticHomeViewModel.works,
-      writing:
-        postsResult.docs.length > 0
-          ? postsResult.docs.map((post) => ({
-              label: uppercaseLabel(post.category),
-              title: post.title,
-              meta: post.excerpt,
-              ...(post.canonicalUrl ? { href: post.canonicalUrl } : {}),
-            }))
-          : staticHomeViewModel.writing,
-      activity:
-        newsResult.docs.length > 0
-          ? newsResult.docs.map((news) => ({
-              label: uppercaseLabel(news.type),
-              title: news.title,
-              meta: compactText(news.body),
-              ...(news.externalUrl ? { href: news.externalUrl } : {}),
-            }))
-          : staticHomeViewModel.activity,
-      schedule:
-        scheduleResult.docs.length > 0
-          ? scheduleResult.docs.map((item) => ({
-              label: uppercaseLabel(item.type),
-              title: item.title,
-              meta: formatScheduleMeta(item.startAt, item.timezone, item.location),
-              ...(item.url ? { href: item.url } : {}),
-            }))
-          : staticHomeViewModel.schedule,
-      socials:
-        socialsResult.docs.length > 0
-          ? socialsResult.docs.map((social) => ({
-              label: social.platform,
-              handle: social.handle ?? social.platform,
-              href: social.url,
-            }))
-          : staticHomeViewModel.socials,
+      works: worksResult.docs.map((work) => ({
+        title: work.title,
+        summary: work.summary,
+        role: work.role,
+        stack: work.stack.join(' · '),
+        href: work.githubUrl ?? work.liveUrl ?? '#works',
+        signal: uppercaseLabel(work.projectStatus),
+      })),
+      writing: postsResult.docs.map((post) => ({
+        label: uppercaseLabel(post.category),
+        title: post.title,
+        meta: post.excerpt,
+        ...(post.canonicalUrl ? { href: post.canonicalUrl } : {}),
+      })),
+      activity: newsResult.docs.map((news) => ({
+        label: uppercaseLabel(news.type),
+        title: news.title,
+        meta: compactPublicText(news.body, 180),
+        ...(news.externalUrl ? { href: news.externalUrl } : {}),
+      })),
+      schedule: scheduleResult.docs.map((item) => ({
+        label: uppercaseLabel(item.type),
+        title: item.title,
+        meta: formatScheduleMeta(item.startAt, item.timezone, item.location),
+        ...(item.url ? { href: item.url } : {}),
+      })),
+      socials: socialsResult.docs.map((social) => ({
+        label: social.platform,
+        handle: social.handle ?? social.platform,
+        href: social.url,
+      })),
     }
   } catch (error) {
     console.error(

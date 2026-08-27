@@ -1,6 +1,27 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type APIRequestContext, type APIResponse } from '@playwright/test'
 
 import { gotoExpected } from './navigation'
+
+async function getStatus200(request: APIRequestContext, path: string): Promise<APIResponse> {
+  let lastError: unknown
+
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      const response = await request.get(path)
+      if (response.status() === 200) return response
+      lastError = new Error(`${path} returned HTTP ${response.status()}`)
+    } catch (error) {
+      lastError = error
+    }
+
+    if (attempt < 3) {
+      await new Promise((resolve) => setTimeout(resolve, 500 * attempt))
+    }
+  }
+
+  if (lastError instanceof Error) throw lastError
+  throw new Error(`${path} did not return HTTP 200`)
+}
 
 test('serves primary content, metadata, structured data, robots and sitemap', async ({
   page,
@@ -37,16 +58,14 @@ test('serves primary content, metadata, structured data, robots and sitemap', as
     .poll(async () => character.evaluate((image: HTMLImageElement) => image.naturalWidth))
     .toBeGreaterThan(0)
 
-  const robots = await request.get('/robots.txt')
-  expect(robots.ok()).toBe(true)
+  const robots = await getStatus200(request, '/robots.txt')
   const robotsText = await robots.text()
   expect(robotsText).toContain('User-Agent: *')
   expect(robotsText).toContain('Disallow: /admin/')
   expect(robotsText).toContain('Disallow: /api/')
   expect(robotsText).toContain('https://ivmz.ivrm.jp/sitemap.xml')
 
-  const sitemap = await request.get('/sitemap.xml')
-  expect(sitemap.ok()).toBe(true)
+  const sitemap = await getStatus200(request, '/sitemap.xml')
   expect(await sitemap.text()).toContain('<loc>https://ivmz.ivrm.jp/</loc>')
 })
 
@@ -56,17 +75,23 @@ test('keeps layered content readable with reduced motion', async ({ page }) => {
 
   const workbench = page.locator('.about-workbench')
   const workbenchWindows = workbench.locator('.workbench-window')
+  const writingSection = page.locator('#writing')
   const writingCards = page.locator('.editorial-stack article')
 
   await expect(workbench).toBeVisible()
   await expect(workbench.getByText('ship → learn → refine')).toBeVisible()
-  await expect(writingCards.first()).toBeVisible()
+  await expect(writingSection).toBeVisible()
 
-  for (const locator of [workbenchWindows, writingCards]) {
-    const count = await locator.count()
-    expect(count).toBeGreaterThan(0)
-    for (let index = 0; index < count; index += 1) {
-      await expect(locator.nth(index)).toHaveCSS('transform', 'none')
-    }
+  const workbenchCount = await workbenchWindows.count()
+  expect(workbenchCount).toBeGreaterThan(0)
+  for (let index = 0; index < workbenchCount; index += 1) {
+    await expect(workbenchWindows.nth(index)).toHaveCSS('transform', 'none')
+  }
+
+  // Published CMS content may legitimately be empty. When cards exist, reduced motion
+  // must still remove their transforms; an empty writing section is also a valid state.
+  const writingCount = await writingCards.count()
+  for (let index = 0; index < writingCount; index += 1) {
+    await expect(writingCards.nth(index)).toHaveCSS('transform', 'none')
   }
 })
