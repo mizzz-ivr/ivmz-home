@@ -28,18 +28,19 @@ test('renders the complete home experience without animation gates', async ({ pa
 test('toggles and persists the visual theme across routes', async ({ page }) => {
   await gotoExpected(page, '/')
   const root = page.locator('html')
+  await expect(root).toHaveAttribute('data-theme', /^(dark|light)$/)
   const before = await root.getAttribute('data-theme')
-  expect(['dark', 'light']).toContain(before)
+  expect(before === 'dark' || before === 'light').toBe(true)
 
   await page.getByRole('button', { name: 'テーマを切り替える' }).click()
-  const after = await root.getAttribute('data-theme')
-  expect(after).not.toBe(before)
+  const expectedAfter = before === 'dark' ? 'light' : 'dark'
+  await expect(root).toHaveAttribute('data-theme', expectedAfter)
 
   await gotoExpected(page, '/about')
-  await expect(root).toHaveAttribute('data-theme', after ?? 'dark')
+  await expect(root).toHaveAttribute('data-theme', expectedAfter)
 
   await reloadExpected(page, '/about')
-  await expect(root).toHaveAttribute('data-theme', after ?? 'dark')
+  await expect(root).toHaveAttribute('data-theme', expectedAfter)
 })
 
 test('stays overflow-free at every required responsive width', async ({ page }, testInfo) => {
