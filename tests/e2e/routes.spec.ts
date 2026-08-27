@@ -12,6 +12,8 @@ const routes = [
   '/legal/terms',
 ] as const
 
+const responsiveWidths = [320, 375, 390, 768, 1024, 1440] as const
+
 test('serves every static/list route directly and after reload', async ({ page }) => {
   for (const route of routes) {
     const response = await page.goto(route)
@@ -44,10 +46,10 @@ test('marks the current route in desktop and mobile navigation', async ({ page }
   await expect(worksLink).toHaveAttribute('aria-current', 'page')
 })
 
-test('keeps route pages overflow-free at representative widths', async ({ page }, testInfo) => {
+test('keeps route pages overflow-free at the supported widths', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'chromium', 'Responsive route matrix runs in Chromium')
 
-  for (const width of [320, 768, 1440]) {
+  for (const width of responsiveWidths) {
     await page.setViewportSize({ width, height: 900 })
     for (const route of routes) {
       await page.goto(route)

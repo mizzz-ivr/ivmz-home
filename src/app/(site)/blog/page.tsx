@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 import { EmptyState, PageCTA, PageHero, PageSection } from '@/components/site/PageFoundation'
 import { createPageMetadata } from '@/lib/metadata'
 import { getPostsListContent } from '@/lib/public-list-content'
@@ -51,10 +53,11 @@ export default async function BlogPage() {
                       : 'PUBLISHED'}
                   </span>
                   <small>{post.tags?.join(' · ') || 'Writing'}</small>
-                  {post.canonicalUrl ? (
-                    <a href={post.canonicalUrl}>Read article ↗</a>
-                  ) : (
-                    <small>Detail route coming next</small>
+                  <Link href={`/blog/${encodeURIComponent(post.slug)}`}>Read details →</Link>
+                  {post.canonicalUrl && (
+                    <a href={post.canonicalUrl} target="_blank" rel="noreferrer">
+                      Original article ↗
+                    </a>
                   )}
                 </div>
               </article>
