@@ -60,7 +60,9 @@ test('Schedule API keeps public visibility and the ISR page renders a healthy pu
   // The page uses a 5-minute ISR window, so its snapshot can legitimately lag the live
   // API query above. Validate the API security/filter boundary separately, then require
   // the rendered snapshot to be a healthy public state rather than an exact live-data match.
-  await expect(page.getByText('Schedule is temporarily unavailable.', { exact: true })).toHaveCount(0)
+  await expect(
+    page.getByText('Schedule is temporarily unavailable.', { exact: true }),
+  ).toHaveCount(0)
 
   const emptyState = page.getByText('Nothing public is scheduled.', { exact: true })
   const rows = page.locator('.content-list > article')
