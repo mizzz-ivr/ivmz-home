@@ -1,27 +1,7 @@
-import { expect, test, type APIRequestContext, type APIResponse } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 
 import { gotoExpected } from './navigation'
-
-async function getStatus200(request: APIRequestContext, path: string): Promise<APIResponse> {
-  let lastError: unknown
-
-  for (let attempt = 1; attempt <= 3; attempt += 1) {
-    try {
-      const response = await request.get(path)
-      if (response.status() === 200) return response
-      lastError = new Error(`${path} returned HTTP ${response.status()}`)
-    } catch (error) {
-      lastError = error
-    }
-
-    if (attempt < 3) {
-      await new Promise((resolve) => setTimeout(resolve, 500 * attempt))
-    }
-  }
-
-  if (lastError instanceof Error) throw lastError
-  throw new Error(`${path} did not return HTTP 200`)
-}
+import { getWithTransientRetry } from './request'
 
 test('serves primary content, metadata, structured data, robots and sitemap', async ({
   page,
@@ -58,14 +38,16 @@ test('serves primary content, metadata, structured data, robots and sitemap', as
     .poll(async () => character.evaluate((image: HTMLImageElement) => image.naturalWidth))
     .toBeGreaterThan(0)
 
-  const robots = await getStatus200(request, '/robots.txt')
+  const robots = await getWithTransientRetry(request, '/robots.txt')
+  expect(robots.status(), '/robots.txt').toBe(200)
   const robotsText = await robots.text()
   expect(robotsText).toContain('User-Agent: *')
   expect(robotsText).toContain('Disallow: /admin/')
   expect(robotsText).toContain('Disallow: /api/')
   expect(robotsText).toContain('https://ivmz.ivrm.jp/sitemap.xml')
 
-  const sitemap = await getStatus200(request, '/sitemap.xml')
+  const sitemap = await getWithTransientRetry(request, '/sitemap.xml')
+  expect(sitemap.status(), '/sitemap.xml').toBe(200)
   expect(await sitemap.text()).toContain('<loc>https://ivmz.ivrm.jp/</loc>')
 })
 
