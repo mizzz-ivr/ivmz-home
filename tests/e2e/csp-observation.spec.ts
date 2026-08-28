@@ -88,8 +88,6 @@ async function installCspObserver(page: Page) {
 }
 
 async function observeRoute(page: Page, route: string, testInfo: TestInfo) {
-  await installCspObserver(page)
-
   const response = await page.goto(route, { waitUntil: 'domcontentloaded' })
   expect(response, `${route}: navigation response`).not.toBeNull()
 
@@ -98,8 +96,14 @@ async function observeRoute(page: Page, route: string, testInfo: TestInfo) {
   expect(response.status(), `${route}: status`).toBeLessThan(500)
 
   const headers = response.headers()
-  expect(headers['content-security-policy-report-only'], `${route}: Report-Only header`).toBeTruthy()
-  expect(headers['content-security-policy'], `${route}: enforcing CSP must stay disabled`).toBeUndefined()
+  expect(
+    headers['content-security-policy-report-only'],
+    `${route}: Report-Only header`,
+  ).toBeTruthy()
+  expect(
+    headers['content-security-policy'],
+    `${route}: enforcing CSP must stay disabled`,
+  ).toBeUndefined()
 
   await page.waitForTimeout(1_000)
 
@@ -122,46 +126,53 @@ test.describe('CSP Report-Only observation', () => {
   test('public routes and Payload Admin login surface expose sanitized violations only', async ({
     page,
   }, testInfo) => {
+    await installCspObserver(page)
+
     for (const route of publicObservationRoutes) {
       await observeRoute(page, route, testInfo)
     }
   })
 
-  test('Payload public API remains Report-Only and is not accidentally enforced', async ({ request }) => {
-    const response = await request.get('/api/works?limit=1&depth=0')
-    expect(response.status()).toBe(200)
+  test(
+    'Payload public API remains Report-Only and is not accidentally enforced',
+    async ({ request }) => {
+      const response = await request.get('/api/works?limit=1&depth=0')
+      expect(response.status()).toBe(200)
 
-    const headers = response.headers()
-    expect(headers['content-security-policy-report-only']).toBeTruthy()
-    expect(headers['content-security-policy']).toBeUndefined()
-  })
+      const headers = response.headers()
+      expect(headers['content-security-policy-report-only']).toBeTruthy()
+      expect(headers['content-security-policy']).toBeUndefined()
+    },
+  )
 
-  test('authenticated Payload Admin observation is explicit local opt-in and read-only', async ({
-    browser,
-  }, testInfo) => {
-    const storageState = process.env.CSP_ADMIN_STORAGE_STATE
-    test.skip(
-      !storageState,
-      'Set CSP_ADMIN_STORAGE_STATE to a local, untracked Playwright storage-state file to observe authenticated Admin routes.',
-    )
+  test(
+    'authenticated Payload Admin observation is explicit local opt-in and read-only',
+    async ({ browser }, testInfo) => {
+      const storageState = process.env.CSP_ADMIN_STORAGE_STATE
+      test.skip(
+        !storageState,
+        'Set CSP_ADMIN_STORAGE_STATE to a local, untracked Playwright storage-state file to observe authenticated Admin routes.',
+      )
 
-    const baseURL = process.env.E2E_BASE_URL
-    if (!baseURL) {
-      throw new Error('E2E_BASE_URL is required when CSP_ADMIN_STORAGE_STATE is set.')
-    }
-
-    const context = await browser.newContext({
-      baseURL,
-      storageState,
-    })
-    const page = await context.newPage()
-
-    try {
-      for (const route of authenticatedAdminRoutes) {
-        await observeRoute(page, route, testInfo)
+      const baseURL = process.env.E2E_BASE_URL
+      if (!baseURL) {
+        throw new Error('E2E_BASE_URL is required when CSP_ADMIN_STORAGE_STATE is set.')
       }
-    } finally {
-      await context.close()
-    }
-  })
+
+      const context = await browser.newContext({
+        baseURL,
+        storageState,
+      })
+      const page = await context.newPage()
+      await installCspObserver(page)
+
+      try {
+        for (const route of authenticatedAdminRoutes) {
+          await observeRoute(page, route, testInfo)
+        }
+      } finally {
+        await context.close()
+      }
+    },
+  )
 })
