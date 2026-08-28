@@ -111,6 +111,8 @@ async function observeRoute(page: Page, route: string, testInfo: TestInfo) {
     await page.evaluate(() => (window as ObservationWindow).__ivmzCspViolations ?? []),
   )
 
+  // Exact-head Preview Smoke logs are the short-lived observation source.
+  // Only this sanitized inventory may be summarized into long-lived Issue/PR documentation.
   // Intentionally emit only sanitized fields. Do not add documentURI, sourceFile,
   // line/column, sample, request bodies, cookies, tokens, or query strings here.
   console.info(
