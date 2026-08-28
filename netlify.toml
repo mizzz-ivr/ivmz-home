@@ -1,12 +1,12 @@
 [context.deploy-preview]
-  command = "node scripts/assert-preview-database.mjs && pnpm db:migrate && pnpm build"
+  command = "node scripts/assert-preview-database.mjs && PAYLOAD_DATABASE_POOL_MODE=session pnpm db:migrate && pnpm build"
 
 [context.deploy-preview.environment]
   PAYLOAD_PREVIEW_DATABASE_PROJECT_REF = "dzdgbkjmomvmexcbjyin"
   PAYLOAD_PRODUCTION_DATABASE_PROJECT_REF = "drazbrcqnjxjuygfxmlz"
 
 [context.branch-deploy]
-  command = "node scripts/assert-preview-database.mjs && pnpm db:migrate && pnpm build"
+  command = "node scripts/assert-preview-database.mjs && PAYLOAD_DATABASE_POOL_MODE=session pnpm db:migrate && pnpm build"
 
 [context.branch-deploy.environment]
   PAYLOAD_PREVIEW_DATABASE_PROJECT_REF = "dzdgbkjmomvmexcbjyin"
