@@ -46,7 +46,9 @@ test('Schedule API keeps public visibility and the ISR page renders a healthy pu
 
   for (const item of items) {
     expect(item.visibility, item.title).toBe('public')
-    expect(new Date(item.startAt).getTime(), item.title).toBeGreaterThanOrEqual(requestedAt.getTime())
+    expect(new Date(item.startAt).getTime(), item.title).toBeGreaterThanOrEqual(
+      requestedAt.getTime(),
+    )
     expect(() => formatScheduleTime(item.startAt, item.timezone), item.title).not.toThrow()
     if (item.endAt) {
       expect(() => formatScheduleTime(item.endAt, item.timezone), item.title).not.toThrow()
@@ -65,9 +67,10 @@ test('Schedule API keeps public visibility and the ISR page renders a healthy pu
   const emptyVisible = await emptyState.isVisible().catch(() => false)
   const rowCount = await rows.count()
 
-  expect(emptyVisible || rowCount > 0, 'schedule page must render an empty state or public rows').toBe(
-    true,
-  )
+  expect(
+    emptyVisible || rowCount > 0,
+    'schedule page must render an empty state or public rows',
+  ).toBe(true)
 })
 
 test('Social Links page treats a successful zero-result query as an intentional empty state', async ({
