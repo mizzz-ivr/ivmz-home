@@ -144,9 +144,13 @@ Preview側にProduction dataやProduction credentialをコピーしない。
 
 最初のmanaged-secret cutover完了後は、各rotation前に現在のmanaged secretがsecret managerからrecoverableであることを確認する。
 
-次世代secretを事前保存してからProductionへ反映し、問題がある場合は保存済みの直前managed secretへ戻してreviewed Git `main`由来でredeployする。
+次世代secretを事前生成・保存しrecoverabilityを確認してからProductionへ反映する。
 
-旧managed secretへrollbackすると旧secretで署名されたsession/tokenが再び有効になり得る一方、新secretで発行されたsession/tokenは無効になる。rotation/rollback時は全Adminへ再loginを前提とする。
+- 定期rotationや設定変更など、**直前secretがcompromiseしていないと確認できる通常変更**で問題が発生した場合だけ、保存済みの直前managed secretへrollbackしてreviewed Git `main`由来でredeployできる。
+- 漏えい・盗難・不正利用など**直前secretのcompromiseが疑われるincident response**では、その直前secretへrollbackしない。切替先secretで問題が発生した場合は、さらに別の新しいsecretを生成・保存・recoverability確認したうえでroll-forwardし、application側もrevert / forward-fixして復旧する。
+- compromiseした可能性のあるsecretで署名されたsession/tokenは再び有効化しない。必要に応じて全Admin session無効化・credential reviewなどincident responseを行う。
+
+安全な通常rollbackで旧managed secretへ戻した場合でも、旧secretで署名されたsession/tokenが再び有効になり得る一方、新secretで発行されたsession/tokenは無効になる。rotation / rollback / roll-forward時は全Adminへ再loginを前提とする。
 
 ## Preview database isolation
 
