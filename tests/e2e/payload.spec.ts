@@ -1,6 +1,9 @@
 import { expect, test, type APIResponse } from '@playwright/test'
 
 import { gotoExpected } from './navigation'
+import { getWithTransientRetry } from './request'
+
+test.describe.configure({ retries: 0 })
 
 const publicCollections = ['works', 'posts', 'news', 'schedule', 'social-links'] as const
 const draftEnabledCollections = ['works', 'posts', 'news'] as const
@@ -13,11 +16,12 @@ const sensitiveErrorMarkers = [
   '"stack"',
 ] as const
 
-async function responseDiagnostic(response: APIResponse) {
-  const contentType = response.headers()['content-type'] ?? 'unknown'
-  const body = await response.text()
+function responseDiagnostic(response: APIResponse) {
+  const headers = response.headers()
+  const contentType = headers['content-type'] ?? 'unknown'
+  const requestId = headers['x-nf-request-id'] ?? 'unknown'
 
-  return `status=${response.status()} content-type=${contentType} body=${body.slice(0, 2_000)}`
+  return `status=${response.status()} content-type=${contentType} request-id=${requestId}`
 }
 
 function expectSecurityHeaders(response: APIResponse, path: string) {
@@ -40,21 +44,21 @@ test('保護されたPayload Adminの入口を表示できる', async ({ page })
 
 test('Public pageとPayload Adminへsecurity headersを付与する', async ({ request }) => {
   for (const path of ['/', '/admin'] as const) {
-    const response = await request.get(path)
+    const response = await getWithTransientRetry(request, path)
 
-    expect(response.status(), `${path}: ${await responseDiagnostic(response)}`).toBeLessThan(500)
+    expect(response.status(), `${path}: ${responseDiagnostic(response)}`).toBeLessThan(500)
     expectSecurityHeaders(response, path)
   }
 })
 
 test('Users collectionを匿名ユーザーへ公開しない', async ({ request }) => {
-  const response = await request.get('/api/users?limit=1')
+  const response = await getWithTransientRetry(request, '/api/users?limit=1')
 
-  expect([401, 403], await responseDiagnostic(response)).toContain(response.status())
+  expect([401, 403], responseDiagnostic(response)).toContain(response.status())
 })
 
 test('匿名authorization errorへsecret/internal情報を含めない', async ({ request }) => {
-  const response = await request.get('/api/users?limit=1')
+  const response = await getWithTransientRetry(request, '/api/users?limit=1')
   const body = (await response.text()).toLowerCase()
 
   expect([401, 403], `status=${response.status()}`).toContain(response.status())
@@ -65,8 +69,8 @@ test('匿名authorization errorへsecret/internal情報を含めない', async (
 
 test('公開Content collectionは匿名readできる', async ({ request }) => {
   for (const collection of publicCollections) {
-    const response = await request.get(`/api/${collection}?limit=1`)
-    const diagnostic = await responseDiagnostic(response)
+    const response = await getWithTransientRetry(request, `/api/${collection}?limit=1`)
+    const diagnostic = responseDiagnostic(response)
 
     expect(response.status(), `${collection}: ${diagnostic}`).toBe(200)
     const payload = JSON.parse(await response.body().then((body) => body.toString('utf8')))
@@ -76,10 +80,11 @@ test('公開Content collectionは匿名readできる', async ({ request }) => {
 
 test('draft-enabled Contentは匿名queryでもdraftを返さない', async ({ request }) => {
   for (const collection of draftEnabledCollections) {
-    const response = await request.get(
+    const response = await getWithTransientRetry(
+      request,
       `/api/${collection}?where[_status][equals]=draft&limit=1&depth=0`,
     )
-    const diagnostic = await responseDiagnostic(response)
+    const diagnostic = responseDiagnostic(response)
 
     expect(response.status(), `${collection}: ${diagnostic}`).toBe(200)
     const payload = JSON.parse(await response.body().then((body) => body.toString('utf8')))
@@ -89,28 +94,30 @@ test('draft-enabled Contentは匿名queryでもdraftを返さない', async ({ r
 
 test('version endpointを匿名ユーザーへ公開しない', async ({ request }) => {
   for (const collection of draftEnabledCollections) {
-    const response = await request.get(`/api/${collection}/versions?limit=1`)
+    const response = await getWithTransientRetry(request, `/api/${collection}/versions?limit=1`)
 
-    expect([401, 403], `${collection}: ${await responseDiagnostic(response)}`).toContain(
+    expect([401, 403], `${collection}: ${responseDiagnostic(response)}`).toContain(
       response.status(),
     )
   }
 })
 
 test('private Scheduleとdisabled Social Linkは匿名queryへ漏れない', async ({ request }) => {
-  const scheduleResponse = await request.get(
+  const scheduleResponse = await getWithTransientRetry(
+    request,
     '/api/schedule?where[visibility][equals]=private&limit=1&depth=0',
   )
-  expect(scheduleResponse.status(), await responseDiagnostic(scheduleResponse)).toBe(200)
+  expect(scheduleResponse.status(), responseDiagnostic(scheduleResponse)).toBe(200)
   const schedulePayload = JSON.parse(
     await scheduleResponse.body().then((body) => body.toString('utf8')),
   )
   expect(schedulePayload.docs).toEqual([])
 
-  const socialResponse = await request.get(
+  const socialResponse = await getWithTransientRetry(
+    request,
     '/api/social-links?where[enabled][equals]=false&limit=1&depth=0',
   )
-  expect(socialResponse.status(), await responseDiagnostic(socialResponse)).toBe(200)
+  expect(socialResponse.status(), responseDiagnostic(socialResponse)).toBe(200)
   const socialPayload = JSON.parse(
     await socialResponse.body().then((body) => body.toString('utf8')),
   )
@@ -119,18 +126,18 @@ test('private Scheduleとdisabled Social Linkは匿名queryへ漏れない', asy
 
 test('arbitrary OriginへPayload CORS許可を返さない', async ({ request }) => {
   const arbitraryOrigin = 'https://attacker.invalid'
-  const arbitraryResponse = await request.get('/api/works?limit=1', {
+  const arbitraryResponse = await getWithTransientRetry(request, '/api/works?limit=1', {
     headers: {
       Origin: arbitraryOrigin,
     },
   })
 
-  expect(arbitraryResponse.status(), await responseDiagnostic(arbitraryResponse)).toBe(200)
+  expect(arbitraryResponse.status(), responseDiagnostic(arbitraryResponse)).toBe(200)
   expect(arbitraryResponse.headers()['access-control-allow-origin']).not.toBe(arbitraryOrigin)
 
   if (process.env.E2E_BASE_URL) {
     const sameOrigin = new URL(process.env.E2E_BASE_URL).origin
-    const sameOriginResponse = await request.get('/api/works?limit=1', {
+    const sameOriginResponse = await getWithTransientRetry(request, '/api/works?limit=1', {
       headers: {
         Origin: sameOrigin,
       },
@@ -138,7 +145,7 @@ test('arbitrary OriginへPayload CORS許可を返さない', async ({ request })
 
     // Deploy Previewではpublic appとPayload APIがsame-originのため、
     // ブラウザはAccess-Control-Allow-Originを必要としない。APIの正常応答だけを確認する。
-    expect(sameOriginResponse.status(), await responseDiagnostic(sameOriginResponse)).toBe(200)
+    expect(sameOriginResponse.status(), responseDiagnostic(sameOriginResponse)).toBe(200)
   }
 })
 
@@ -150,7 +157,7 @@ test('匿名ユーザーはContent collectionを作成できない', async ({ re
       },
     })
 
-    expect([401, 403], `${collection}: ${await responseDiagnostic(response)}`).toContain(
+    expect([401, 403], `${collection}: ${responseDiagnostic(response)}`).toContain(
       response.status(),
     )
   }
@@ -164,10 +171,10 @@ test('匿名ユーザーはContent collectionを更新・削除できない', as
   })
   const deleteResponse = await request.delete('/api/works/999999999')
 
-  expect([401, 403], `update: ${await responseDiagnostic(updateResponse)}`).toContain(
+  expect([401, 403], `update: ${responseDiagnostic(updateResponse)}`).toContain(
     updateResponse.status(),
   )
-  expect([401, 403], `delete: ${await responseDiagnostic(deleteResponse)}`).toContain(
+  expect([401, 403], `delete: ${responseDiagnostic(deleteResponse)}`).toContain(
     deleteResponse.status(),
   )
 })
