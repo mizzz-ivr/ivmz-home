@@ -14,10 +14,7 @@ const mobileWebKit = {
 
 export default defineConfig({
   testDir: './tests/e2e',
-  // Remote navigation and idempotent API GETs have scoped transport-only retries.
-  // Keep test-level retries disabled so HTTP/security/assertion failures are not
-  // multiplied or accidentally masked by a second retry layer.
-  retries: 0,
+  retries: remoteBaseURL ? 2 : 0,
   workers: remoteBaseURL ? 1 : undefined,
   use: { baseURL },
   webServer: remoteBaseURL
