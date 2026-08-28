@@ -3,6 +3,8 @@ import { expect, test } from '@playwright/test'
 import { gotoExpected } from './navigation'
 import { getWithTransientRetry } from './request'
 
+test.describe.configure({ retries: 0 })
+
 test('serves primary content, metadata, structured data, robots and sitemap', async ({
   page,
   request,
