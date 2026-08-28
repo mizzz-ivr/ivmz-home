@@ -49,7 +49,7 @@ Netlify deploy metadataの`deploy_source`値だけをGit integration有無の判
 
 Continuous Deploymentが動作することと、API / CLI / MCPからProductionを直接publishできないことは別のcontrolである。
 
-ProductionはNetlify **Enforce Git-based deployments** を有効化して、GitHub `main` push以外のProduction publish経路を拒否する。
+2026-08-28、Netlify **Enforce Git-based deployments** を有効化済み。Production publishはGitHub `main`由来へ限定する。
 
 ### Netlify UI
 
@@ -59,9 +59,9 @@ ProductionはNetlify **Enforce Git-based deployments** を有効化して、GitH
 4. Repositoryが `mizzz-ivr/ivmz-home` へ接続されていることを確認する。
 5. Production branchが `main` であることを確認する。
 6. `Enforce deployment methods` -> `Configure` を開く。
-7. Git-based deployment enforcementを有効化する。
+7. Git-based deployment enforcementが有効であることを確認する。
 
-有効化後のacceptance:
+acceptance:
 
 - `main` pushはProduction deploy可能
 - Deploy Preview / Branch Deployは引き続き利用可能
@@ -73,18 +73,21 @@ ProductionはNetlify **Enforce Git-based deployments** を有効化して、GitH
 
 ## GitHub main guardrail
 
-NetlifyだけでなくGitHub `main`自体をruleset / branch protectionで保護する。
+2026-08-28、Repository ruleset `Protect main` をactive化済み。
 
-推奨baseline:
+現在のbaseline:
 
+- default branch `main` を対象
 - Require a pull request before merging
-- Require repository CI status checks
+- required status check: `quality`
+- required status check: `netlify/ivmz-home/deploy-preview`
+- Require conversation resolution
+- Strict required status checks policy
 - Block force pushes
 - Block branch deletion
-- Require conversation resolutionを利用可能なら有効化
-- Admin bypassは緊急時に本当に必要な範囲だけにする
+- bypass actorなし
 
-Repository設定変更後、通常開発は `Issue -> branch -> implementation -> CI -> Draft PR -> Deploy Preview -> review -> merge` を維持する。
+Repository設定変更後も、通常開発は `Issue -> branch -> implementation -> CI -> Draft PR -> Deploy Preview -> review -> merge` を維持する。
 
 ## Environment separation
 
@@ -106,11 +109,12 @@ Production dataをPreviewへcloneしない。
 - Production -> 現行Production専用secret
 - Deploy Preview -> Productionと異なるsecret
 - Branch Deploy -> Production / Deploy Preview双方と異なるsecret
+- Preview Server -> Production / Deploy Preview / Branch Deployと異なる専用secret
 - Local / CI -> Production secretを使わない
 
 secret値はRepository / Issue / PR / Notion / CI logへ記載しない。
 
-Production secret rotationは旧Production secretを外部secret managerからrecoverできる状態を作ってから行う。Netlifyからmasked値しか取得できない状態で旧secretを上書きしない。
+現行Production secretはNetlify上でwrite-only/maskedとなっており、旧実値を後から取得できない。このため、現行Production secretを本Issue完了条件として無理にrotationしない。将来rotationするときは、新secretを先に承認済みsecret managerで生成・保存・recoverability確認してからNetlifyへ反映し、その後のrotation世代からrollback可能な運用へ移行する。
 
 ## Preview database migration gate
 
@@ -173,6 +177,8 @@ Production deploy後は最低限次を確認する。
 Production変更前にcurrent known-good deploy ID / commitを記録する。
 
 Application regression時はNetlifyからknown-good deployをrestoreする。
+
+古いdeployをrestoreした場合、Production `commit_ref`は一時的にGitHub `main` HEADと不一致になり得る。このrestoreは緊急時の一時例外として扱い、直ちに`main`側へrevertまたはforward-fix PRを作成してreview/CIを通し、GitとProductionを再収束させる。再収束するまで無関係な変更をProductionへ流さない。
 
 DB migrationが原因でない変更をrollbackするためにProduction DBへ逆DDL/DMLを流さない。
 
