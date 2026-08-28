@@ -257,6 +257,11 @@ SRIはexternal JavaScript integrityとinline script/style CSP許可を同一問�
 - [x] Preview由来の不要sourceをProduction allowlistへ含めない方針
 - [x] rendering / cache impactをcandidateごとに記録
 
+## Validation history
+
+- Iteration head `16378105fa3861bf821bdc4bfc187d7632b210f1`: CI `#343` success。format / lint / typecheck / unit / migration / generated artifacts / buildを通過。
+- Final exact-head Deploy PreviewはこのRunbook更新commitを対象に、PR titleから`[skip netlify]`を外した状態で実施する。
+
 ## Official references
 
 - Next.js CSP: https://nextjs.org/docs/app/guides/content-security-policy
