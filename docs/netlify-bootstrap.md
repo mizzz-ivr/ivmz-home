@@ -1,104 +1,188 @@
-# Netlify bootstrap
+# Netlify bootstrap / Production operations
 
-Status: Repository connected; Deploy Preview gate GREEN — 2026-08-26
+Status: Repository connected / Production live / Deploy Preview gate GREEN — updated 2026-08-28
 
-## Repository security baseline
+## Source of Truth
 
-Netlify deployment must not run from a revision older than:
+- Repository: `mizzz-ivr/ivmz-home`
+- Production branch: `main`
+- Netlify project: `ivmz-home`
+- Netlify Site ID: `a6b04c39-d2c7-4996-8ba1-277ccb3532e3`
+- Canonical Production: `https://ivmz.ivrm.jp`
+- Netlify branch alias: `https://main--ivmz-home.netlify.app`
 
-- main merge commit: `0e61e7bbf887a8a132359f9ac0727ff3486d7b21`
+Production releaseはRepositoryのreview済み`main`をSource of Truthとする。固定SHAを恒久的なminimum deploy revisionとして運用せず、deploy時にGitHub `main` HEADとNetlify Production `commit_ref`の一致を確認する。
+
+## Runtime baseline
+
 - Next.js: `16.3.3`
 - eslint-config-next: `16.3.3`
 - package manager: `pnpm@10.17.0`
 - Node.js: 24 series (`engines.node >=24.15.0`)
+- Netlify Next.js integration: `@netlify/plugin-nextjs@5.15.13`
 - committed `pnpm-lock.yaml`
 - CI install: `pnpm install --frozen-lockfile`
 
-This baseline remediates Critical advisory `GHSA-2xp9-vwfh-vxw4` and includes the reduced-motion layout fix carried by PR #2.
+Next.js 16.3.3 baselineはCritical advisory `GHSA-2xp9-vwfh-vxw4` remediationを含む。
 
-## Netlify project
+## Git integration
 
-- Team: `mizzz-dev`
-- Project: `ivumz-home`
-- Site ID: `a6b04c39-d2c7-4996-8ba1-277ccb3532e3`
-- Initial hostname: `https://ivumz-home.netlify.app`
-- Canonical production target: `https://mizzz.ivrm.jp`
-- Existing project `ivuru-web`: unchanged; do not modify, rename, or reuse
+Repository bindingはNetlify UIで完了済み。
 
-## Git binding
+Productionの期待経路:
 
-Repository binding was completed in the Netlify UI on 2026-08-26.
+```text
+GitHub pull request
+  -> CI / Deploy Preview / review
+  -> merge to main
+  -> Netlify Git integration
+  -> Production
+```
 
-Verified from the first Git-backed deployment:
+2026-08-28のPR #24 mergeでは、GitHub `main` merge commit `cf329210e0712af3dfb816e69e03fa94113914c1` がmerge直後にNetlify Productionへ自動deployされ、Netlify `commit_ref`も同一SHA、state `ready`、secret scan 0 matchesを確認した。
 
-- repository commit: `0e61e7bbf887a8a132359f9ac0727ff3486d7b21`
-- production branch: `main`
-- framework: `next`
-- runtime: `nodejs24.x`
-- Netlify Next.js integration: `@netlify/plugin-nextjs@5.15.13`
-- plugin state: `success`
-- deployment state: `ready`
+この確認によりGitHub `main` -> Netlify Productionのcontinuous deployment自体は動作している。
 
-Netlify automatically published the connected `main` revision in `production` context as part of repository linking. This was not a manually-triggered production release. The deployment used the already-remediated security baseline, so there is no vulnerable Next.js 16.3.2 deployment to unwind.
+Netlify deploy metadataの`deploy_source`値だけをGit integration有無の判定材料にしない。Git由来deployかどうかは、merge/push時刻、branch、commit URL、commit title、committer、exact `commit_ref`の一致を合わせて確認する。
 
-No custom production domain or DNS record has been attached yet.
+## Production deployment enforcement
 
-## Configuration policy
+Continuous Deploymentが動作することと、API / CLI / MCPからProductionを直接publishできないことは別のcontrolである。
 
-No `netlify.toml` or hosting-specific workaround is added for the foundation bootstrap unless a real deployment failure proves it necessary.
+ProductionはNetlify **Enforce Git-based deployments** を有効化して、GitHub `main` push以外のProduction publish経路を拒否する。
 
-The application remains portable:
+### Netlify UI
 
-- PostgreSQL is behind `DATABASE_URL`
-- media stays behind the Payload storage adapter boundary
-- email, bot protection, and rate limiting remain replaceable adapters
-- Cloudflare remains DNS-only for now
-- no Workers, D1, native R2 binding, or DNS-provider page logic
+1. Project `ivmz-home` を開く。
+2. `Project configuration` を開く。
+3. `Build & deploy` -> `Continuous deployment` を開く。
+4. Repositoryが `mizzz-ivr/ivmz-home` へ接続されていることを確認する。
+5. Production branchが `main` であることを確認する。
+6. `Enforce deployment methods` -> `Configure` を開く。
+7. Git-based deployment enforcementを有効化する。
+
+有効化後のacceptance:
+
+- `main` pushはProduction deploy可能
+- Deploy Preview / Branch Deployは引き続き利用可能
+- CLI / API / MCPからProductionへの直接publishは拒否される
+- Deploy PreviewをUIから直接Production publishできない
+- Productionに出す変更はPRを`main`へmergeする
+
+設定変更前に現在のknown-good Production deploy IDをrollback referenceとして記録する。Enforce設定自体は解除可能だが、Production failureのrollbackはNetlifyのknown-good deploy restoreを使用する。
+
+## GitHub main guardrail
+
+NetlifyだけでなくGitHub `main`自体をruleset / branch protectionで保護する。
+
+推奨baseline:
+
+- Require a pull request before merging
+- Require repository CI status checks
+- Block force pushes
+- Block branch deletion
+- Require conversation resolutionを利用可能なら有効化
+- Admin bypassは緊急時に本当に必要な範囲だけにする
+
+Repository設定変更後、通常開発は `Issue -> branch -> implementation -> CI -> Draft PR -> Deploy Preview -> review -> merge` を維持する。
+
+## Environment separation
+
+Netlify environment variablesはcontextを分離する。
+
+### DATABASE_URL
+
+- Production -> Supabase `ivrm-core`
+- Deploy Preview -> Supabase `ivmz-home-preview`
+- Branch Deploy -> `ivmz-home-preview`
+- Local / Dev -> Productionとは別の開発接続先
+
+Production dataをPreviewへcloneしない。
+
+### PAYLOAD_SECRET
+
+2026-08-28に次の分離を実施済み。
+
+- Production -> 現行Production専用secret
+- Deploy Preview -> Productionと異なるsecret
+- Branch Deploy -> Production / Deploy Preview双方と異なるsecret
+- Local / CI -> Production secretを使わない
+
+secret値はRepository / Issue / PR / Notion / CI logへ記載しない。
+
+Production secret rotationは旧Production secretを外部secret managerからrecoverできる状態を作ってから行う。Netlifyからmasked値しか取得できない状態で旧secretを上書きしない。
+
+## Preview database migration gate
+
+Deploy Preview / Branch DeployはProduction DBへmigrationを実行しない。
+
+`netlify.toml`のPreview/Branch buildだけが、target guard通過後にRepository migrationを`ivmz-home-preview`へ適用する。
+
+Safety guard:
+
+- contextが`deploy-preview` / `branch-deploy`以外なら拒否
+- `DATABASE_URL`未設定なら拒否
+- Preview Project refと一致しなければ拒否
+- Production Project refは明示的に拒否
+- migration commandのみsession poolingを使用
+- connection stringをlogへ出さない
+
+Production migrationはNetlify buildへ暗黙に組み込まない。
 
 ## Deploy Preview acceptance gate
 
-The Deploy Preview gate is GREEN.
+PRのfinal headでは次を通す。
 
-Validated against the real PR #3 Netlify preview URL with Playwright from GitHub Actions:
+- GitHub CI
+  - format check
+  - lint
+  - typecheck
+  - unit tests
+  - ephemeral PostgreSQL migration
+  - Payload generated artifact drift
+  - Next production build
+- Netlify Deploy Preview success
+- Payload public API preflight
+- Chromium Playwright
+- mobile WebKit Playwright
+- Payload security boundary tests
+- non-existent probe identityによるlogin rate-limit 429 verification
 
-- Deploy Preview alias: `https://deploy-preview-3--ivumz-home.netlify.app`
-- initial validated Deploy ID: `6a8e37d64834840009c2e2ef`
-- framework: `next`
-- runtime: `nodejs24.x`
-- Netlify Next.js integration: `@netlify/plugin-nextjs@5.15.13`
-- plugin state: `success`
-- Next.js Server Handler deployed successfully
-- Edge Functions: none
-- remote Playwright result: `6 passed`
-- desktop browser: Chromium
-- mobile baseline: iPhone 13 / WebKit
+Remote GETの既知transient transport errorはPR #24のshared helperで最大1回だけretryする。HTTP 4xx/5xx、assertion failure、mutation requestはretryしない。
 
-The remote smoke verifies:
+## Production post-deploy acceptance
 
-- root response and primary SSR/RSC DOM content
-- identity heading and primary navigation
-- canonical metadata (`https://mizzz.ivrm.jp`)
-- canonical character image loads through `next/image`
-- `/robots.txt`
-- `/sitemap.xml`
-- responsive mobile rendering baseline
-- `prefers-reduced-motion: reduce` switches About/Writing layered content to static non-overlapping layout
+Production deploy後は最低限次を確認する。
 
-The Playwright configuration keeps local development portable: `E2E_BASE_URL` enables remote deployment smoke, while normal local runs continue to use `pnpm dev` on localhost. Netlify-specific preview URL construction is isolated to `.github/workflows/netlify-preview-smoke.yml` and is not used by application page logic.
+1. Netlify Production `commit_ref` == GitHub `main` HEAD
+2. state `ready`
+3. plugin state success
+4. secret scan 0 matches
+5. `/` と主要public routeが正常
+6. `/admin` login surfaceが正常
+7. Production CORS/CSRF trustへlocalhostを含めない
+8. security headersがpublic/adminへ付与される
+9. CSPは明示承認までReport-Only
+10. anonymous Users / drafts / versions / mutationsが拒否される
+11. Production `DATABASE_URL`がPreview projectを指していない
 
-`mizzz.ivrm.jp` DNS changes happen only after the Netlify deployment baseline is healthy; DNS changes never precede the working Netlify project.
+実admin identityを使ったrate-limit stress testは行わない。
 
-## Baseline production deploy created by Git binding
+## Rollback
 
-- Deploy ID: `6a8e3742ae362707d06a753a`
-- Context: `production`
-- Branch: `main`
-- Commit: `0e61e7bbf887a8a132359f9ac0727ff3486d7b21`
-- State: `ready`
-- Published: `2026-08-26T00:46:32.716Z`
-- HTTPS URL: `https://ivumz-home.netlify.app`
-- Function: Next.js Server Handler
-- Runtime: Node.js 24
-- Edge Functions: none
+Production変更前にcurrent known-good deploy ID / commitを記録する。
 
-This netlify.app deployment is an infrastructure baseline only. `https://mizzz.ivrm.jp` remains unchanged until the merged Netlify bootstrap revision is confirmed healthy in production.
+Application regression時はNetlifyからknown-good deployをrestoreする。
+
+DB migrationが原因でない変更をrollbackするためにProduction DBへ逆DDL/DMLを流さない。
+
+HSTSをsourceから削除してもclient cacheは即時解除されない。緊急解除が必要な場合はHTTPS responseで `Strict-Transport-Security: max-age=0` を返す専用対応が必要。
+
+## Portability policy
+
+- PostgreSQLは`DATABASE_URL`の背後に置く
+- Payload mediaはstorage adapter境界へ置く
+- email / bot protection / rate limitingはreplaceable adapterとして扱う
+- CloudflareはDNS境界に留める
+- hosting provider固有logicをpage/content codeへ入れない
+- Production Git enforcementはdeployment controlでありapplication architectureへ混在させない
