@@ -3,7 +3,7 @@ const REPO = 'mizzz-ivr'
 const EVENT_TYPE = 'profile-signal-full'
 const API_VERSION = '2026-03-10'
 
-export default async () => {
+const handler = async () => {
   const token = process.env.PROFILE_SIGNAL_GITHUB_TOKEN
   if (!token) {
     throw new Error('PROFILE_SIGNAL_GITHUB_TOKEN is not configured')
@@ -33,3 +33,5 @@ export default async () => {
 
   console.log('Profile Signal full dispatch accepted by GitHub')
 }
+
+export default handler
