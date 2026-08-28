@@ -1,4 +1,4 @@
-import { expect, test, type Page, type TestInfo } from '@playwright/test'
+import { expect, test, type Page, type Response, type TestInfo } from '@playwright/test'
 
 type SanitizedCspViolation = {
   blocked: string
@@ -29,6 +29,9 @@ const authenticatedAdminRoutes = [
   '/admin/collections/posts',
 ] as const
 
+const remoteObservationAttempts = process.env.E2E_BASE_URL ? 2 : 1
+const remoteObservationTimeoutMs = process.env.E2E_BASE_URL ? 20_000 : undefined
+
 function dedupeViolations(violations: SanitizedCspViolation[]) {
   const unique = new Map<string, SanitizedCspViolation>()
 
@@ -47,6 +50,41 @@ function dedupeViolations(violations: SanitizedCspViolation[]) {
       `${right.effectiveDirective}|${right.blocked}`,
     ),
   )
+}
+
+function isTransientNavigationError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error)
+  return /net::ERR_|NS_ERROR_|navigation.*interrupted|page\.goto: Timeout|Timeout \d+ms exceeded/i.test(
+    message,
+  )
+}
+
+async function gotoObservation(page: Page, route: string): Promise<Response | null> {
+  let lastError: unknown
+
+  for (let attempt = 1; attempt <= remoteObservationAttempts; attempt += 1) {
+    try {
+      return await page.goto(route, {
+        waitUntil: 'domcontentloaded',
+        timeout: remoteObservationTimeoutMs,
+      })
+    } catch (error) {
+      lastError = error
+
+      if (attempt === remoteObservationAttempts || !isTransientNavigationError(error)) {
+        throw error
+      }
+
+      // Keep retry diagnostics privacy-safe: route labels are fixed constants and
+      // no URL, response body, request ID, cookie, token, or credential is emitted.
+      console.info(`CSP_NAVIGATION_RETRY ${JSON.stringify({ route, attempt })}`)
+      await page.waitForTimeout(250)
+    }
+  }
+
+  throw lastError instanceof Error
+    ? lastError
+    : new Error('CSP observation navigation failed without an Error object.')
 }
 
 async function installCspObserver(page: Page) {
@@ -88,7 +126,7 @@ async function installCspObserver(page: Page) {
 }
 
 async function observeRoute(page: Page, route: string, testInfo: TestInfo) {
-  const response = await page.goto(route, { waitUntil: 'domcontentloaded' })
+  const response = await gotoObservation(page, route)
   expect(response, `${route}: navigation response`).not.toBeNull()
 
   if (!response) return
@@ -128,6 +166,10 @@ test.describe('CSP Report-Only observation', () => {
   test('public routes and Payload Admin login surface expose sanitized violations only', async ({
     page,
   }, testInfo) => {
+    if (process.env.E2E_BASE_URL) {
+      testInfo.setTimeout(90_000)
+    }
+
     await installCspObserver(page)
 
     for (const route of publicObservationRoutes) {
@@ -159,6 +201,8 @@ test.describe('CSP Report-Only observation', () => {
     if (!baseURL) {
       throw new Error('E2E_BASE_URL is required when CSP_ADMIN_STORAGE_STATE is set.')
     }
+
+    testInfo.setTimeout(60_000)
 
     const context = await browser.newContext({
       baseURL,
