@@ -2,7 +2,9 @@ import type { APIRequestContext, APIResponse } from '@playwright/test'
 
 type GetOptions = Parameters<APIRequestContext['get']>[1]
 
-const remoteGetAttempts = process.env.E2E_BASE_URL ? 2 : 1
+const isRemoteE2E = Boolean(process.env.E2E_BASE_URL)
+const remoteGetAttempts = isRemoteE2E ? 2 : 1
+const remoteGetTimeoutMs = 8_000
 const remoteGetRetryDelayMs = 500
 const transientNetworkMarkers = [
   'econnreset',
@@ -13,6 +15,7 @@ const transientNetworkMarkers = [
   'eai_again',
   'socket hang up',
   'timed out',
+  'timeout',
 ] as const
 
 function isTransientNetworkError(error: unknown) {
@@ -31,11 +34,17 @@ export async function getWithTransientRetry(
   path: string,
   options?: GetOptions,
 ): Promise<APIResponse> {
+  const requestOptions = isRemoteE2E
+    ? { ...options, timeout: options?.timeout ?? remoteGetTimeoutMs }
+    : options
+
   for (let attempt = 1; attempt <= remoteGetAttempts; attempt += 1) {
     try {
       // HTTP responses, including 4xx/5xx, are returned immediately. Only a thrown
-      // transient transport error is eligible for a retry.
-      return await request.get(path, options)
+      // transient transport error is eligible for a retry. Remote request attempts use
+      // their own timeout so Playwright's broader test timeout cannot dispose the request
+      // context before this helper can classify and retry the transport failure.
+      return await request.get(path, requestOptions)
     } catch (error) {
       const canRetry = attempt < remoteGetAttempts && isTransientNetworkError(error)
       if (!canRetry) throw error
