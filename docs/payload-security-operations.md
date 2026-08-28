@@ -12,8 +12,10 @@ Repositoryは `mizzz-ivr/ivmz-home`、Production canonicalは `https://ivmz.ivrm
 
 - Payload Admin / Auth hardening: Production反映済み
 - Netlify Deploy Preview / Branch Deploy database: Productionから分離済み
-- Deploy Preview / Branch Deploy `PAYLOAD_SECRET`: Productionから分離済み、かつ相互にも別secret
-- Production `PAYLOAD_SECRET`: 未rotation
+- Deploy Preview / Branch Deploy / Preview Server / Local `PAYLOAD_SECRET`: Productionから分離済み
+- Production `PAYLOAD_SECRET`: 現行legacy secretを維持、未rotation
+- Netlify **Enforce Git-based deployments**: owner設定済み
+- GitHub Ruleset `Protect main`: active
 - CSP: `Content-Security-Policy-Report-Only` のまま運用
 - Production / Preview Supabase `ivmz_home`: client rolesから直接到達不能をread-onlyで再確認済み
 - Production DBへのfixture / destructive DDL/DML: 実施しない
@@ -73,18 +75,19 @@ CSPはPayload AdminやNext.js runtimeを壊さないことを優先し、Report-
 
 ### Current state
 
-2026-08-28にNetlify contextを再確認し、以下へ分離した。
+2026-08-28にNetlify contextを分離した。
 
-- Production: 現行Production専用secretを維持
+- Production: 現行Production専用legacy secretを維持
 - Deploy Preview: Productionと異なるPreview専用secret
 - Branch Deploy: Production / Deploy Previewの両方と異なるBranch専用secret
+- Preview Server: Production / Deploy Preview / Branch Deployと異なる専用secret
 - Local / CI: Production secretを利用しない
 
 値そのものは記録しない。
 
 ### Why split contexts
 
-Production / Deploy Preview / Branch Deployで同じ`PAYLOAD_SECRET`を共有すると、Preview側の侵害がProduction auth secretの侵害へ波及する可能性がある。Preview/Branchを独立secretにすることでblast radiusを分離する。
+Productionと非Production contextで同じ`PAYLOAD_SECRET`を共有すると、Preview / Branch / Preview Server / Local側の侵害がProduction auth secretの侵害へ波及する可能性がある。contextごとに独立secretを使いblast radiusを分離する。
 
 ### Impact of rotation
 
@@ -94,7 +97,7 @@ secret変更自体はDB schema migrationを必要としないが、暗号化済�
 
 ### Preview validation sequence
 
-1. Deploy Preview / Branch DeployをProductionと異なるsecretへ分離する。
+1. Deploy Preview / Branch Deploy / Preview ServerをProductionと異なるsecretへ分離する。
 2. fresh Deploy Previewを作成する。
 3. build / Payload migration guard / public API preflightを通す。
 4. `/admin` login surfaceを確認する。
@@ -104,35 +107,46 @@ secret変更自体はDB schema migrationを必要としないが、暗号化済�
 
 Preview側にProduction dataやProduction credentialをコピーしない。
 
-### Production rotation gate
+### Current Production rotation decision
 
-Production rotationは、次をすべて満たすまで実行しない。
+現行Production secretはNetlify上でwrite-only / maskedとして保存されており、そのraw legacy valueを後から取得できない。
 
-1. **現在のProduction secretの実値を、Netlifyとは別の承認済みsecret managerへrollback用として保存できていること。**
-2. 保存した値を実際に復旧時に取得できることを確認すること。
-3. fresh Previewで分離secretのacceptanceが完了していること。
-4. Production rollback deploy referenceを記録していること。
-5. Admin再loginが必要になる可能性を許容できること。
-6. Production change window中にpublic/API/CMS acceptanceを実施できること。
+そのため、Security rollout完了のためだけにProduction secretを上書きしない。現時点ではrotationを**deferred**とする。
 
-Netlify API/MCPからmasked secretしか取得できず旧値を復元できない場合、その状態でProduction secretを上書きしてはいけない。
+現行legacy secretから最初のmanaged secretへ切り替える場合、legacy raw valueへ戻すsecret-level rollbackはできない。この最初の切替は通常のrotationではなく、**明示承認されたone-way cutover**として扱う。
 
-### Production rotation sequence
+### First managed-secret cutover gate
 
-1. rollback用旧secretのrecoverabilityを確認する。
-2. Production contextだけ新しいsecretへ更新する。
-3. Git `main`由来のProduction deployを実行する。
-4. exact `main` commit / deploy `ready` / secret scan 0件を確認する。
+最初のProduction cutoverは次をすべて満たした場合だけ実施する。
+
+1. 新しいProduction secretをapproved secret managerで生成する。
+2. Netlifyへ設定する前に、新secretをsecret managerへ保存する。
+3. 保存済み新secretを実際にrecoverできることを確認する。
+4. legacy secretへ戻せないone-way cutoverであることを明示的に受け入れる。
+5. current known-good Production deploy ID / commitを記録する。
+6. fresh Preview acceptanceがGREENであることを確認する。
+7. Admin再loginが必要になる可能性を許容できるmaintenance windowで実施する。
+8. public/API/CMS acceptanceを直ちに実施できることを確認する。
+
+### First managed-secret cutover sequence
+
+1. approved secret manager上の新secret recoverabilityを再確認する。
+2. Netlify Production contextだけを新secretへ更新する。
+3. reviewed Git `main`由来のProduction deployを実行する。
+4. exact `main` commit / deploy `ready` / plugin success / secret scan 0件を確認する。
 5. public routes / Payload public APIを確認する。
 6. 正規Adminでloginし、新sessionが発行されることを確認する。
-7. CMS read/writeとlogoutを確認する。
-8. 問題がなければ旧secretをrotation rollback専用保管へ移す。
+7. CMS read/write / logout / 再loginを確認する。
+8. 問題がある場合も未知のlegacy secretへ戻そうとせず、新managed secretを維持したままapplication側をrevert / forward-fixする。
+9. acceptance完了後、新managed secretを以後のrecoverable baselineとする。
 
-### Rollback
+### Subsequent rotation / rollback
 
-問題がある場合は、保存済みの旧Production secretへ戻してGit由来のProduction redeployを行う。
+最初のmanaged-secret cutover完了後は、各rotation前に現在のmanaged secretがsecret managerからrecoverableであることを確認する。
 
-旧secretへrollbackすると旧secretで署名されたsession/tokenが再び有効になり得る一方、新secretで発行されたsession/tokenは無効になる。rotation/rollback時は全Adminへ再loginを前提とする。
+次世代secretを事前保存してからProductionへ反映し、問題がある場合は保存済みの直前managed secretへ戻してreviewed Git `main`由来でredeployする。
+
+旧managed secretへrollbackすると旧secretで署名されたsession/tokenが再び有効になり得る一方、新secretで発行されたsession/tokenは無効になる。rotation/rollback時は全Adminへ再loginを前提とする。
 
 ## Preview database isolation
 
@@ -192,21 +206,20 @@ GitHub reviewed PR
   -> Production
 ```
 
-Netlifyでは **Enforce Git-based deployments** を有効化し、CLI / API / MCP / Deploy Previewの直接Production publishを拒否する。
+2026-08-28、Netlify **Enforce Git-based deployments** はowner設定済み。Production publishはreviewed Git `main`由来へ限定する。
 
-Netlify UI:
+GitHub側もRepository Ruleset `Protect main` をactive化済み。
 
-1. Project `ivmz-home`
-2. Project configuration
-3. Build & deploy
-4. Continuous deployment
-5. Enforce deployment methods
-6. Configure
-7. Git-based Production deployment enforcementを有効化
+- Require Pull Request
+- required status check: `quality`
+- required status check: `netlify/ivmz-home/deploy-preview`
+- Require conversation resolution
+- strict required status checks policy
+- force-push禁止
+- deletion禁止
+- bypass actorなし
 
 有効化後もDeploy Preview / Branch Deployの非Production deployは利用できる。
-
-GitHub側では`main`をruleset / branch protectionで保護し、PR経由・CI成功・force-push/deletion禁止を基本とする。
 
 ## Acceptance checklist
 
@@ -218,7 +231,7 @@ GitHub側では`main`をruleset / branch protectionで保護し、PR経由・CI�
 - Public page / Payload Adminにsecurity headersが付く
 - CSPは明示的なenforce承認までReport-Only
 - Deploy Previewでlogin rate limitが429を返す
-- Production / Preview / Branchの`PAYLOAD_SECRET`を共有しない
+- Production / Deploy Preview / Branch Deploy / Preview Server / Localで`PAYLOAD_SECRET`を共有しない
 - Production DBとPreview DBを共有しない
 - client rolesへ`ivmz_home` grantsを与えない
 - Production publishをreviewed Git `main`へ限定する
