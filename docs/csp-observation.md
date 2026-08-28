@@ -85,6 +85,27 @@ NetlifyはCSP reporting functionやthird-party collectorも利用できるが、
 
 violationが存在すること自体ではfailしない。Issue #29のPhase Bではviolationが観測対象だからである。
 
+Remote navigationだけは既知の一時的transport/navigation failureに限り最大2回まで試行する。HTTP status assertion、CSP header assertion、violation分類自体はretryしない。retry diagnosticには固定route labelとattempt以外のrequest/response情報を出さない。
+
+## Deploy Preview inventory — 2026-08-28
+
+Exact-head Deploy Preview Smoke run `#309` / commit `cc26be416ce6ade0a1810d974c25fda9422a5fd4` はChromium / mobile WebKitともGREEN。
+
+両browserで共通して観測したsanitized inventory:
+
+| Surface | Effective directive / blocked category | Classification |
+| --- | --- | --- |
+| public routes | `script-src-elem` / `inline` | Next.js / React framework requirement candidate |
+| public routes | `style-src-attr` / `inline` | framework/application rendering requirement candidate |
+| `/admin` login surface | `script-src-elem` / `inline` | shared Next.js / React requirement candidate |
+| `/admin` login surface | `style-src-attr` / `inline` | shared rendering requirement candidate |
+| `/admin` login surface | `style-src-elem` / `inline` | Payload Admin-specific requirement candidate |
+| Deploy Preview | `frame-src` / `https://app.netlify.com` | Netlify Deploy Preview environment; do not promote to Production allowlist |
+
+観測上、`unsafe-eval`を要求するviolationは確認していない。外部`script` / `img` / `font` / `connect` / `worker` originをProduction policyへ追加すべき証拠も、このPreview inventoryからは得られていない。
+
+この結果から、Payload Adminだけ追加のinline style requirementを持つため、public routesと`/admin`のpolicy分離は有力candidateとして残す。ただしauthenticated Admin operationまで観測する前に確定しない。
+
 ## Production public / login-surface observation
 
 Productionへの観測も同じspecを使用する。read-only public routesと`/admin` login surfaceにはcredential不要。
@@ -181,11 +202,23 @@ Next.js公式はrequestごとのnonceをCSP headerへ入れるstrict CSPをサ�
 
 ### Candidate B — SRI / hash-based CSP
 
-Next.jsにはSRIによるhash-based CSP supportがあるが、現時点ではexperimentalでApp Router + webpack限定。
+Next.jsのSRIについては、**16.3.3時点で公式情報に整合しない記述があるため、webpack opt-outの要否をRunbook上で断定しない**。
 
-`ivmz-home`はNext.js 16系で、Next.js 16は`next build`のdefault bundlerがTurbopackである。SRIを採用するにはwebpackへopt-outする必要があり、build pipeline / deploy behaviorの変更を伴う。
+確認済みの公式情報:
 
-したがってSRIも観測前には採用しない。
+- CSP guideは`experimental.sri`をexperimental / App Router / webpack-onlyと記載している。
+- Turbopack API referenceにも`experimental.sri.algorithm`をTurbopack未対応featureとして記載している。
+- 一方、Next.js 16.2 release notes / Turbopack 16.2 release notesはJavaScript filesのSRI supportをTurbopack improvementとして明記している。
+
+したがって、enforcement PRを作る前に**exact Next.js `16.3.3` + current Netlify build pipeline**で小さなPreview spikeを行い、次を実測する:
+
+1. Turbopack buildで`experimental.sri`が実際に有効か。
+2. emitted external JavaScriptへ`integrity`が付与されるか。
+3. inline React Server Components / flight scriptsがstrict `script-src`で残るか。
+4. CDN/Netlify配信後もintegrity hashが一致するか。
+5. `style-src-attr` / `style-src-elem` requirementをSRIでは解決できないことを前提に別strategyが必要か。
+
+SRIはexternal JavaScript integrityとinline script/style CSP許可を同一問題として扱わない。Preview inventoryではinline script/styleが実際に主要violationなので、SRI単独をenforcement solutionとはみなさない。
 
 ### Candidate C — public / Admin policy separation
 
@@ -215,19 +248,20 @@ Next.jsにはSRIによるhash-based CSP supportがあるが、現時点ではexp
 
 次を満たしてからenforcement candidate実装へ進む。
 
-- Chromium Deploy Preview inventory
-- mobile WebKit Deploy Preview inventory
-- Production public/login-surface inventory
-- authenticated Admin inventory
-- framework / Payload / application / third-party分類
-- required origin / inline requirementに証拠がある
-- unnecessary sourceをallowlistへ含めない
-- rendering / cache impactを候補ごとに記録する
+- [x] Chromium Deploy Preview inventory
+- [x] mobile WebKit Deploy Preview inventory
+- [ ] Production public/login-surface inventory
+- [ ] authenticated Admin inventory
+- [x] Previewのframework / Payload / application / third-party初期分類
+- [ ] authenticated Adminを含むrequired origin / inline requirementに証拠がある
+- [x] Preview由来の不要sourceをProduction allowlistへ含めない方針
+- [x] rendering / cache impactをcandidateごとに記録
 
 ## Official references
 
 - Next.js CSP: https://nextjs.org/docs/app/guides/content-security-policy
 - Next.js 16 upgrade / Turbopack default: https://nextjs.org/docs/app/guides/upgrading/version-16
+- Next.js 16.2 release notes: https://nextjs.org/blog/next-16-2
 - Payload Admin overview: https://payloadcms.com/docs/admin/overview
 - Payload production deployment: https://payloadcms.com/docs/production/deployment
 - Netlify CSP: https://docs.netlify.com/manage/security/content-security-policy/
