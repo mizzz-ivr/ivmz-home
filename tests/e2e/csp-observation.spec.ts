@@ -123,15 +123,16 @@ async function observeRoute(page: Page, route: string, testInfo: TestInfo) {
 }
 
 test.describe('CSP Report-Only observation', () => {
-  test('public routes and Payload Admin login surface expose sanitized violations only', async ({
-    page,
-  }, testInfo) => {
-    await installCspObserver(page)
+  test(
+    'public routes and Payload Admin login surface expose sanitized violations only',
+    async ({ page }, testInfo) => {
+      await installCspObserver(page)
 
-    for (const route of publicObservationRoutes) {
-      await observeRoute(page, route, testInfo)
-    }
-  })
+      for (const route of publicObservationRoutes) {
+        await observeRoute(page, route, testInfo)
+      }
+    },
+  )
 
   test(
     'Payload public API remains Report-Only and is not accidentally enforced',
