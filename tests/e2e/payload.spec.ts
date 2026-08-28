@@ -3,6 +3,8 @@ import { expect, test, type APIResponse } from '@playwright/test'
 import { gotoExpected } from './navigation'
 import { getWithTransientRetry } from './request'
 
+test.describe.configure({ retries: 0 })
+
 const publicCollections = ['works', 'posts', 'news', 'schedule', 'social-links'] as const
 const draftEnabledCollections = ['works', 'posts', 'news'] as const
 const sensitiveErrorMarkers = [
