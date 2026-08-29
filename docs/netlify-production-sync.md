@@ -41,28 +41,19 @@ Repository-side suppression was checked:
 
 Draft PR #39 was created from the exact current `main` to determine whether GitHub/Netlify integration and builds are globally broken.
 
-Validated first diagnostic head:
+Final validated diagnostic head:
 
-- commit: `e15bfd354e84d68975899fcccdcb1a9c370b1665`
+- commit: `53998ecfcae54f64c2e9d68b65693d9bc714a4f2`
+- CI #348: success
 - Netlify Deploy Preview: exact-head / `ready`
-- `netlify/ivmz-home/deploy-preview`: success
-- CI #346: success
-- Netlify Preview Smoke #313: success
+- Netlify plugin state: success
+- Deploy Preview secret scan: zero matches
+- Netlify Preview Smoke #315: success
 - Payload public API preflight: success
 - Chromium / mobile WebKit Playwright smoke: success
 - Payload auth rate-limit 429 verification: success
-- Deploy Preview secret scan: zero matches
 
-Current runbook-refresh head:
-
-- commit: `bcd17d63903ce484d8d149284b246c4ec96b532c`
-- CI #347: success
-- exact-head Netlify Deploy Preview: `ready`
-- Netlify plugin state: success
-- Deploy Preview secret scan: zero matches / 214 files
-- Netlify Preview Smoke #314: running at the time of this documentation refresh
-
-This rules out:
+Earlier diagnostic heads also produced healthy exact-head previews. This repeated result rules out:
 
 - a global stopped-builds state
 - a complete GitHub/Netlify integration disconnect
