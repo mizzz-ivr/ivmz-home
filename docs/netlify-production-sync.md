@@ -41,7 +41,7 @@ Repository-side suppression was checked:
 
 Draft PR #39 was created from the exact current `main` to determine whether GitHub/Netlify integration and builds are globally broken.
 
-Validated diagnostic head before this runbook refresh:
+Validated first diagnostic head:
 
 - commit: `e15bfd354e84d68975899fcccdcb1a9c370b1665`
 - Netlify Deploy Preview: exact-head / `ready`
@@ -52,6 +52,15 @@ Validated diagnostic head before this runbook refresh:
 - Chromium / mobile WebKit Playwright smoke: success
 - Payload auth rate-limit 429 verification: success
 - Deploy Preview secret scan: zero matches
+
+Current runbook-refresh head:
+
+- commit: `bcd17d63903ce484d8d149284b246c4ec96b532c`
+- CI #347: success
+- exact-head Netlify Deploy Preview: `ready`
+- Netlify plugin state: success
+- Deploy Preview secret scan: zero matches / 214 files
+- Netlify Preview Smoke #314: running at the time of this documentation refresh
 
 This rules out:
 
@@ -65,7 +74,7 @@ The remaining failure domain is Production-path-specific.
 
 ### 1. Confirm builds are active
 
-The successful exact-head Deploy Preview from PR #39 proves builds are currently active for the project. Do not treat global stopped builds as the primary hypothesis unless a later PR also stops producing previews.
+The successful exact-head Deploy Previews from PR #39 prove builds are currently active for the project. Do not treat global stopped builds as the primary hypothesis unless a later PR also stops producing previews.
 
 ### 2. Confirm configured Production branch
 
