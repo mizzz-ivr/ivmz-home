@@ -17,12 +17,12 @@ Do not use a manual/API Production deploy merely to hide commit drift. `main` is
 
 ## Verified incident snapshot
 
-At the 2026-08-29 recheck:
+Latest recheck:
 
 - GitHub `main`: `f99ec389a098477b46d37136aa7339b52b30c17a`
 - latest main CI: #345 / success
-- Netlify Production branch: `main`
 - Netlify current Production deploy: `6a91749fbb00070008ddaf51`
+- Netlify current Production deploy branch metadata: `main`
 - Netlify current Production commit: `7377189dcae4b67ea87f9e00058be42666db0619`
 - Netlify current Production state: `ready`
 - current Production deploy is not a manual deploy
@@ -31,35 +31,53 @@ At the 2026-08-29 recheck:
 
 The Production deploy is therefore healthy but stale relative to the current GitHub `main` after PR #34.
 
-Repository-side suppression was also checked:
+Repository-side suppression was checked:
 
 - PR #34 title and merge commit do not contain `[skip netlify]` or `[skip ci]`
 - `netlify.toml` does not define a Production ignore/skip rule
-- Production branch remains intended to be `main`
+- intended Production branch remains `main`
+
+## Diagnostic PR result
+
+Draft PR #39 was created from the exact current `main` to determine whether GitHub/Netlify integration and builds are globally broken.
+
+Validated diagnostic head before this runbook refresh:
+
+- commit: `e15bfd354e84d68975899fcccdcb1a9c370b1665`
+- Netlify Deploy Preview: exact-head / `ready`
+- `netlify/ivmz-home/deploy-preview`: success
+- CI #346: success
+- Netlify Preview Smoke #313: success
+- Payload public API preflight: success
+- Chromium / mobile WebKit Playwright smoke: success
+- Payload auth rate-limit 429 verification: success
+- Deploy Preview secret scan: zero matches
+
+This rules out:
+
+- a global stopped-builds state
+- a complete GitHub/Netlify integration disconnect
+- a general inability for Netlify to build the current repository
+
+The remaining failure domain is Production-path-specific.
 
 ## Root-cause decision tree
 
 ### 1. Confirm builds are active
 
+The successful exact-head Deploy Preview from PR #39 proves builds are currently active for the project. Do not treat global stopped builds as the primary hypothesis unless a later PR also stops producing previews.
+
+### 2. Confirm configured Production branch
+
 In Netlify:
-
-`Project configuration -> Build & deploy -> Continuous deployment -> Build settings`
-
-Expected:
-
-- Build status: `Active builds`
-
-If builds are stopped, activate builds before doing anything else. Activating builds alone does not create a new deploy; the next approved Git event must trigger the build.
-
-### 2. Confirm Production branch
-
-In:
 
 `Project configuration -> Build & deploy -> Continuous deployment -> Branches and deploy contexts`
 
 Expected:
 
 - Production branch: `main`
+
+Do not infer this setting only from the old Production deploy metadata reporting `branch=main`. Verify the current project configuration.
 
 Do not temporarily point Production at a feature branch to work around the incident.
 
@@ -69,6 +87,8 @@ On the Netlify Deploys page, verify the site is not locked and auto publishing i
 
 A locked deploy may allow newer Production builds to exist without making them the live deploy. If a newer `main` deploy exists but is unpublished, investigate why the lock was enabled before unlocking it.
 
+The currently live deploy reports `locked=null`; this does not by itself prove the current project-level auto-publish control is enabled.
+
 ### 4. Inspect the exact current-main commit
 
 Search the Production deploy history for:
@@ -77,7 +97,7 @@ Search the Production deploy history for:
 
 Classify the result:
 
-- no deploy exists -> investigate GitHub App / repository integration event delivery
+- no deploy exists -> investigate Production `main` push event delivery / Production branch trigger
 - failed deploy -> inspect build logs and fix the actual failure
 - skipped deploy -> inspect skip reason / build configuration
 - ready but unpublished -> inspect auto-publish lock
@@ -85,25 +105,32 @@ Classify the result:
 
 Do not copy secrets, environment values, contact data, or authenticated state into the incident record.
 
-### 5. Confirm Git integration
+### 5. Confirm Git integration target
 
 Verify the connected repository is still:
 
 `mizzz-ivr/ivmz-home`
 
-If the repository connection is broken, restore the Git integration without weakening `Enforce Git-based deployments`.
+PR #39 proves current PR events can reach Netlify, but the Production branch trigger / publish path still needs separate validation.
 
-## Diagnostic PR behavior
+If configuration evidence shows the repository connection is inconsistent, restore the Git integration without weakening `Enforce Git-based deployments`.
 
-This runbook change is intentionally a docs-only Draft PR created from the exact stale-gap `main` head.
+## Connected-tool boundary
 
-Its Deploy Preview is a non-Production diagnostic signal:
+The currently connected Netlify surface can:
 
-- Deploy Preview created successfully -> Netlify can still receive/build current PR Git events; investigate Production branch / auto-publish behavior specifically
-- no Deploy Preview and no Netlify check -> investigate stopped builds or broken Git integration globally
-- Deploy Preview fails -> inspect the failure without weakening required checks
+- read the project and current deploy
+- read a known deploy by ID
+- trigger a deployment
 
-The PR must not be merged only to force a Production deploy. Merge remains subject to the normal review and explicit owner approval policy.
+It does not expose:
+
+- configured Production branch controls
+- project-level auto-publish / deploy-lock controls
+- complete Production deploy-history search by commit
+- Git repository-binding configuration
+
+Because the available deployment trigger would create a direct/manual deployment path, it must not be used for Issue #38. The remaining Production-path configuration checks require an authorized Netlify configuration surface that exposes these controls.
 
 ## Recovery acceptance
 
@@ -112,20 +139,23 @@ Issue #38 can be completed only when all of the following are true:
 1. GitHub `main` HEAD is reconfirmed immediately before acceptance.
 2. latest main CI is success.
 3. Netlify current Production `commit_ref` equals that exact `main` HEAD.
-4. Production state is `ready`.
-5. Next.js Netlify plugin state is success.
-6. secret scan has zero matches.
-7. public read-only smoke is healthy.
-8. Payload published read remains healthy.
-9. Production CSP remains Report-Only until Issue #29 explicitly advances enforcement.
-10. the root cause and recovery action are recorded without exposing secrets.
+4. configured Production branch is `main`.
+5. Production state is `ready`.
+6. Next.js Netlify plugin state is success.
+7. secret scan has zero matches.
+8. deployment came from the approved Git integration path.
+9. public read-only smoke is healthy.
+10. Payload published read remains healthy.
+11. Production CSP remains Report-Only until Issue #29 explicitly advances enforcement.
+12. the root cause and recovery action are recorded without exposing secrets.
 
 ## Guardrails
 
 - do not disable `Enforce Git-based deployments`
 - do not bypass GitHub `Protect main`
 - do not direct-push to `main`
-- do not use a manual/API Production deploy to conceal drift
+- do not use a manual/API/MCP Production deploy to conceal drift
+- do not merge diagnostic PR #39 merely to generate a Production build
 - do not rotate `PAYLOAD_SECRET` as part of this incident
 - do not modify Production database data
 - do not weaken Deploy Preview, CI, security, or secret-scanning checks
