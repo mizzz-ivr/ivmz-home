@@ -1,6 +1,6 @@
 # Netlify Production Git synchronization recovery
 
-Status: Issue #38 investigation — 2026-08-29
+Status: Issue #38 investigation — rechecked 2026-09-01
 
 ## Goal
 
@@ -17,7 +17,7 @@ Do not use a manual/API Production deploy merely to hide commit drift. `main` is
 
 ## Verified incident snapshot
 
-Latest recheck:
+Latest recheck on 2026-09-01:
 
 - GitHub `main`: `f99ec389a098477b46d37136aa7339b52b30c17a`
 - latest main CI: #345 / success
@@ -29,7 +29,7 @@ Latest recheck:
 - Production plugin state is success
 - Production secret scan reports zero matches
 
-The Production deploy is therefore healthy but stale relative to the current GitHub `main` after PR #34.
+The Production deploy is healthy but still stale relative to GitHub `main`; the billing/credit-cycle recovery did not retroactively create the missed Production deploy.
 
 Repository-side suppression was checked:
 
@@ -41,31 +41,41 @@ Repository-side suppression was checked:
 
 Draft PR #39 was created from the exact current `main` to determine whether GitHub/Netlify integration and builds are globally broken.
 
-Final validated diagnostic head:
+Last fully validated pre-recheck head:
 
-- commit: `53998ecfcae54f64c2e9d68b65693d9bc714a4f2`
-- CI #348: success
+- commit: `81f06cb0d1f06344f59c91eb22798cb8205f47d0`
+- CI #349: success
 - Netlify Deploy Preview: exact-head / `ready`
 - Netlify plugin state: success
-- Deploy Preview secret scan: zero matches
-- Netlify Preview Smoke #315: success
+- Deploy Preview secret scan: zero matches / 216 files
+- Netlify Preview Smoke #316: success
 - Payload public API preflight: success
 - Chromium / mobile WebKit Playwright smoke: success
 - Payload auth rate-limit 429 verification: success
 
 Earlier diagnostic heads also produced healthy exact-head previews. This repeated result rules out:
 
-- a global stopped-builds state
+- a global stopped-builds state at the time of those checks
 - a complete GitHub/Netlify integration disconnect
 - a general inability for Netlify to build the current repository
 
-The remaining failure domain is Production-path-specific.
+### 2026-09-01 credit-cycle probe
+
+This documentation-only update intentionally creates one new PR Git event after the expected credit-cycle recovery.
+
+Interpretation:
+
+- exact-head Deploy Preview builds successfully -> current Netlify build capacity is available again; proceed to a legitimate reviewed `main` Git event for Production-path validation
+- Preview is blocked by account/credit state -> pause deployment work until Netlify capacity is restored
+- Preview fails for a repository/build reason -> fix that actual failure first
+
+Do not add another docs-only commit merely to keep probing. After this probe, use its resulting CI / Deploy Preview / Preview Smoke as the final non-Production evidence.
 
 ## Root-cause decision tree
 
 ### 1. Confirm builds are active
 
-The successful exact-head Deploy Previews from PR #39 prove builds are currently active for the project. Do not treat global stopped builds as the primary hypothesis unless a later PR also stops producing previews.
+Healthy exact-head Deploy Previews prove builds are active for the project. If the 2026-09-01 probe also succeeds, current build capacity after the credit-cycle reset is confirmed.
 
 ### 2. Confirm configured Production branch
 
@@ -129,6 +139,7 @@ It does not expose:
 - project-level auto-publish / deploy-lock controls
 - complete Production deploy-history search by commit
 - Git repository-binding configuration
+- account credit balance / billing-cycle controls
 
 Because the available deployment trigger would create a direct/manual deployment path, it must not be used for Issue #38. The remaining Production-path configuration checks require an authorized Netlify configuration surface that exposes these controls.
 
