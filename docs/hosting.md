@@ -1,4 +1,4 @@
-# Hosting方針 — updated 2026-08-28
+# Hosting方針 — updated 2026-09-03
 
 ## 目的
 
@@ -60,6 +60,24 @@ Issue
 ProductionはGitHub `main`をSource of Truthとする。
 
 Netlifyの **Enforce Git-based deployments** を有効化し、CLI / API / MCP / Deploy PreviewからProductionへの直接publishを禁止する。設定方法とacceptanceは `docs/netlify-bootstrap.md` を参照する。
+
+## Profile Signal scheduling boundary
+
+Profile Signalの定期実行は `mizzz-ivr/mizzz-ivr` のGitHub Actions `profile-signal-scheduler-fallback.yml` をownerとする。GitHub側schedulerは5分間隔でstateのfreshnessを判定し、必要なときだけstreamまたはfull refreshを実行する。
+
+`ivmz-home` のNetlify Scheduled Functionsによる `profile-signal-stream-dispatch` / `profile-signal-full-dispatch` はIssue #40でsourceから廃止する。Netlifyは引き続きWeb hosting / Deploy Preview / Production deploymentを担当し、Profile Signal schedulingの実行基盤にはしない。
+
+Production cutoverではIssue #38のGit synchronization recoveryをgateとする。GitHubでsource削除をmergeしただけでは、staleなcurrent Production deploy上の旧Scheduled Functionsが停止したとは扱わない。
+
+Cutover sequence:
+
+1. Issue #38を解消し、通常のGit-based Production deployがcurrent `main`のexact commitをpublishできる状態に戻す。
+2. Issue #40の削除を含むcommitがcurrent Production deployであることを確認する。
+3. current Production deployから2つのProfile Signal Scheduled Functionsが消えていることを確認する。
+4. `PROFILE_SIGNAL_GITHUB_TOKEN` の残存consumerがないことを再確認する。
+5. その後にのみNetlify Productionのobsolete secretを削除する。
+
+Production cutover完了前はrollback可能性と旧deploy互換性のため、Netlify上の実 `PROFILE_SIGNAL_GITHUB_TOKEN` を保持する。manual / API / MCP Production deployでIssue #38を迂回しない。
 
 ## Payload + PostgreSQL deployment gate
 
