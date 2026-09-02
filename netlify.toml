@@ -11,9 +11,3 @@
 [context.branch-deploy.environment]
   PAYLOAD_PREVIEW_DATABASE_PROJECT_REF = "dzdgbkjmomvmexcbjyin"
   PAYLOAD_PRODUCTION_DATABASE_PROJECT_REF = "drazbrcqnjxjuygfxmlz"
-
-[functions."profile-signal-stream-dispatch"]
-  schedule = "*/5 * * * *"
-
-[functions."profile-signal-full-dispatch"]
-  schedule = "9 */3 * * *"
