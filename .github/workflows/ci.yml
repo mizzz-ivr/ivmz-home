@@ -56,3 +56,66 @@ jobs:
         shell: bash
         run: git diff --exit-code -- src/payload-types.ts 'src/app/(payload)/admin/importMap.js'
       - run: pnpm build
+      - name: Netlify適用前のlocal SRI metadataを観測
+        continue-on-error: true
+        shell: bash
+        run: |
+          pnpm start >/tmp/ivmz-next-start.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+
+          ready=false
+          for attempt in {1..30}; do
+            if curl --fail --silent --show-error \
+              --output /tmp/ivmz-home.html \
+              http://127.0.0.1:3000/; then
+              ready=true
+              break
+            fi
+
+            if ! kill -0 "$server_pid" 2>/dev/null; then
+              cat /tmp/ivmz-next-start.log
+              exit 1
+            fi
+
+            sleep 1
+          done
+
+          if [[ "$ready" != "true" ]]; then
+            cat /tmp/ivmz-next-start.log
+            exit 1
+          fi
+
+          node <<'NODE'
+          const fs = require('node:fs')
+
+          const html = fs.readFileSync('/tmp/ivmz-home.html', 'utf8')
+          const tags = html.match(/<script\b[^>]*>/gi) ?? []
+          const extractAttribute = (tag, name) => {
+            const pattern = new RegExp(`${name}=(?:"([^"]+)"|'([^']+)')`, 'i')
+            const match = tag.match(pattern)
+            return match?.[1] ?? match?.[2] ?? null
+          }
+          const assets = tags
+            .map((tag) => ({
+              src: extractAttribute(tag, 'src'),
+              integrity: extractAttribute(tag, 'integrity'),
+            }))
+            .filter((asset) => asset.src?.includes('/_next/static/'))
+          const missing = assets
+            .filter((asset) => !asset.integrity)
+            .map((asset) => new URL(asset.src, 'http://127.0.0.1:3000').pathname)
+
+          console.log(
+            `LOCAL_SRI_OBSERVATION ${JSON.stringify({
+              emittedScripts: assets.length,
+              integrityScripts: assets.length - missing.length,
+              missingScripts: missing.length,
+            })}`,
+          )
+
+          if (missing.length > 0) {
+            console.error(`LOCAL_SRI_MISSING ${missing.join(', ')}`)
+            process.exit(2)
+          }
+          NODE
