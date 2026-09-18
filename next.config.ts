@@ -44,6 +44,11 @@ const nextConfig: NextConfig = {
     PAYLOAD_BUILD_CONTEXT: payloadBuildContext,
     PAYLOAD_BUILD_ORIGIN: payloadBuildOrigin,
   },
+  experimental: {
+    sri: {
+      algorithm: 'sha256',
+    },
+  },
   poweredByHeader: false,
   reactStrictMode: true,
   headers: async () => [
