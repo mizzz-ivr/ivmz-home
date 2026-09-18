@@ -31,11 +31,11 @@ test.describe('Next.js SRI spike', () => {
   test('Netlify-served Next.js scripts expose matching SHA-256 integrity metadata', async ({
     request,
   }, testInfo) => {
-    test.skip(!process.env.E2E_BASE_URL, 'SRI spike validates a real remote Deploy Preview.')
+    test.skip(\n      !process.env.E2E_BASE_URL,\n      'SRI spike validates a real remote Deploy Preview.',\n    )
 
     // The byte-level validation is browser-independent. Run it once while the normal
     // E2E suite continues exercising both Chromium and mobile WebKit.
-    test.skip(testInfo.project.name !== 'chromium', 'Run byte-level SRI validation once.')
+    test.skip(\n      testInfo.project.name !== 'chromium',\n      'Run byte-level SRI validation once.',\n    )
 
     const documentResponse = await request.get('/')
     expect(documentResponse.status()).toBe(200)
@@ -45,7 +45,7 @@ test.describe('Next.js SRI spike', () => {
 
     const missingIntegrity = assets.filter((asset) => !asset.integrity)
     expect(
-      missingIntegrity.map((asset) => new URL(asset.src, documentResponse.url()).pathname),
+      missingIntegrity.map(\n        (asset) => new URL(asset.src, documentResponse.url()).pathname,\n      ),
       'every emitted Next.js script must carry integrity metadata',
     ).toEqual([])
 
