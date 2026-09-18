@@ -119,6 +119,94 @@ jobs:
             echo
             exit 1
           fi
+      - name: Netlify配信後のSRI hash一致を確認
+        shell: bash
+        run: |
+          node <<'NODE'
+          const crypto = require('node:crypto')
+
+          const baseURL = process.env.E2E_BASE_URL
+          if (!baseURL) throw new Error('E2E_BASE_URL is required')
+
+          const extractAttribute = (tag, name) => {
+            const pattern = new RegExp(`${name}=(?:"([^"]+)"|'([^']+)')`, 'i')
+            const match = tag.match(pattern)
+            return match?.[1] ?? match?.[2] ?? null
+          }
+
+          const run = async () => {
+            const documentResponse = await fetch(baseURL, { redirect: 'follow' })
+            if (!documentResponse.ok) {
+              throw new Error(`SRI document request failed: status=${documentResponse.status}`)
+            }
+
+            const html = await documentResponse.text()
+            const tags = html.match(/<script\b[^>]*>/gi) ?? []
+            const assets = tags
+              .map((tag) => ({
+                src: extractAttribute(tag, 'src'),
+                integrity: extractAttribute(tag, 'integrity'),
+              }))
+              .filter((asset) => asset.src?.includes('/_next/static/'))
+
+            if (assets.length === 0) {
+              throw new Error('SRI spike found no emitted Next.js script assets')
+            }
+
+            const missingIntegrity = assets
+              .filter((asset) => !asset.integrity)
+              .map((asset) => new URL(asset.src, documentResponse.url).pathname)
+
+            if (missingIntegrity.length > 0) {
+              throw new Error(
+                `SRI integrity metadata is missing: ${missingIntegrity.join(', ')}`,
+              )
+            }
+
+            let verifiedScripts = 0
+
+            for (const asset of assets) {
+              const expected = asset.integrity
+                .split(/\s+/)
+                .find((token) => token.startsWith('sha256-'))
+
+              if (!expected) {
+                throw new Error('SRI spike found no SHA-256 integrity token')
+              }
+
+              const assetURL = new URL(asset.src, documentResponse.url)
+              const assetResponse = await fetch(assetURL)
+              if (!assetResponse.ok) {
+                throw new Error(
+                  `SRI asset request failed: path=${assetURL.pathname} status=${assetResponse.status}`,
+                )
+              }
+
+              const bytes = Buffer.from(await assetResponse.arrayBuffer())
+              const digest = crypto.createHash('sha256').update(bytes).digest('base64')
+              const actual = `sha256-${digest}`
+
+              if (actual !== expected) {
+                throw new Error(`SRI digest mismatch: path=${assetURL.pathname}`)
+              }
+
+              verifiedScripts += 1
+            }
+
+            console.log(
+              `SRI_SPIKE ${JSON.stringify({
+                algorithm: 'sha256',
+                emittedScripts: assets.length,
+                verifiedScripts,
+              })}`,
+            )
+          }
+
+          run().catch((error) => {
+            console.error(error instanceof Error ? error.message : error)
+            process.exit(1)
+          })
+          NODE
       - run: pnpm exec playwright install --with-deps chromium webkit
       - name: 実Deploy Previewに対するPlaywright smokeを実行
         run: pnpm test:e2e
