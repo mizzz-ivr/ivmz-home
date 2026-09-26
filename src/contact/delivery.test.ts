@@ -31,8 +31,6 @@ describe('createContactDelivery', () => {
     })
 
     expect(delivery.kind).toBe('unavailable')
-    await expect(delivery.deliver(message)).rejects.toBeInstanceOf(
-      ContactDeliveryUnavailableError,
-    )
+    await expect(delivery.deliver(message)).rejects.toBeInstanceOf(ContactDeliveryUnavailableError)
   })
 })
