@@ -54,7 +54,9 @@ function stringValue(value: unknown) {
 }
 
 function normalizeSingleLine(value: unknown) {
-  return stringValue(value).trim().replace(/[ \t]+/g, ' ')
+  return stringValue(value)
+    .trim()
+    .replace(/[ \t]+/g, ' ')
 }
 
 function normalizeMessage(value: unknown) {
@@ -122,8 +124,7 @@ export function parseContactSubmission(input: unknown): ContactSubmissionParseRe
   if (!message) {
     errors.message = '問い合わせ内容を入力してください。'
   } else if (message.length > limits.message) {
-    errors.message =
-      `問い合わせ内容は${limits.message.toLocaleString('ja-JP')}文字以内で入力してください。`
+    errors.message = `問い合わせ内容は${limits.message.toLocaleString('ja-JP')}文字以内で入力してください。`
   }
 
   if (Object.keys(errors).length > 0 || !isCategory(category)) {
