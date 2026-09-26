@@ -87,7 +87,17 @@ All four returned:
 - `EnforcementStatus=HEALTHY`
 - sandbox quota: 200 messages / 24 hours
 - maximum rate: 1 message / second
-- zero SES identities
+
+At the time of the initial read-only check, all four Regions had zero SES identities.
+After selecting `us-east-2`, an `ivrm.jp` DOMAIN identity was created there with Easy DKIM
+enabled. Its current state is:
+
+- identity verification: `PENDING`
+- verified for sending: `false`
+- Easy DKIM: `PENDING`
+- DKIM key length: RSA 2048-bit
+- custom MAIL FROM: not configured
+- Production access: still `false`
 
 Tokyo also reported the current SES pricing plan as `ESSENTIALS`.
 
@@ -96,7 +106,7 @@ recipients/domains until production access is approved.
 
 ## Region decision
 
-**Candidate: `us-east-2` (Ohio).**
+**Selected: `us-east-2` (Ohio).**
 
 Reason:
 
@@ -112,13 +122,18 @@ currently working inbound path and MX records remain unchanged.
 
 Before enabling Production delivery:
 
-1. create an SES domain identity for `ivrm.jp` in `us-east-2`
-2. enable Easy DKIM and publish the SES-provided DNS records
-3. verify the identity before requesting Production access
-4. keep the existing MX records unchanged
-5. use a region-specific custom MAIL FROM candidate such as
+1. [x] create an SES domain identity for `ivrm.jp` in `us-east-2`
+2. [ ] publish the three SES-provided Easy DKIM CNAME records
+3. [ ] wait for identity / Easy DKIM verification
+4. [ ] request Production access only after domain verification
+5. [x] keep the existing MX records unchanged
+6. [ ] use a region-specific custom MAIL FROM candidate such as
    `bounce-us-east-2.ivrm.jp` only after checking existing DNS and DMARC alignment
-6. do not weaken an existing DMARC policy merely to make SES setup pass
+7. [ ] do not weaken an existing DMARC policy merely to make SES setup pass
+
+Creating the SES identity itself did not change DNS or inbound routing. If this SES path is
+abandoned before Production use, rollback is to remove any SES-specific DKIM / MAIL FROM DNS
+records that were added and then delete the `ivrm.jp` SES identity in `us-east-2`.
 
 AWS recommends Easy DKIM as the primary authentication path and describes custom MAIL FROM
 as an additive SPF/DMARC-alignment option.
