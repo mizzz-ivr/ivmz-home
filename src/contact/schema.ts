@@ -19,12 +19,7 @@ export type ContactSubmission = {
   subject: string
 }
 
-export type ContactField =
-  | 'category'
-  | 'email'
-  | 'message'
-  | 'name'
-  | 'subject'
+export type ContactField = 'category' | 'email' | 'message' | 'name' | 'subject'
 
 export type ContactValidationErrors = Partial<Record<ContactField, string>>
 
@@ -127,7 +122,8 @@ export function parseContactSubmission(input: unknown): ContactSubmissionParseRe
   if (!message) {
     errors.message = '問い合わせ内容を入力してください。'
   } else if (message.length > limits.message) {
-    errors.message = `問い合わせ内容は${limits.message.toLocaleString('ja-JP')}文字以内で入力してください。`
+    errors.message =
+      `問い合わせ内容は${limits.message.toLocaleString('ja-JP')}文字以内で入力してください。`
   }
 
   if (Object.keys(errors).length > 0 || !isCategory(category)) {
