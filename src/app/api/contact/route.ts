@@ -35,10 +35,7 @@ async function deliverWithTimeout(delivery: ContactDelivery, message: ContactDel
     return await Promise.race([
       delivery.deliver(message),
       new Promise<never>((_, reject) => {
-        timeout = setTimeout(
-          () => reject(new ContactDeliveryTimeoutError()),
-          DELIVERY_TIMEOUT_MS,
-        )
+        timeout = setTimeout(() => reject(new ContactDeliveryTimeoutError()), DELIVERY_TIMEOUT_MS)
       }),
     ])
   } finally {
