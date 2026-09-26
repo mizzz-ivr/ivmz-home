@@ -17,7 +17,8 @@ export default function ContactPage() {
         title={<>One entrance. Clear routing.</>}
         description={
           <p>
-            問い合わせカテゴリからserver-sideで適切なIdentityへroutingします。配送先メールアドレスを利用者が直接指定することはありません。
+            問い合わせカテゴリからserver-sideで適切なIdentityへroutingします。
+            配送先メールアドレスを利用者が直接指定することはありません。
           </p>
         }
         signal="CONTACT / ROUTING"
@@ -26,9 +27,7 @@ export default function ContactPage() {
       <PageSection
         title="Send a message"
         description={
-          <p>
-            入力内容はserver-sideで検証し、カテゴリに応じて配送先を決定します。
-          </p>
+          <p>入力内容はserver-sideで検証し、カテゴリに応じて配送先を決定します。</p>
         }
       >
         <ContactForm generalEmail={site.contactEmail} securityEmail={site.securityEmail} />
@@ -69,13 +68,16 @@ export default function ContactPage() {
           </div>
           <div className="profile-line">
             <span>VALIDATION</span>
-            <p>server-side validation、origin check、honeypot、size limit、edge rate limitを適用します。</p>
+            <p>
+              server-side validation、origin check、honeypot、size limit、edge rate
+              limitを適用します。
+            </p>
           </div>
           <div className="profile-line">
             <span>DELIVERY</span>
             <p>
-              Deploy Previewでは実メールを送らず、Productionは実delivery providerが設定されるまでfail
-              closedします。
+              Deploy Previewでは実メールを送らず、Productionは実delivery
+              providerが設定されるまでfail closedします。
             </p>
           </div>
         </div>
