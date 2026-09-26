@@ -42,19 +42,25 @@ class UnavailableContactDelivery implements ContactDelivery {
 }
 
 type ContactDeliveryEnvironment = {
+  CONTEXT?: string
+  NODE_ENV?: string
   PAYLOAD_BUILD_CONTEXT?: string
 }
 
 export function createContactDelivery(
   env: ContactDeliveryEnvironment = {
+    CONTEXT: process.env.CONTEXT,
+    NODE_ENV: process.env.NODE_ENV,
     PAYLOAD_BUILD_CONTEXT: process.env.PAYLOAD_BUILD_CONTEXT,
   },
 ): ContactDelivery {
-  if (
-    env.PAYLOAD_BUILD_CONTEXT === 'deploy-preview' ||
-    env.PAYLOAD_BUILD_CONTEXT === 'branch-deploy' ||
-    !env.PAYLOAD_BUILD_CONTEXT
-  ) {
+  const context = env.PAYLOAD_BUILD_CONTEXT || env.CONTEXT
+
+  if (context === 'deploy-preview' || context === 'branch-deploy') {
+    return new PreviewContactDelivery()
+  }
+
+  if (!context && env.NODE_ENV !== 'production') {
     return new PreviewContactDelivery()
   }
 
