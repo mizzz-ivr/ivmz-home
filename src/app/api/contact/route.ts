@@ -1,14 +1,11 @@
-import { recipientFor } from '@/lib/contact-routing'
 import {
   ContactDeliveryUnavailableError,
   createContactDelivery,
   type ContactDelivery,
   type ContactDeliveryMessage,
 } from '@/contact/delivery'
-import {
-  CONTACT_BODY_LIMIT_BYTES,
-  parseContactSubmission,
-} from '@/contact/schema'
+import { CONTACT_BODY_LIMIT_BYTES, parseContactSubmission } from '@/contact/schema'
+import { recipientFor } from '@/lib/contact-routing'
 import { isAllowedContactOrigin } from '@/security/contact-origin'
 
 export const runtime = 'nodejs'
@@ -31,10 +28,7 @@ function json(body: unknown, status: number) {
   })
 }
 
-async function deliverWithTimeout(
-  delivery: ContactDelivery,
-  message: ContactDeliveryMessage,
-) {
+async function deliverWithTimeout(delivery: ContactDelivery, message: ContactDeliveryMessage) {
   let timeout: ReturnType<typeof setTimeout> | undefined
 
   try {
