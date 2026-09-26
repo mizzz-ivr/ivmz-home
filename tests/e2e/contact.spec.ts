@@ -8,7 +8,9 @@ test.describe('Contact form', () => {
     await page.getByLabel('メールアドレス').fill('visitor@example.com')
     await page.getByLabel('カテゴリ').selectOption('development')
     await page.getByLabel('件名').fill('Preview contact test')
-    await page.getByLabel('問い合わせ内容').fill('Deploy Previewでの問い合わせフォーム動作確認です。')
+    await page
+      .getByLabel('問い合わせ内容')
+      .fill('Deploy Previewでの問い合わせフォーム動作確認です。')
 
     await page.getByRole('button', { name: 'Send message ↗' }).click()
 
