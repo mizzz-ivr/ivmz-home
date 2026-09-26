@@ -1,3 +1,4 @@
+import { ContactForm } from '@/components/site/ContactForm'
 import { PageHero, PageSection } from '@/components/site/PageFoundation'
 import { createPageMetadata } from '@/lib/metadata'
 import { site } from '@/lib/site'
@@ -16,23 +17,25 @@ export default function ContactPage() {
         title={<>One entrance. Clear routing.</>}
         description={
           <p>
-            配送先アドレスを利用者に選ばせるのではなく、将来のフォームでは問い合わせカテゴリからserver-sideでroutingします。
+            問い合わせカテゴリからserver-sideで適切なIdentityへroutingします。
+            配送先メールアドレスを利用者が直接指定することはありません。
           </p>
         }
         signal="CONTACT / ROUTING"
       />
+
       <PageSection
-        title="Current contact"
-        description={
-          <p>フォームbackendはまだ実装していないため、送信可能に見えるダミーUIは置きません。</p>
-        }
+        title="Send a message"
+        description={<p>入力内容はserver-sideで検証し、カテゴリに応じて配送先を決定します。</p>}
+      >
+        <ContactForm generalEmail={site.contactEmail} securityEmail={site.securityEmail} />
+      </PageSection>
+
+      <PageSection
+        title="Direct contact"
+        description={<p>フォームを利用できない場合も、メールの連絡先を維持しています。</p>}
       >
         <div className="contact-baseline">
-          <p>
-            現時点の一般的な問い合わせはUnified Personal Identityの窓口へ送れます。フォーム実装時は
-            personal / job / collaboration / media、development / OSS、ivRooom / community / team
-            を内部で適切なIdentityへroutingします。
-          </p>
           <div className="contact-primary">
             <div>
               <span>GENERAL / PERSONAL</span>
@@ -51,22 +54,29 @@ export default function ContactPage() {
           </p>
         </div>
       </PageSection>
+
       <PageSection
-        title="Form boundary"
-        description={<p>次のフォーム実装で守る境界を先に固定します。</p>}
+        title="Delivery boundary"
+        description={<p>問い合わせ処理はhostingやmail providerへ密結合しない境界を維持します。</p>}
       >
         <div className="profile-lines">
           <div className="profile-line">
             <span>ROUTING</span>
-            <p>カテゴリからserver-side routingし、配送先メールアドレスを選択UIにしない。</p>
+            <p>カテゴリからserver-side routingし、recipientをclient inputとして受け取りません。</p>
           </div>
           <div className="profile-line">
             <span>VALIDATION</span>
-            <p>server-side validation、bot protection、rate limit、spam対策を前提とする。</p>
+            <p>
+              server-side validation、origin check、honeypot、size limit、edge rate
+              limitを適用します。
+            </p>
           </div>
           <div className="profile-line">
-            <span>PORTABLE</span>
-            <p>特定hosting providerへ問い合わせ処理を密結合しない。</p>
+            <span>DELIVERY</span>
+            <p>
+              Deploy Previewでは実メールを送らず、Productionは実delivery
+              providerが設定されるまでfail closedします。
+            </p>
           </div>
         </div>
       </PageSection>
