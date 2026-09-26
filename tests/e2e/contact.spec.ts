@@ -42,7 +42,7 @@ test.describe('Contact form', () => {
 
     await page.getByRole('button', { name: 'Send message ↗' }).click()
 
-    await expect(page.getByRole('alert')).toContainText('入力内容は残っています。')
+    await expect(page.locator('.contact-feedback-error')).toContainText('入力内容は残っています。')
     await expect(page.getByLabel('件名')).toHaveValue('Keep this message')
     await expect(page.getByLabel('問い合わせ内容')).toHaveValue(
       '失敗時にも残してほしい問い合わせ内容です。',
