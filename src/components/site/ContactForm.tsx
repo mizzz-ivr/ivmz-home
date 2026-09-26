@@ -230,13 +230,7 @@ export function ContactForm({ generalEmail, securityEmail }: ContactFormProps) {
 
         <div aria-hidden="true" className="contact-honeypot">
           <label htmlFor="contact-website">Website</label>
-          <input
-            autoComplete="off"
-            id="contact-website"
-            name="website"
-            tabIndex={-1}
-            type="text"
-          />
+          <input autoComplete="off" id="contact-website" name="website" tabIndex={-1} type="text" />
         </div>
 
         <div className="contact-submit-row">
