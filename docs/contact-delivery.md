@@ -57,6 +57,12 @@ make it necessary.
 The delivery adapter returns a Preview acceptance result and sends **no real email**.
 This lets Playwright exercise success UX without contacting a real recipient.
 
+Deploy Preview also depends on the dedicated `ivmz-home-preview` Supabase project because the
+Netlify build runs the preview-database assertion and migrations before `next build`. If the
+project has auto-paused, restore it and wait for `ACTIVE_HEALTHY` before creating the final
+validation commit. Do not bypass `scripts/assert-preview-database.mjs`, and never point a
+Deploy Preview at the Production database to make validation pass.
+
 ### Production
 
 Production fails closed with `503 delivery_unavailable` until a real delivery provider is
