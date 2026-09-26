@@ -45,17 +45,6 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: TEMP Contact Prettier diagnostic
-        shell: bash
-        run: |
-          pnpm exec prettier --write \
-            'src/app/(site)/contact/page.tsx' \
-            'src/app/api/contact/route.ts' \
-            'src/contact/schema.ts'
-          git diff -- \
-            'src/app/(site)/contact/page.tsx' \
-            'src/app/api/contact/route.ts' \
-            'src/contact/schema.ts'
       - run: pnpm format:check
       - run: pnpm lint
       - run: pnpm typecheck
