@@ -25,7 +25,7 @@ export class ContactDeliveryUnavailableError extends Error {
 class PreviewContactDelivery implements ContactDelivery {
   readonly kind = 'preview'
 
-  async deliver(_message: ContactDeliveryMessage): Promise<ContactDeliveryResult> {
+  async deliver(): Promise<ContactDeliveryResult> {
     return {
       deliveryId: 'preview-no-send',
       mode: 'preview',
@@ -36,7 +36,7 @@ class PreviewContactDelivery implements ContactDelivery {
 class UnavailableContactDelivery implements ContactDelivery {
   readonly kind = 'unavailable'
 
-  async deliver(_message: ContactDeliveryMessage): Promise<ContactDeliveryResult> {
+  async deliver(): Promise<ContactDeliveryResult> {
     throw new ContactDeliveryUnavailableError()
   }
 }
