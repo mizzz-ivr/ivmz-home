@@ -1,5 +1,5 @@
 import Image from 'next/image'
-import { SectionIndex } from '@/components/site/SiteEnhancements'
+import { SectionIndex, ToolboxMarquee } from '@/components/site/SiteEnhancements'
 import { HeroPointerSignal } from '@/components/site/SiteExperience'
 import { getHomeViewModel } from '@/lib/home-content'
 import { site } from '@/lib/site'
@@ -145,18 +145,7 @@ export default async function HomePage() {
         </a>
       </section>
 
-      <div className="toolbox-marquee" role="group" aria-label="主なツールと技術">
-        <ul className="toolbox-track">
-          {toolbox.map((tool) => (
-            <li key={tool}>{tool}</li>
-          ))}
-        </ul>
-        <ul className="toolbox-track" aria-hidden="true">
-          {toolbox.map((tool) => (
-            <li key={tool}>{tool}</li>
-          ))}
-        </ul>
-      </div>
+      <ToolboxMarquee tools={toolbox} />
 
       <section className="section-shell works-section" id="works" aria-labelledby="works-title">
         <div className="section-intro" data-reveal>

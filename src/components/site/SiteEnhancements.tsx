@@ -118,3 +118,34 @@ export function SectionIndex({ items }: { items: readonly SectionIndexItem[] }) 
     </nav>
   )
 }
+
+/** Auto-moving tool list with a keyboard/touch accessible pause control (WCAG 2.2.2). */
+export function ToolboxMarquee({ tools }: { tools: readonly string[] }) {
+  const [paused, setPaused] = useState(false)
+
+  return (
+    <div className={`toolbox-marquee${paused ? ' is-paused' : ''}`}>
+      <div className="toolbox-viewport" role="group" aria-label="主なツールと技術">
+        <ul className="toolbox-track">
+          {tools.map((tool) => (
+            <li key={tool}>{tool}</li>
+          ))}
+        </ul>
+        <ul className="toolbox-track" aria-hidden="true">
+          {tools.map((tool) => (
+            <li key={tool}>{tool}</li>
+          ))}
+        </ul>
+      </div>
+      <button
+        className="toolbox-pause"
+        type="button"
+        aria-pressed={paused}
+        aria-label={paused ? '流れる表示を再生する' : '流れる表示を一時停止する'}
+        onClick={() => setPaused((value) => !value)}
+      >
+        <span aria-hidden="true">{paused ? '▶' : '❚❚'}</span>
+      </button>
+    </div>
+  )
+}

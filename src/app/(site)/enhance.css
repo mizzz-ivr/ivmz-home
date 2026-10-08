@@ -208,11 +208,36 @@ html.ivmz-signature-seen .hero-underline path {
 /* ---- Toolbox marquee ---- */
 .toolbox-marquee {
   position: relative;
-  display: flex;
-  overflow: hidden;
   border-block: 1px solid var(--color-line);
   background: color-mix(in srgb, var(--color-bg-elevated) 70%, transparent);
+}
+.toolbox-viewport {
+  display: flex;
+  overflow: hidden;
   mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+.toolbox-pause {
+  position: absolute;
+  top: 50%;
+  right: var(--space-page);
+  z-index: 2;
+  width: 44px;
+  height: 44px;
+  transform: translateY(-50%);
+  border: 1px solid var(--color-line-strong);
+  border-radius: 999px;
+  background: var(--color-bg);
+  color: var(--color-text-soft);
+  font: 700 0.6rem/1 var(--font-mono);
+  cursor: pointer;
+}
+.toolbox-pause:hover {
+  border-color: var(--color-primary);
+  color: var(--color-text);
+}
+.toolbox-marquee.is-paused .toolbox-track,
+.toolbox-marquee:focus-within .toolbox-track {
+  animation-play-state: paused;
 }
 .toolbox-track {
   flex: none;
@@ -575,5 +600,18 @@ html.ivmz-signature-seen .hero-underline path {
   }
   .scroll-progress {
     transition: none;
+  }
+}
+
+@media print {
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  .scroll-progress,
+  .section-index,
+  .toolbox-pause {
+    display: none !important;
   }
 }
