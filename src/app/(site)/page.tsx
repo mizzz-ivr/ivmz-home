@@ -1,15 +1,76 @@
 import Image from 'next/image'
+import { SectionIndex } from '@/components/site/SiteEnhancements'
 import { HeroPointerSignal } from '@/components/site/SiteExperience'
 import { getHomeViewModel } from '@/lib/home-content'
 import { site } from '@/lib/site'
 
 export const revalidate = 300
 
+const sectionIndex = [
+  { id: 'top', label: 'TOP' },
+  { id: 'works', label: 'WORKS' },
+  { id: 'what-i-do', label: 'WHAT I DO' },
+  { id: 'process', label: 'PROCESS' },
+  { id: 'about', label: 'ABOUT' },
+  { id: 'writing', label: 'WRITING' },
+  { id: 'activity', label: 'NEWS' },
+  { id: 'schedule', label: 'SCHEDULE' },
+  { id: 'social', label: 'SOCIAL' },
+  { id: 'contact', label: 'CONTACT' },
+] as const
+
+const toolbox = [
+  'TypeScript',
+  'Next.js',
+  'React',
+  'Node.js',
+  'Go',
+  'Flask',
+  'PostgreSQL',
+  'Payload CMS',
+  'Docker',
+  'GitHub Actions',
+  'Netlify',
+  'Discord',
+  'Realtime AI',
+] as const
+
+const buildSteps = [
+  {
+    step: 'UNDERSTAND',
+    title: '課題と制約を読む',
+    description: '誰が・何のために・どこまで使うのか。作る前に前提と境界を言葉にします。',
+  },
+  {
+    step: 'IMPLEMENT',
+    title: '設計を理解して手を動かす',
+    description: 'UI・API・データを分断せず、一本の体験として実装します。',
+  },
+  {
+    step: 'SHIP SMALL',
+    title: '小さく公開する',
+    description: 'Previewとリリースを早く回し、実際に触れる状態で判断できるようにします。',
+  },
+  {
+    step: 'OBSERVE',
+    title: '反応と運用を見る',
+    description: 'ログ・監視・フィードバックから、直すべき場所を事実で見つけます。',
+  },
+  {
+    step: 'POLISH',
+    title: '磨き続ける',
+    description: '変更し続けられる状態を保ったまま、体験と品質を少しずつ上げていきます。',
+  },
+] as const
+
+const contactTopics = ['開発相談', 'お仕事', 'コラボ', '取材・登壇'] as const
+
 export default async function HomePage() {
   const home = await getHomeViewModel()
 
   return (
     <main id="main-content">
+      <SectionIndex items={sectionIndex} />
       <section className="hero section-shell" id="top" aria-labelledby="hero-title">
         <HeroPointerSignal />
         <div className="hero-grid" aria-hidden="true" />
@@ -17,7 +78,12 @@ export default async function HomePage() {
           <p className="signal-label">PERSONAL WEB / PORTFOLIO PLATFORM</p>
           <h1 id="hero-title">
             <span className="hero-name">いゔる。</span>
-            <span className="hero-alias">a.k.a. mizzz（ずーみー）</span>
+            <span className="hero-alias">
+              a.k.a. mizzz（ずーみー）
+              <svg className="hero-underline" viewBox="0 0 320 16" aria-hidden="true">
+                <path d="M3 10 C48 3 92 14 142 7 S246 5 317 9" />
+              </svg>
+            </span>
           </h1>
           <p className="hero-role">Product-minded Full Stack Developer / Creator</p>
           <p className="hero-description">
@@ -79,8 +145,21 @@ export default async function HomePage() {
         </a>
       </section>
 
+      <div className="toolbox-marquee" role="group" aria-label="主なツールと技術">
+        <ul className="toolbox-track">
+          {toolbox.map((tool) => (
+            <li key={tool}>{tool}</li>
+          ))}
+        </ul>
+        <ul className="toolbox-track" aria-hidden="true">
+          {toolbox.map((tool) => (
+            <li key={tool}>{tool}</li>
+          ))}
+        </ul>
+      </div>
+
       <section className="section-shell works-section" id="works" aria-labelledby="works-title">
-        <div className="section-intro">
+        <div className="section-intro" data-reveal>
           <p className="signal-label">01 / SELECTED WORKS</p>
           <h2 id="works-title">
             Built in public.
@@ -94,7 +173,13 @@ export default async function HomePage() {
         </div>
         <div className="works-rail">
           {home.works.map((work, index) => (
-            <article className="work-entry" key={work.title}>
+            <article
+              className="work-entry"
+              key={work.title}
+              data-reveal
+              data-spotlight
+              style={{ '--reveal-delay': `${index * 90}ms` } as React.CSSProperties}
+            >
               <div className="work-number" aria-hidden="true">
                 0{index + 1}
               </div>
@@ -105,8 +190,12 @@ export default async function HomePage() {
               </div>
               <div className="work-meta">
                 <span>{work.role}</span>
-                <small>{work.stack}</small>
-                <a href={work.href}>
+                <ul className="stack-chips" aria-label="Tech stack">
+                  {work.stack.split(' · ').map((tech) => (
+                    <li key={tech}>{tech}</li>
+                  ))}
+                </ul>
+                <a className="stretched-link" href={work.href}>
                   View repository <span aria-hidden="true">↗</span>
                 </a>
               </div>
@@ -120,7 +209,7 @@ export default async function HomePage() {
         id="what-i-do"
         aria-labelledby="capability-title"
       >
-        <div className="section-intro compact-intro">
+        <div className="section-intro compact-intro" data-reveal>
           <p className="signal-label">02 / WHAT I DO</p>
           <h2 id="capability-title">
             From interface
@@ -130,7 +219,12 @@ export default async function HomePage() {
         </div>
         <div className="capability-lines">
           {home.capabilities.map((item, index) => (
-            <article key={item.title}>
+            <article
+              key={item.title}
+              data-reveal
+              data-spotlight
+              style={{ '--reveal-delay': `${index * 80}ms` } as React.CSSProperties}
+            >
               <span className="capability-index">0{index + 1}</span>
               <h3>{item.title}</h3>
               <p>{item.description}</p>
@@ -140,9 +234,42 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <section
+        className="section-shell process-section"
+        id="process"
+        aria-labelledby="process-title"
+      >
+        <div className="section-intro compact-intro" data-reveal>
+          <p className="signal-label">03 / HOW I BUILD</p>
+          <h2 id="process-title">
+            Understand,
+            <br />
+            ship, refine.
+          </h2>
+          <p>作って終わりにしない。公開してから磨く、一周ぶんの開発の流れです。</p>
+        </div>
+        <ol className="process-steps">
+          {buildSteps.map((item, index) => (
+            <li
+              key={item.step}
+              data-reveal
+              data-spotlight
+              style={{ '--reveal-delay': `${index * 70}ms` } as React.CSSProperties}
+            >
+              <span className="process-index" aria-hidden="true">
+                {String(index + 1).padStart(2, '0')}
+              </span>
+              <b>{item.step}</b>
+              <h3>{item.title}</h3>
+              <p>{item.description}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+
       <section className="section-shell about-section" id="about" aria-labelledby="about-title">
-        <div className="about-copy">
-          <p className="signal-label">03 / ABOUT SNAPSHOT</p>
+        <div className="about-copy" data-reveal>
+          <p className="signal-label">04 / ABOUT SNAPSHOT</p>
           <h2 id="about-title">画面の向こう側まで、つくる。</h2>
           <p className="about-lead">
             実装することが好きです。設計を理解したうえで手を動かし、小さく公開して、反応と運用から磨き続けます。
@@ -154,7 +281,7 @@ export default async function HomePage() {
             More about me →
           </a>
         </div>
-        <div className="about-workbench" aria-label="Development workbench fragments">
+        <div className="about-workbench" data-reveal aria-label="Development workbench fragments">
           <div className="workbench-window window-main">
             <div className="window-chrome">
               <span />
@@ -187,8 +314,8 @@ export default async function HomePage() {
         id="writing"
         aria-labelledby="writing-title"
       >
-        <div className="section-intro">
-          <p className="signal-label">04 / LATEST WRITING</p>
+        <div className="section-intro" data-reveal>
+          <p className="signal-label">05 / LATEST WRITING</p>
           <h2 id="writing-title">
             Notes become
             <br />
@@ -198,7 +325,7 @@ export default async function HomePage() {
             View all Writing →
           </a>
         </div>
-        <div className="editorial-stack">
+        <div className="editorial-stack" data-reveal>
           {home.writing.map((item, index) => (
             <article key={item.title}>
               <div>
@@ -222,14 +349,14 @@ export default async function HomePage() {
         id="activity"
         aria-labelledby="activity-title"
       >
-        <div className="section-intro compact-intro">
-          <p className="signal-label">05 / NEWS &amp; ACTIVITY</p>
+        <div className="section-intro compact-intro" data-reveal>
+          <p className="signal-label">06 / NEWS &amp; ACTIVITY</p>
           <h2 id="activity-title">What is moving now.</h2>
           <a className="snapshot-destination" href="/news">
             View all News →
           </a>
         </div>
-        <div className="activity-stream">
+        <div className="activity-stream" data-reveal>
           {home.activity.map((item) => (
             <article key={item.title}>
               <span>{item.label}</span>
@@ -254,8 +381,8 @@ export default async function HomePage() {
         id="schedule"
         aria-labelledby="schedule-title"
       >
-        <div className="section-intro compact-intro">
-          <p className="signal-label">06 / SCHEDULE</p>
+        <div className="section-intro compact-intro" data-reveal>
+          <p className="signal-label">07 / SCHEDULE</p>
           <h2 id="schedule-title">
             Public plans,
             <br />
@@ -266,7 +393,7 @@ export default async function HomePage() {
             Open full Schedule →
           </a>
         </div>
-        <div className="timeline-rail" role="list">
+        <div className="timeline-rail" role="list" data-reveal>
           {home.schedule.map((item, index) => (
             <div role="listitem" key={item.label}>
               <i aria-hidden="true" />
@@ -282,15 +409,15 @@ export default async function HomePage() {
       </section>
 
       <section className="section-shell social-section" id="social" aria-labelledby="social-title">
-        <div className="section-intro compact-intro">
-          <p className="signal-label">07 / SOCIAL SIGNAL</p>
+        <div className="section-intro compact-intro" data-reveal>
+          <p className="signal-label">08 / SOCIAL SIGNAL</p>
           <h2 id="social-title">Find the live edges.</h2>
           <p>外部サービスが落ちてもこのサイトは残る。最新活動はリンクを常時fallbackとして持つ。</p>
           <a className="snapshot-destination" href="/links">
             Open Links →
           </a>
         </div>
-        <div className="social-links">
+        <div className="social-links" data-reveal>
           {home.socials.map((social, index) => (
             <a href={social.href} key={social.label}>
               <span>0{index + 1}</span>
@@ -310,8 +437,8 @@ export default async function HomePage() {
         <div className="contact-signal-art" aria-hidden="true">
           IVMZ / SIGNAL / CONTACT
         </div>
-        <div className="contact-copy">
-          <p className="signal-label">08 / CONTACT</p>
+        <div className="contact-copy" data-reveal>
+          <p className="signal-label">09 / CONTACT</p>
           <h2 id="contact-title">
             Let’s make something
             <br />
@@ -320,8 +447,13 @@ export default async function HomePage() {
           <p>
             開発相談、仕事、コラボ、取材など。配送先を選ばせず、Contactを一つの正式destinationへ整理します。
           </p>
+          <ul className="topic-chips" aria-label="ご相談の例">
+            {contactTopics.map((topic) => (
+              <li key={topic}>{topic}</li>
+            ))}
+          </ul>
         </div>
-        <div className="contact-routes">
+        <div className="contact-routes" data-reveal>
           <a href="/contact">
             <span>CONTACT / ROUTING</span>
             <strong>Open contact destination</strong>
