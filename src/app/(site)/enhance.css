@@ -235,8 +235,7 @@ html.ivmz-signature-seen .hero-underline path {
   border-color: var(--color-primary);
   color: var(--color-text);
 }
-.toolbox-marquee.is-paused .toolbox-track,
-.toolbox-marquee:focus-within .toolbox-track {
+.toolbox-marquee.is-paused .toolbox-track {
   animation-play-state: paused;
 }
 .toolbox-track {
@@ -251,7 +250,7 @@ html.ivmz-signature-seen .hero-underline path {
   list-style: none;
   animation: marquee 38s linear infinite;
 }
-.toolbox-marquee:hover .toolbox-track {
+.toolbox-viewport:hover .toolbox-track {
   animation-play-state: paused;
 }
 .toolbox-track li {
@@ -576,9 +575,12 @@ html.ivmz-signature-seen .hero-underline path {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .toolbox-marquee {
+  .toolbox-viewport {
     overflow-x: auto;
     mask-image: none;
+  }
+  .toolbox-pause {
+    display: none;
   }
   .toolbox-track {
     animation: none;
