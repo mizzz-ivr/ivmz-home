@@ -3,6 +3,10 @@ import { PageHero, PageSection } from '@/components/site/PageFoundation'
 import { createPageMetadata } from '@/lib/metadata'
 import { site } from '@/lib/site'
 
+// Decide at request time whether the bot check is on, so the widget and the API (which reads the
+// secret at runtime) can never disagree because of build-time vs runtime environment scopes.
+export const dynamic = 'force-dynamic'
+
 export const metadata = createPageMetadata({
   title: 'Contact',
   description: '仕事、開発相談、コラボ、取材等の正式なContact destination。',
@@ -28,7 +32,17 @@ export default function ContactPage() {
         title="Send a message"
         description={<p>入力内容はserver-sideで検証し、カテゴリに応じて配送先を決定します。</p>}
       >
-        <ContactForm generalEmail={site.contactEmail} securityEmail={site.securityEmail} />
+        <ContactForm
+          generalEmail={site.contactEmail}
+          securityEmail={site.securityEmail}
+          // The widget is only shown when the server can also verify it (secret present); otherwise the
+          // form would look protected while the API accepts anything.
+          turnstileSiteKey={
+            process.env.TURNSTILE_SECRET_KEY
+              ? process.env.TURNSTILE_SITE_KEY || undefined
+              : undefined
+          }
+        />
       </PageSection>
 
       <PageSection

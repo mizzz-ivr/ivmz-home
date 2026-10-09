@@ -148,3 +148,14 @@ returning 429 on three consecutive runs (cause not identified). Instead the rout
 per-client limiter (`src/contact/attachments/rate-limit.ts`): 20 upload starts and 120 scan polls per
 minute per IP. It is per serverless instance, so it is best effort; the backstops are the hard caps on
 size and count, the 1-day quarantine expiry and an AWS Budgets alert for GuardDuty/S3.
+
+## Picker and admin download
+
+- The picker accepts files by drag and drop onto the dashed area as well as by "Select files" (keyboard
+  users keep the native file input). Dropped files go through the same type/size/count checks.
+- In `/admin` -> Inbox, every stored attachment shows a **Download** link. Every stored attachment has
+  already passed the malware scan and content checks; the link redirects to a 60-second signed URL that
+  forces a download and needs an admin session. The admin notification email lists file names and sizes
+  and links to the record, but never contains the files.
+- Plain text / Markdown / CSV and Office files are opt-in: tick them in Contact settings -> Allowed file
+  types (for example *Plain text* to try the EICAR test file).

@@ -151,6 +151,30 @@ test.describe('Contact attachments', () => {
     await expect(page.getByText('photo.png')).toHaveCount(0)
   })
 
+  test('accepts files dropped onto the picker', async ({ page }) => {
+    const api = await mockAttachmentApi(page, [
+      { payload: { attachmentToken: 'att-token', ok: true, status: 'clean' }, status: 200 },
+    ])
+    await page.goto('/contact')
+
+    const dataTransfer = await page.evaluateHandle((base64) => {
+      const bytes = Uint8Array.from(atob(base64), (char) => char.charCodeAt(0))
+      const transfer = new DataTransfer()
+      transfer.items.add(new File([bytes], 'dropped.png', { type: 'image/png' }))
+      return transfer
+    }, png.toString('base64'))
+
+    const zone = page.locator('.contact-attachments-picker')
+    await zone.dispatchEvent('dragenter', { dataTransfer })
+    await expect(zone).toHaveClass(/is-dragging/)
+    await zone.dispatchEvent('drop', { dataTransfer })
+
+    await expect(page.getByText('dropped.png')).toBeVisible()
+    await expect(page.getByText('安全を確認しました')).toBeVisible()
+    expect(api.calls.init).toBe(1)
+    await expect(zone).not.toHaveClass(/is-dragging/)
+  })
+
   test('hides the picker entirely when attachments are not enabled', async ({ page }) => {
     await page.route('**/api/contact/attachments/policy', (route) =>
       route.fulfill({ json: { ...policy, enabled: false } }),

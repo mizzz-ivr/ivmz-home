@@ -15,6 +15,8 @@ export type ContactDeliveryMessage = ContactSubmission & {
   attachments?: ContactDeliveryAttachment[]
   recipient: string
   requestId: string
+  /** CMS record id, set once the submission is stored (used for the admin deep link). */
+  submissionId?: number | string
 }
 
 export type ContactDeliveryResult = {
@@ -85,7 +87,7 @@ export class PersistingContactDelivery implements ContactDelivery {
     }
 
     try {
-      await notifyWithTimeout(this.notifier, message, notifyBudget)
+      await notifyWithTimeout(this.notifier, { ...message, submissionId: id }, notifyBudget)
       await this.mark(id, remaining(), 'sent')
     } catch (error) {
       const errorName = error instanceof Error ? error.name : 'UnknownError'

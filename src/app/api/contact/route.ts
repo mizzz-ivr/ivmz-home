@@ -9,10 +9,15 @@ import { getAttachmentRuntime } from '@/contact/attachments/runtime'
 import { verifyAttachmentTokens } from '@/contact/attachments/service'
 import { recipientFor } from '@/lib/contact-routing'
 import { isAllowedContactOrigin } from '@/security/contact-origin'
+import { verifyTurnstile } from '@/security/turnstile'
 
 export const runtime = 'nodejs'
 
-const DELIVERY_TIMEOUT_MS = 8_000
+// Whole-request budget, measured from the start of the request. It stays under the browser's 10 s
+// abort so a stored submission is never reported as a failure, and it covers the Turnstile check
+// (<= 2 s) plus attachment verification; delivery only starts if at least 1.5 s are left.
+const REQUEST_BUDGET_MS = 9_000
+const MIN_DELIVERY_TIMEOUT_MS = 1_500
 
 class ContactDeliveryTimeoutError extends Error {
   constructor() {
@@ -34,14 +39,18 @@ function json(body: unknown, status: number) {
   })
 }
 
-async function deliverWithTimeout(delivery: ContactDelivery, message: ContactDeliveryMessage) {
+async function deliverWithTimeout(
+  delivery: ContactDelivery,
+  message: ContactDeliveryMessage,
+  timeoutMs: number,
+) {
   let timeout: ReturnType<typeof setTimeout> | undefined
 
   try {
     return await Promise.race([
       delivery.deliver(message),
       new Promise<never>((_, reject) => {
-        timeout = setTimeout(() => reject(new ContactDeliveryTimeoutError()), DELIVERY_TIMEOUT_MS)
+        timeout = setTimeout(() => reject(new ContactDeliveryTimeoutError()), timeoutMs)
       }),
     ])
   } finally {
@@ -50,6 +59,8 @@ async function deliverWithTimeout(delivery: ContactDelivery, message: ContactDel
 }
 
 export async function POST(request: Request) {
+  const startedAt = Date.now()
+
   if (!isAllowedContactOrigin(request.headers.get('origin'))) {
     return json(
       {
@@ -135,6 +146,16 @@ export async function POST(request: Request) {
     )
   }
 
+  // Bot check (only when TURNSTILE_SECRET_KEY is set). Runs after validation so a validation error
+  // does not spend the visitor's single-use token.
+  const captcha = await verifyTurnstile(
+    isRecord(input) ? input.turnstileToken : undefined,
+    request.headers.get('x-nf-client-connection-ip'),
+  )
+  if (captcha === 'failed') {
+    return json({ code: 'captcha_failed', ok: false }, 403)
+  }
+
   const attachmentTokens = isRecord(input) ? input.attachments : undefined
   let attachments: ContactDeliveryMessage['attachments']
 
@@ -178,7 +199,12 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await deliverWithTimeout(delivery, message)
+    const remainingMs = REQUEST_BUDGET_MS - (Date.now() - startedAt)
+    // Too little time left to deliver safely: fail before any side effect. The client retries with
+    // the same requestId, so nothing is duplicated.
+    if (remainingMs < MIN_DELIVERY_TIMEOUT_MS) throw new ContactDeliveryTimeoutError()
+
+    const result = await deliverWithTimeout(delivery, message, remainingMs)
 
     return json(
       {

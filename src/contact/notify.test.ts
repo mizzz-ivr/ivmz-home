@@ -60,8 +60,51 @@ describe('buildNotificationEmail', () => {
     expect(email.FromEmailAddress).toBe('ivmz@ivrm.jp')
     expect(email.ConfigurationSetName).toBe('ivmz-contact')
     expect(email.ReplyToAddresses).toEqual(['visitor@example.com'])
-    expect(email.Content.Simple.Subject.Data).toBe('[ivmz contact] Work request')
+    expect(email.Content.Simple.Subject.Data).toBe('[ivmz] Job / Work | Work request')
     expect(email.Content.Simple.Body.Text.Data).toContain('Hello there')
+    expect(email.Content.Simple.Body.Html.Data).toContain('Hello there')
+  })
+})
+
+describe('buildNotificationEmail details', () => {
+  it('links to the CMS record and lists scanned attachments without attaching them', () => {
+    const email = buildNotificationEmail(
+      {
+        ...message,
+        attachments: [
+          { contentType: 'application/pdf', filename: 'cv.pdf', key: 'k', sha256: 'h', size: 2048 },
+        ],
+        submissionId: 42,
+      },
+      'ivmz@ivrm.jp',
+      'ivmz-contact',
+    )
+    const { Html, Text } = email.Content.Simple.Body
+
+    expect(Text.Data).toContain('https://ivmz.ivrm.jp/admin/collections/contact-submissions/42')
+    expect(Text.Data).toContain('cv.pdf')
+    expect(Text.Data).toContain('メールには添付されません')
+    expect(Html.Data).toContain('contact-submissions/42')
+    expect(JSON.stringify(email)).not.toContain('"k"')
+  })
+
+  it('escapes visitor-controlled text in the HTML part', () => {
+    const email = buildNotificationEmail(
+      {
+        ...message,
+        message: '<script>alert(1)</script>',
+        name: '<b>x</b>',
+        subject: '"><img src=x onerror=alert(1)>',
+      },
+      'ivmz@ivrm.jp',
+      'ivmz-contact',
+    )
+    const html = email.Content.Simple.Body.Html.Data
+
+    expect(html).not.toContain('<script>')
+    expect(html).not.toContain('<img')
+    expect(html).not.toContain('<b>x</b>')
+    expect(html).toContain('&lt;script&gt;')
   })
 })
 

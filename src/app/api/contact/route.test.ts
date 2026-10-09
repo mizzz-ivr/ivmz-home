@@ -102,6 +102,33 @@ describe('POST /api/contact', () => {
     })
   })
 
+  it('requires a valid Turnstile token once a secret is configured', async () => {
+    usePreviewEnvironment()
+    vi.stubEnv('TURNSTILE_SECRET_KEY', 'secret')
+
+    const missing = await POST(request(validBody()))
+    expect(missing.status).toBe(403)
+    expect(await missing.json()).toMatchObject({ code: 'captcha_failed', ok: false })
+
+    const fetchMock = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(new Response('{"success":true}', { status: 200 }))
+    const accepted = await POST(request(validBody({ turnstileToken: 'good' })))
+    expect(accepted.status).toBe(202)
+    fetchMock.mockRestore()
+  })
+
+  it('does not spend the token on validation errors', async () => {
+    usePreviewEnvironment()
+    vi.stubEnv('TURNSTILE_SECRET_KEY', 'secret')
+    const fetchMock = vi.spyOn(globalThis, 'fetch')
+
+    const response = await POST(request(validBody({ email: 'not-an-email' })))
+    expect(response.status).toBe(422)
+    expect(fetchMock).not.toHaveBeenCalled()
+    fetchMock.mockRestore()
+  })
+
   it('absorbs honeypot submissions without invoking real delivery', async () => {
     usePreviewEnvironment()
 

@@ -1,5 +1,8 @@
 import { SESv2Client, SendEmailCommand } from '@aws-sdk/client-sesv2'
 
+import { site } from '@/lib/site'
+
+import { contactCategoryLabels } from './category-labels'
 import type { ContactDeliveryMessage } from './delivery'
 
 export interface ContactNotifier {
@@ -25,25 +28,82 @@ type SesEnvironment = {
   CONTACT_AUTOREPLY?: string
 }
 
+const oneLine = (value: string, max: number) => value.replace(/\s+/g, ' ').trim().slice(0, max)
+
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+function formatBytes(bytes: number) {
+  return bytes >= 1024 * 1024
+    ? `${(bytes / 1024 / 1024).toFixed(1)} MB`
+    : `${Math.max(1, Math.round(bytes / 1024))} KB`
+}
+
+function adminUrl(message: ContactDeliveryMessage) {
+  return message.submissionId === undefined
+    ? `${site.url}/admin/collections/contact-submissions`
+    : `${site.url}/admin/collections/contact-submissions/${encodeURIComponent(String(message.submissionId))}`
+}
+
 export function buildNotificationEmail(
   message: ContactDeliveryMessage,
   from: string,
   configurationSet: string,
 ) {
-  const body = [
-    `Category: ${message.category}`,
-    `From: ${message.name} <${message.email}>`,
-    `Request ID: ${message.requestId}`,
-    ...(message.attachments?.length
+  const category = contactCategoryLabels[message.category] ?? message.category
+  const link = adminUrl(message)
+  const attachments = message.attachments ?? []
+  const attachmentLines = attachments.map(
+    (file) => `  - ${oneLine(file.filename, 160)} (${formatBytes(file.size)})`,
+  )
+
+  const text = [
+    '新しい問い合わせが届きました。',
+    '',
+    `カテゴリ : ${category}`,
+    `件名     : ${oneLine(message.subject, 160)}`,
+    `送信者   : ${oneLine(message.name, 80)} <${message.email}>`,
+    `受付番号 : ${message.requestId}`,
+    ...(attachments.length > 0
       ? [
-          `Attachments: ${message.attachments.length} (scanned; open them from the CMS inbox, not attached here)`,
+          `添付     : ${attachments.length} 件（ウイルススキャン済み。メールには添付されません）`,
+          ...attachmentLines,
         ]
       : []),
     '',
+    '── メッセージ ──',
     message.message,
+    '────────────────',
     '',
-    '— Stored in the ivmz CMS inbox (/admin → Inbox). Reply to this email to answer the sender.',
+    `▶ CMS で開く（添付のダウンロードはここから・要ログイン）\n  ${link}`,
+    '',
+    '※ このメールに返信すると、送信者のアドレスに届きます。',
   ].join('\n')
+
+  const row = (label: string, value: string) =>
+    `<tr><th align="left" style="padding:4px 12px 4px 0;color:#6b6280;font-weight:600;white-space:nowrap;vertical-align:top">${label}</th><td style="padding:4px 0">${value}</td></tr>`
+
+  const html = `<!doctype html><html lang="ja"><body style="margin:0;background:#f2eff8;font-family:-apple-system,'Segoe UI','Hiragino Sans',Meiryo,sans-serif;color:#1a1230">
+<div style="max-width:620px;margin:0 auto;padding:20px">
+<div style="background:#ffffff;border-radius:14px;padding:22px;border:1px solid #ddd6ee">
+<p style="margin:0 0 4px;font-size:12px;letter-spacing:.12em;color:#6d3bd8;font-weight:700">IVMZ / CONTACT</p>
+<h1 style="margin:0 0 14px;font-size:18px;line-height:1.4">${escapeHtml(oneLine(message.subject, 160))}</h1>
+<table role="presentation" cellpadding="0" cellspacing="0" style="font-size:14px;line-height:1.5;width:100%">
+${row('カテゴリ', escapeHtml(category))}
+${row('送信者', `${escapeHtml(oneLine(message.name, 80))} &lt;<a href="mailto:${escapeHtml(message.email)}" style="color:#6d3bd8">${escapeHtml(message.email)}</a>&gt;`)}
+${row('受付番号', `<code style="font-size:12px">${escapeHtml(message.requestId)}</code>`)}
+${attachments.length > 0 ? row('添付', `${attachments.length} 件（スキャン済み）<br>${attachments.map((file) => `${escapeHtml(oneLine(file.filename, 160))} <span style="color:#6b6280">(${formatBytes(file.size)})</span>`).join('<br>')}`) : ''}
+</table>
+<div style="margin:16px 0;padding:14px 16px;background:#f7f4fd;border-left:4px solid #ffd23a;border-radius:6px;white-space:pre-wrap;font-size:14px;line-height:1.7">${escapeHtml(message.message)}</div>
+<p style="margin:0 0 10px"><a href="${escapeHtml(link)}" style="display:inline-block;background:#6d3bd8;color:#ffffff;text-decoration:none;padding:10px 18px;border-radius:999px;font-weight:700;font-size:13px">CMS で開く${attachments.length > 0 ? '（添付はここから）' : ''}</a></p>
+<p style="margin:0;font-size:12px;color:#6b6280">このメールに返信すると、送信者のアドレスに届きます。添付ファイルはメールに含まれません（要ログイン）。</p>
+</div></div></body></html>`
 
   return {
     // Required so delivery / bounce / complaint events reach the monitored event destination.
@@ -53,8 +113,14 @@ export function buildNotificationEmail(
     ReplyToAddresses: [message.email],
     Content: {
       Simple: {
-        Subject: { Charset: 'UTF-8', Data: `[ivmz contact] ${message.subject}` },
-        Body: { Text: { Charset: 'UTF-8', Data: body } },
+        Subject: {
+          Charset: 'UTF-8',
+          Data: `[ivmz] ${category} | ${oneLine(message.subject, 120)}`,
+        },
+        Body: {
+          Html: { Charset: 'UTF-8', Data: html },
+          Text: { Charset: 'UTF-8', Data: text },
+        },
       },
     },
   }

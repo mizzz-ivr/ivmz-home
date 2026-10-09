@@ -131,6 +131,17 @@ export const ContactSubmissions: CollectionConfig = {
       ],
     },
     {
+      // Rendered outside the array on purpose: custom `Field` components nested in array rows are not
+      // honoured by the pinned Payload version. It lists one download link per stored attachment.
+      name: 'attachmentDownloads',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: '/components/admin/AttachmentDownloads#AttachmentDownloads',
+        },
+      },
+    },
+    {
       name: 'notification',
       type: 'select',
       access: submittedFieldAccess,

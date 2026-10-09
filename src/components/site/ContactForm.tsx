@@ -2,20 +2,14 @@
 
 import { useCallback, useRef, useState } from 'react'
 
+import { contactCategoryLabels } from '@/contact/category-labels'
 import type { ContactField, ContactValidationErrors } from '@/contact/schema'
+import type { ContactCategory } from '@/lib/contact-routing'
 
 import { ContactAttachments } from './ContactAttachments'
+import { TurnstileWidget } from './TurnstileWidget'
 
-const categories = [
-  ['personal', 'General / Personal'],
-  ['development', 'Technical / OSS / Development'],
-  ['job', 'Job / Work'],
-  ['collaboration', 'Collaboration'],
-  ['media', 'Media / Interview'],
-  ['community', 'ivRooom / Community'],
-  ['team', 'ivRooom / Team'],
-  ['security', 'Security'],
-] as const
+const categories = Object.entries(contactCategoryLabels) as [ContactCategory, string][]
 
 type SubmitState = 'idle' | 'review' | 'submitting' | 'success' | 'preview' | 'error'
 
@@ -29,7 +23,7 @@ type Draft = {
   website: string
 }
 
-const categoryLabels: Record<string, string> = Object.fromEntries(categories)
+const categoryLabels: Record<string, string> = contactCategoryLabels
 
 type ContactResponse = {
   code?: string
@@ -40,15 +34,20 @@ type ContactResponse = {
 }
 
 type ContactFormProps = {
+  /** Public Cloudflare Turnstile site key; the bot check is off when it is not set. */
+  turnstileSiteKey?: string
   generalEmail: string
   securityEmail: string
 }
 
-export function ContactForm({ generalEmail, securityEmail }: ContactFormProps) {
+export function ContactForm({ generalEmail, securityEmail, turnstileSiteKey }: ContactFormProps) {
   const feedbackRef = useRef<HTMLDivElement>(null)
   const formRef = useRef<HTMLFormElement>(null)
   const reviewRef = useRef<HTMLElement>(null)
   const [draft, setDraft] = useState<Draft | null>(null)
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
+  const [captchaKey, setCaptchaKey] = useState(0)
+  const [errorCode, setErrorCode] = useState<string | null>(null)
   // Idempotency key: kept across failed retries of the same content, dropped when the content changes.
   const attemptIdRef = useRef<string | null>(null)
   // Edits made while a request is in flight must survive the success reset.
@@ -109,13 +108,14 @@ export function ContactForm({ generalEmail, securityEmail }: ContactFormProps) {
 
   // Step 2: send exactly what was shown on the confirmation screen.
   const submit = async () => {
-    if (state === 'submitting' || !draft) return
+    if (state === 'submitting' || !draft || (turnstileSiteKey && !captchaToken)) return
 
     const form = formRef.current
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), 10_000)
 
     setFieldErrors({})
+    setErrorCode(null)
     setState('submitting')
     attemptIdRef.current ??= crypto.randomUUID()
     submittingRef.current = true
@@ -131,6 +131,7 @@ export function ContactForm({ generalEmail, securityEmail }: ContactFormProps) {
           name: draft.name,
           requestId: attemptIdRef.current,
           subject: draft.subject,
+          turnstileToken: captchaToken,
           website: draft.website,
         }),
         headers: {
@@ -150,6 +151,7 @@ export function ContactForm({ generalEmail, securityEmail }: ContactFormProps) {
       }
 
       if (!response.ok || !payload.ok) {
+        setErrorCode(payload.code ?? null)
         setState('error')
         focusFeedback()
         return
@@ -174,6 +176,9 @@ export function ContactForm({ generalEmail, securityEmail }: ContactFormProps) {
     } finally {
       submittingRef.current = false
       clearTimeout(timeout)
+      // Turnstile tokens are single use: every attempt needs a fresh challenge.
+      setCaptchaToken(null)
+      setCaptchaKey((value) => value + 1)
     }
   }
 
@@ -184,9 +189,11 @@ export function ContactForm({ generalEmail, securityEmail }: ContactFormProps) {
       ? '送信しました。返信が必要な場合は入力されたメールアドレスへ連絡します。'
       : state === 'preview'
         ? '送信内容を検証しました。Deploy Previewでは実メールは送信されません。'
-        : state === 'error'
-          ? '送信できませんでした。入力内容は残っています。時間を置いて再送するか、下記メールアドレスをご利用ください。'
-          : ''
+        : state === 'error' && errorCode === 'captcha_failed'
+          ? 'ボット対策の確認に失敗しました。もう一度「内容を確認する」からお試しください。'
+          : state === 'error'
+            ? '送信できませんでした。入力内容は残っています。時間を置いて再送するか、下記メールアドレスをご利用ください。'
+            : ''
 
   return (
     <div className="contact-form-shell">
@@ -359,6 +366,13 @@ export function ContactForm({ generalEmail, securityEmail }: ContactFormProps) {
               </div>
             ) : null}
           </dl>
+          {turnstileSiteKey ? (
+            <TurnstileWidget
+              key={captchaKey}
+              onToken={setCaptchaToken}
+              siteKey={turnstileSiteKey}
+            />
+          ) : null}
           <div className="contact-submit-row">
             <button
               className="contact-review-back"
@@ -370,7 +384,7 @@ export function ContactForm({ generalEmail, securityEmail }: ContactFormProps) {
             </button>
             <button
               className="contact-submit"
-              disabled={state === 'submitting'}
+              disabled={state === 'submitting' || Boolean(turnstileSiteKey && !captchaToken)}
               onClick={submit}
               type="button"
             >
