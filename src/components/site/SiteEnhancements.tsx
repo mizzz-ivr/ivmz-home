@@ -1,5 +1,6 @@
 'use client'
 
+import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 /**
@@ -7,6 +8,8 @@ import { useEffect, useState } from 'react'
  * without this component; it adds scroll progress, reveal-on-scroll and a pointer spotlight.
  */
 export function SiteEnhancements() {
+  const pathname = usePathname()
+
   useEffect(() => {
     const root = document.documentElement
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -74,7 +77,7 @@ export function SiteEnhancements() {
       observer?.disconnect()
       root.classList.remove('reveal-ready')
     }
-  }, [])
+  }, [pathname])
 
   return <div className="scroll-progress" aria-hidden="true" />
 }
