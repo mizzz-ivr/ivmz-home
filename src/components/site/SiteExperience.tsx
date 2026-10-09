@@ -59,6 +59,20 @@ export function SignatureIntro() {
   )
 }
 
+const extraRouteLabels = [
+  ['/links', 'LINKS'],
+  ['/legal/privacy', 'PRIVACY'],
+  ['/legal/terms', 'TERMS'],
+] as const
+
+/** Label shown in the header pill: the current section name, or the brand on Home / unknown routes. */
+function currentRouteLabel(pathname: string): string | null {
+  const match = [...navigation, ...extraRouteLabels].find(
+    ([, href]) => href !== '/' && isCurrentRoute(pathname, href),
+  )
+  return match ? match[0] : null
+}
+
 function isCurrentRoute(pathname: string, href: string) {
   return href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`)
 }
@@ -106,6 +120,8 @@ export function SiteHeader() {
 
   const closeDrawer = () => setOpen(false)
   const homeCurrent = pathname === '/'
+  const routeLabel = currentRouteLabel(pathname)
+  const brandLabel = `ivmz home${routeLabel ? `, current page: ${routeLabel}` : ''}`
 
   return (
     <>
@@ -114,13 +130,18 @@ export function SiteHeader() {
           <a
             className="brand-mark"
             href="/"
-            aria-label="ivmz home"
+            aria-label={brandLabel}
             aria-current={homeCurrent ? 'page' : undefined}
           >
             <span className="brand-glyph" aria-hidden="true">
               i/
             </span>
-            <span className="brand-word">ivmz</span>
+            <span
+              key={routeLabel ?? 'ivmz'}
+              className={`brand-word${routeLabel ? ' brand-word-route' : ''}`}
+            >
+              {routeLabel ?? 'ivmz'}
+            </span>
           </a>
           <nav className="desktop-nav" aria-label="Desktop navigation">
             {navigation.map(([label, href]) => (
@@ -143,14 +164,19 @@ export function SiteHeader() {
           <a
             className="brand-mark"
             href="/"
-            aria-label="ivmz home"
+            aria-label={brandLabel}
             aria-current={homeCurrent ? 'page' : undefined}
             onClick={closeDrawer}
           >
             <span className="brand-glyph" aria-hidden="true">
               i/
             </span>
-            <span className="brand-word">ivmz</span>
+            <span
+              key={routeLabel ?? 'ivmz'}
+              className={`brand-word${routeLabel ? ' brand-word-route' : ''}`}
+            >
+              {routeLabel ?? 'ivmz'}
+            </span>
           </a>
           <div className="mobile-actions">
             <ThemeToggle compact />

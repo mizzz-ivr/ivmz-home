@@ -1,5 +1,6 @@
 import { EmptyState, PageCTA, PageHero, PageSection } from '@/components/site/PageFoundation'
 import { createPageMetadata } from '@/lib/metadata'
+import { workAreas } from '@/lib/work-areas'
 import { getWorksListContent } from '@/lib/public-list-content'
 
 export const revalidate = 300
@@ -29,6 +30,34 @@ export default async function WorksPage() {
         signal="BUILD / CASE STUDY"
       />
       <PageSection
+        title="Work areas"
+        description={<p>つくるもの、担うことを3つの領域に整理しています。</p>}
+      >
+        <div className="area-grid">
+          {workAreas.map((area, index) => (
+            <article
+              className="area-card"
+              id={`area-${area.id}`}
+              key={area.id}
+              data-reveal="pop"
+              data-spotlight
+              style={{ '--reveal-delay': `${index * 90}ms` } as React.CSSProperties}
+            >
+              <span className="area-index">{area.index}</span>
+              <b className="area-label">{area.label}</b>
+              <h3>{area.title}</h3>
+              <p>{area.description}</p>
+              <ul className="stack-chips" aria-label="Keywords">
+                {area.keywords.map((keyword) => (
+                  <li key={keyword}>{keyword}</li>
+                ))}
+              </ul>
+              <small>{area.related}</small>
+            </article>
+          ))}
+        </div>
+      </PageSection>
+      <PageSection
         title="Published works"
         description={<p>公開状態 `_status = published` のコンテンツだけを表示します。</p>}
       >
@@ -39,7 +68,7 @@ export default async function WorksPage() {
         ) : (
           <div className="content-list">
             {content.items.map((work) => (
-              <article className="content-row" key={work.id}>
+              <article className="content-row" key={work.id} data-reveal>
                 <div className="content-row-copy">
                   <span>{work.projectStatus}</span>
                   <h3>{work.title}</h3>
