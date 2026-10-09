@@ -2,6 +2,9 @@ import { EmptyState, PageHero, PageSection } from '@/components/site/PageFoundat
 import { createPageMetadata } from '@/lib/metadata'
 import { getSocialLinksListContent } from '@/lib/public-list-content'
 import { site } from '@/lib/site'
+import { SocialEmbedCard } from '@/components/site/SocialEmbedCard'
+import { getLatestYouTubeVideos } from '@/lib/youtube-feed'
+import { parseSocialEmbeds } from '@/lib/social-embed'
 
 export const revalidate = 300
 
@@ -17,7 +20,11 @@ const stableFallback = [
 ]
 
 export default async function LinksPage() {
-  const content = await getSocialLinksListContent()
+  const [content, videos] = await Promise.all([
+    getSocialLinksListContent(),
+    getLatestYouTubeVideos(),
+  ])
+  const embeds = parseSocialEmbeds(process.env.SOCIAL_EMBED_URLS)
   const links = content.state === 'error' ? stableFallback : content.items
 
   return (
@@ -57,6 +64,39 @@ export default async function LinksPage() {
           </div>
         )}
       </PageSection>
+      {videos.length > 0 && (
+        <PageSection
+          title="Latest videos"
+          description={<p>YouTubeチャンネルの最新動画を自動で表示します。</p>}
+        >
+          <ul className="video-grid">
+            {videos.map((video) => (
+              <li key={video.id}>
+                <a href={video.url} target="_blank" rel="noreferrer">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={video.thumbnail} alt="" loading="lazy" width={320} height={180} />
+                  <strong>{video.title}</strong>
+                  {video.publishedAt && <small>{video.publishedAt.slice(0, 10)}</small>}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </PageSection>
+      )}
+      {embeds.length > 0 && (
+        <PageSection
+          title="Posts"
+          description={
+            <p>X・Instagram・TikTok・YouTubeの投稿を、クリックしたときだけ読み込んで表示します。</p>
+          }
+        >
+          <div className="social-embed-grid">
+            {embeds.map((embed) => (
+              <SocialEmbedCard embed={embed} key={embed.src} />
+            ))}
+          </div>
+        </PageSection>
+      )}
     </main>
   )
 }
