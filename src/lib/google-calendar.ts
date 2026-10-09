@@ -14,7 +14,7 @@ export type CalendarEvent = {
   url: string | null
 }
 
-const CALENDAR_ID = /^[A-Za-z0-9._%+-]+(?:@[A-Za-z0-9.-]+)?$/
+const CALENDAR_ID = /^[A-Za-z0-9._%+#-]+(?:@[A-Za-z0-9.-]+)?$/
 const TIMEOUT_MS = 3_000
 const REVALIDATE_SECONDS = 900
 const MAX_BYTES = 2 * 1024 * 1024

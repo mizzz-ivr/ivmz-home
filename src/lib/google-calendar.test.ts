@@ -49,6 +49,7 @@ describe('google calendar', () => {
   it('validates calendar ids', () => {
     expect(isGoogleCalendarId('me@gmail.com')).toBe(true)
     expect(isGoogleCalendarId('abc123@group.calendar.google.com')).toBe(true)
+    expect(isGoogleCalendarId('ja.japanese#holiday@group.v.calendar.google.com')).toBe(true)
     for (const value of ['', undefined, 'a/b', 'a b', '../x', 'x'.repeat(300)]) {
       expect(isGoogleCalendarId(value)).toBe(false)
     }
@@ -104,6 +105,17 @@ describe('google calendar', () => {
         vi.fn().mockResolvedValue(new Response('', { status: 404 })),
       ),
     ).toEqual([])
+  })
+
+  it('encodes # in public holiday calendar ids', async () => {
+    const fetcher = vi.fn().mockResolvedValue(new Response(ics, { status: 200 }))
+    await getUpcomingGoogleCalendarEvents(
+      'ja.japanese#holiday@group.v.calendar.google.com',
+      fetcher,
+    )
+    expect(fetcher.mock.calls[0][0]).toBe(
+      'https://calendar.google.com/calendar/ical/ja.japanese%23holiday%40group.v.calendar.google.com/public/basic.ics',
+    )
   })
 
   it('fetches only the fixed calendar host with an encoded id', async () => {
