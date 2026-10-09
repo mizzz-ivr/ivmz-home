@@ -2,6 +2,7 @@ import { EmptyState, PageCTA, PageHero, PageSection } from '@/components/site/Pa
 import { createPageMetadata } from '@/lib/metadata'
 import { getScheduleListContent } from '@/lib/public-list-content'
 import { formatPublicDateTime } from '@/lib/public-content-safety'
+import { getUpcomingGoogleCalendarEvents, type CalendarEvent } from '@/lib/google-calendar'
 
 export const revalidate = 300
 
@@ -19,8 +20,18 @@ function formatScheduleRange(startAt: string, endAt: string | null | undefined, 
   return end ? `${start} – ${end}` : start
 }
 
+function formatCalendarWhen(event: CalendarEvent) {
+  const options: Intl.DateTimeFormatOptions = event.allDay
+    ? { dateStyle: 'medium', timeZone: 'UTC' }
+    : { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Tokyo' }
+  return new Intl.DateTimeFormat('ja-JP', options).format(new Date(event.start))
+}
+
 export default async function SchedulePage() {
-  const content = await getScheduleListContent()
+  const [content, calendarEvents] = await Promise.all([
+    getScheduleListContent(),
+    getUpcomingGoogleCalendarEvents(),
+  ])
 
   return (
     <main id="main-content" className="route-page">
@@ -64,6 +75,33 @@ export default async function SchedulePage() {
           </div>
         )}
       </PageSection>
+      {calendarEvents.length > 0 && (
+        <PageSection
+          title="Calendar"
+          description={<p>公開設定のGoogleカレンダーから、これからの予定を自動で表示します。</p>}
+        >
+          <div className="content-list">
+            {calendarEvents.map((event) => (
+              <article className="content-row" key={`${event.start}-${event.title}`}>
+                <div className="content-row-copy">
+                  <span>{event.allDay ? 'ALL DAY' : 'EVENT'}</span>
+                  <h3>{event.title}</h3>
+                </div>
+                <div className="content-row-meta">
+                  <span>{formatCalendarWhen(event)}</span>
+                  {!event.allDay && <small>Asia/Tokyo</small>}
+                  {event.location && <small>{event.location}</small>}
+                  {event.url && (
+                    <a href={event.url} target="_blank" rel="noreferrer">
+                      Open details ↗
+                    </a>
+                  )}
+                </div>
+              </article>
+            ))}
+          </div>
+        </PageSection>
+      )}
       <PageCTA
         title="Need to reach out?"
         body="仕事・開発相談・コラボ等の正式な入口はContactへ集約します。"

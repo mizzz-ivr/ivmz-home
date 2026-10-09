@@ -844,3 +844,77 @@
 .repo-stats-archived {
   color: var(--color-pink);
 }
+
+/* YouTube latest videos + click-to-load social embeds */
+.video-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.video-grid a {
+  display: grid;
+  gap: 6px;
+  color: inherit;
+}
+.video-grid img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border: 1px solid var(--color-line);
+  border-radius: 10px;
+}
+.video-grid strong {
+  font-size: 0.92rem;
+  line-height: 1.4;
+}
+.video-grid small {
+  color: var(--color-muted);
+  font: 650 0.68rem/1.4 var(--font-mono);
+}
+.social-embed-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  gap: 16px;
+}
+.social-embed {
+  border: 1px solid var(--color-line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--color-bg-elevated);
+}
+.social-embed iframe {
+  display: block;
+  width: 100%;
+  min-height: 420px;
+  border: 0;
+}
+.social-embed-placeholder {
+  display: grid;
+  gap: 10px;
+  padding: 20px;
+}
+.social-embed-placeholder p {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.85rem;
+}
+.social-embed-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+.social-embed-actions button {
+  min-height: 40px;
+  padding: 8px 16px;
+  border: 1px solid var(--color-primary);
+  border-radius: 999px;
+  background: var(--color-primary);
+  color: var(--color-bg);
+  font: 750 0.74rem/1 var(--font-mono);
+  cursor: pointer;
+}
