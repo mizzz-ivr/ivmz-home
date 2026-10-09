@@ -1,0 +1,461 @@
+/* Pop layer: tighter rhythm, sticker/marker accents and playful motion.
+   Loaded after enhance.css; everything here is visual-only and reduced-motion safe. */
+
+:root {
+  --color-pop: #ffd84a;
+  --color-pop-ink: #1a1230;
+  --pop-shadow: 4px 4px 0 var(--color-pop-ink);
+}
+:root[data-theme='light'] {
+  --color-pop: #ffd23a;
+  --color-pop-ink: #1a1230;
+  --pop-shadow: 4px 4px 0 var(--color-pop-ink);
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    --color-pop: #ffd23a;
+    --pop-shadow: 4px 4px 0 var(--color-pop-ink);
+  }
+}
+:root:not([data-theme='light']) {
+  --pop-shadow: 4px 4px 0 color-mix(in srgb, var(--color-pop) 85%, transparent);
+}
+
+/* ---- Tighter vertical rhythm ---- */
+.section-shell {
+  padding-block: clamp(52px, 6.4vw, 96px);
+}
+.works-section {
+  padding-top: clamp(64px, 8vw, 110px);
+}
+.section-intro {
+  margin-bottom: clamp(26px, 4vw, 48px);
+}
+.compact-intro {
+  margin-bottom: clamp(22px, 3vw, 34px);
+}
+.section-intro > p:last-child {
+  margin-top: 16px;
+}
+.hero {
+  min-height: min(760px, 100svh);
+  padding-top: clamp(104px, 11vw, 140px);
+  padding-bottom: clamp(48px, 6vw, 80px);
+}
+.hero-status {
+  margin-top: clamp(28px, 4vw, 44px);
+}
+.hero-role {
+  margin-top: 24px;
+}
+.contact-section {
+  min-height: auto;
+  padding-bottom: clamp(72px, 8vw, 100px);
+}
+.work-entry {
+  padding-block: clamp(20px, 2.8vw, 34px);
+}
+.capability-lines article {
+  padding-block: 20px;
+}
+.activity-stream article {
+  padding-block: 20px;
+}
+.timeline-rail {
+  gap: 24px;
+}
+.toolbox-track {
+  padding-block: 13px;
+}
+.process-steps li {
+  padding-block: 22px 26px;
+}
+.editorial-stack article {
+  min-height: 168px;
+}
+
+.route-page {
+  padding-top: clamp(104px, 11vw, 140px);
+  padding-bottom: clamp(56px, 7vw, 96px);
+}
+.page-hero {
+  min-height: auto;
+  padding-block: clamp(36px, 5vw, 64px) clamp(44px, 5.5vw, 72px);
+}
+.page-lede {
+  margin-top: 20px;
+}
+.page-hero-signal {
+  min-height: 180px;
+}
+.page-section {
+  padding-block: clamp(44px, 5.5vw, 76px);
+  gap: clamp(28px, 5vw, 72px);
+}
+.content-row {
+  padding-block: clamp(20px, 2.8vw, 32px);
+}
+.page-cta {
+  padding-top: clamp(44px, 6vw, 76px);
+}
+.global-site-footer-inner {
+  padding-top: clamp(40px, 5vw, 64px);
+}
+
+/* ---- Marker highlight ---- */
+.marker {
+  padding: 0 0.08em;
+  color: inherit;
+  background: linear-gradient(
+      transparent 58%,
+      color-mix(in srgb, var(--color-pop) 82%, transparent) 58% 92%,
+      transparent 92%
+    )
+    no-repeat;
+  background-size: 100% 100%;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  transition: background-size 800ms var(--ease-signal) 250ms;
+}
+.reveal-ready [data-reveal]:not(.is-revealed) .marker {
+  background-size: 0% 100%;
+}
+
+/* ---- Stickers ---- */
+.pop-sticker {
+  position: absolute;
+  z-index: 8;
+  padding: 8px 12px;
+  border: 2px solid var(--color-pop-ink);
+  border-radius: 999px;
+  background: var(--color-pop);
+  color: var(--color-pop-ink);
+  font: 800 0.66rem/1 var(--font-mono);
+  letter-spacing: 0.08em;
+  box-shadow: var(--pop-shadow);
+  white-space: nowrap;
+  animation: sticker-float 5.5s ease-in-out infinite;
+}
+.sticker-a {
+  left: 2%;
+  top: 8%;
+  transform: rotate(-7deg);
+}
+.sticker-b {
+  right: 4%;
+  bottom: 4%;
+  background: var(--color-pink);
+  transform: rotate(8deg);
+  animation-delay: -2.4s;
+}
+@keyframes sticker-float {
+  50% {
+    translate: 0 -8px;
+    rotate: 2deg;
+  }
+}
+.avatar-frame {
+  animation: avatar-bob 7s ease-in-out infinite;
+}
+@keyframes avatar-bob {
+  50% {
+    translate: 0 -6px;
+  }
+}
+
+/* ---- Pop labels, chips, buttons ---- */
+.section-shell .signal-label {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border: 1.5px solid var(--color-pop-ink);
+  border-radius: 999px;
+  background: var(--color-pop);
+  color: var(--color-pop-ink);
+  box-shadow: 3px 3px 0 var(--color-pop-ink);
+  transform: rotate(-1.5deg);
+}
+.section-shell .signal-label::before {
+  background: var(--color-pop-ink);
+}
+.hero .signal-label {
+  transform: rotate(-1.5deg);
+}
+
+.stack-chips li:nth-child(4n + 1),
+.topic-chips li:nth-child(4n + 1) {
+  border-color: var(--color-primary);
+  color: var(--color-primary-soft);
+}
+.stack-chips li:nth-child(4n + 2),
+.topic-chips li:nth-child(4n + 2) {
+  border-color: var(--color-cyan);
+  color: var(--color-cyan);
+}
+.stack-chips li:nth-child(4n + 3),
+.topic-chips li:nth-child(4n + 3) {
+  border-color: var(--color-pink);
+  color: var(--color-pink);
+}
+.stack-chips li:nth-child(4n),
+.topic-chips li:nth-child(4n) {
+  border-color: var(--color-pop);
+  color: var(--color-pop);
+}
+:root[data-theme='light'] .stack-chips li:nth-child(4n),
+:root[data-theme='light'] .topic-chips li:nth-child(4n) {
+  color: #8a6500;
+  border-color: #c99a00;
+}
+.topic-chips li {
+  transition:
+    transform var(--duration-fast) var(--ease-signal),
+    background var(--duration-fast) ease;
+}
+.topic-chips li:hover {
+  transform: translateY(-3px) rotate(-2deg);
+  background: var(--color-selection);
+}
+
+.action-link {
+  border-width: 2px;
+  border-radius: 999px;
+  box-shadow: var(--pop-shadow);
+  transition:
+    transform var(--duration-fast) var(--ease-signal),
+    box-shadow var(--duration-fast) var(--ease-signal),
+    background var(--duration-fast) ease;
+}
+.action-link:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--color-pop-ink);
+}
+:root:not([data-theme='light']) .action-link:hover {
+  box-shadow: 6px 6px 0 color-mix(in srgb, var(--color-pop) 85%, transparent);
+}
+.action-link:active {
+  transform: translate(3px, 3px);
+  box-shadow: 0 0 0 var(--color-pop-ink);
+}
+.action-primary {
+  border-color: var(--color-pop-ink);
+}
+
+.area-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: -12px 0 28px;
+  padding: 0;
+  list-style: none;
+}
+.area-chips a {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border: 2px solid var(--color-line-strong);
+  border-radius: 999px;
+  font: 700 0.84rem/1 var(--font-ui);
+  transition:
+    transform var(--duration-fast) var(--ease-signal),
+    background var(--duration-fast) ease,
+    border-color var(--duration-fast) ease;
+}
+.area-chips b {
+  color: var(--color-primary-soft);
+  font: 700 0.62rem/1 var(--font-mono);
+}
+.area-chips a:hover,
+.area-chips a:focus-visible {
+  transform: translateY(-3px) rotate(-1.5deg);
+  border-color: var(--color-pop);
+  background: var(--color-selection);
+}
+
+/* ---- Work areas (Works page) ---- */
+.area-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(14px, 2vw, 22px);
+}
+.area-card {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  padding: clamp(20px, 2.4vw, 28px);
+  border: 2px solid var(--color-line-strong);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  transition:
+    transform var(--duration-ui) var(--ease-signal),
+    box-shadow var(--duration-ui) var(--ease-signal),
+    border-color var(--duration-fast) ease;
+  scroll-margin-top: 96px;
+}
+.area-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: radial-gradient(
+    300px circle at var(--spot-x) var(--spot-y),
+    var(--color-selection),
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity var(--duration-ui) ease;
+}
+.area-card:hover {
+  transform: translate(-3px, -3px) rotate(-0.6deg);
+  border-color: var(--color-pop);
+  box-shadow: var(--pop-shadow);
+}
+.area-card:hover::before {
+  opacity: 1;
+}
+.area-card:nth-child(2):hover {
+  transform: translate(-3px, -3px) rotate(0.6deg);
+}
+.area-index {
+  color: var(--color-muted);
+  font: 700 0.62rem/1 var(--font-mono);
+}
+.area-label {
+  width: fit-content;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: var(--color-pop);
+  color: var(--color-pop-ink);
+  font: 800 0.6rem/1.2 var(--font-mono);
+  letter-spacing: 0.12em;
+}
+.area-card:nth-child(2) .area-label {
+  background: var(--color-cyan);
+}
+.area-card:nth-child(3) .area-label {
+  background: var(--color-pink);
+}
+.area-card h3 {
+  margin: 4px 0 0;
+  font-family: var(--font-editorial);
+  font-size: clamp(1.4rem, 2.2vw, 1.9rem);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+}
+.area-card p {
+  margin: 0;
+  color: var(--color-text-soft);
+  font-size: 0.9rem;
+}
+.area-card small {
+  color: var(--color-muted);
+  font: 600 0.64rem/1.5 var(--font-mono);
+}
+.area-card:target {
+  border-color: var(--color-pop);
+  box-shadow: var(--pop-shadow);
+}
+
+/* ---- Motion: reveal variants ---- */
+.reveal-ready [data-reveal='pop']:not(.is-revealed) {
+  opacity: 0;
+  transform: translateY(18px) scale(0.92) rotate(-1.5deg);
+}
+[data-reveal='pop'] {
+  transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.reveal-ready [data-reveal='left']:not(.is-revealed) {
+  opacity: 0;
+  transform: translateX(-32px);
+}
+.reveal-ready [data-reveal='right']:not(.is-revealed) {
+  opacity: 0;
+  transform: translateX(32px);
+}
+
+/* Hero marker draws on load (hero has no reveal gate). */
+.hero .marker {
+  animation: marker-draw 900ms 600ms var(--ease-signal) both;
+}
+@keyframes marker-draw {
+  from {
+    background-size: 0% 100%;
+  }
+}
+
+/* Work numbers and process indexes get a small pop on hover. */
+.work-number,
+.process-index {
+  transition: transform var(--duration-fast) var(--ease-signal);
+  display: inline-block;
+}
+.work-entry:hover .work-number {
+  transform: scale(1.35) rotate(-6deg);
+  color: var(--color-pop);
+}
+.process-steps li {
+  transition: transform var(--duration-ui) var(--ease-signal);
+}
+.process-steps li:hover {
+  transform: translateY(-4px);
+}
+.capability-lines article:hover h3 {
+  color: var(--color-primary-soft);
+}
+.social-links a:hover strong {
+  text-decoration: underline wavy var(--color-pop) 2px;
+  text-underline-offset: 6px;
+}
+
+@media (max-width: 900px) {
+  .area-grid {
+    grid-template-columns: 1fr;
+  }
+  .pop-sticker {
+    font-size: 0.58rem;
+  }
+}
+@media (max-width: 640px) {
+  .section-shell {
+    padding-block: 56px 48px;
+  }
+  .sticker-a {
+    left: 0;
+    top: 2%;
+  }
+  .sticker-b {
+    right: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pop-sticker,
+  .avatar-frame {
+    animation: none;
+  }
+  .hero .marker {
+    animation: none;
+  }
+  .marker {
+    transition: none;
+  }
+  .action-link:hover,
+  .action-link:active,
+  .area-card:hover,
+  .topic-chips li:hover,
+  .area-chips a:hover {
+    transform: none;
+  }
+}
+@media print {
+  .pop-sticker {
+    display: none !important;
+  }
+  .marker {
+    background-size: 100% 100% !important;
+  }
+}
