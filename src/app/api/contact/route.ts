@@ -13,7 +13,11 @@ import { verifyTurnstile } from '@/security/turnstile'
 
 export const runtime = 'nodejs'
 
-const DELIVERY_TIMEOUT_MS = 8_000
+// Whole-request budget, measured from the start of the request. It stays under the browser's 10 s
+// abort so a stored submission is never reported as a failure, and it covers the Turnstile check
+// (<= 2 s) plus attachment verification before delivery gets what is left (>= 1 s).
+const REQUEST_BUDGET_MS = 9_000
+const MIN_DELIVERY_TIMEOUT_MS = 1_000
 
 class ContactDeliveryTimeoutError extends Error {
   constructor() {
@@ -35,14 +39,18 @@ function json(body: unknown, status: number) {
   })
 }
 
-async function deliverWithTimeout(delivery: ContactDelivery, message: ContactDeliveryMessage) {
+async function deliverWithTimeout(
+  delivery: ContactDelivery,
+  message: ContactDeliveryMessage,
+  timeoutMs: number,
+) {
   let timeout: ReturnType<typeof setTimeout> | undefined
 
   try {
     return await Promise.race([
       delivery.deliver(message),
       new Promise<never>((_, reject) => {
-        timeout = setTimeout(() => reject(new ContactDeliveryTimeoutError()), DELIVERY_TIMEOUT_MS)
+        timeout = setTimeout(() => reject(new ContactDeliveryTimeoutError()), timeoutMs)
       }),
     ])
   } finally {
@@ -51,6 +59,8 @@ async function deliverWithTimeout(delivery: ContactDelivery, message: ContactDel
 }
 
 export async function POST(request: Request) {
+  const startedAt = Date.now()
+
   if (!isAllowedContactOrigin(request.headers.get('origin'))) {
     return json(
       {
@@ -189,7 +199,11 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await deliverWithTimeout(delivery, message)
+    const result = await deliverWithTimeout(
+      delivery,
+      message,
+      Math.max(MIN_DELIVERY_TIMEOUT_MS, REQUEST_BUDGET_MS - (Date.now() - startedAt)),
+    )
 
     return json(
       {

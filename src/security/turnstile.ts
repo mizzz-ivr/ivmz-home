@@ -7,7 +7,8 @@
 export type TurnstileResult = 'failed' | 'ok' | 'skipped'
 
 const VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify'
-const TIMEOUT_MS = 3_000
+// Kept short: it runs inside the route's overall request budget (see route.ts).
+const TIMEOUT_MS = 2_000
 const MAX_TOKEN_LENGTH = 2_048
 
 export async function verifyTurnstile(
