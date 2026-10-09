@@ -168,7 +168,7 @@ data "aws_iam_policy_document" "guardduty_access" {
 }
 
 resource "aws_iam_role" "guardduty" {
-  name               = "${var.bucket_name}-guardduty-malware-protection"
+  name               = var.guardduty_role_name
   assume_role_policy = data.aws_iam_policy_document.guardduty_trust.json
 }
 

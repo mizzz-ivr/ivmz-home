@@ -20,3 +20,9 @@ variable "clean_retention_days" {
   type        = number
   default     = 90
 }
+
+variable "guardduty_role_name" {
+  description = "IAM role GuardDuty assumes to scan the bucket (IAM role names are limited to 64 characters)."
+  type        = string
+  default     = "ivmz-home-attach-guardduty"
+}
