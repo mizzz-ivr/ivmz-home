@@ -12,12 +12,35 @@ test.describe('Contact form', () => {
       .getByLabel('問い合わせ内容')
       .fill('Deploy Previewでの問い合わせフォーム動作確認です。')
 
-    await page.getByRole('button', { name: 'Send message ↗' }).click()
+    await page.getByRole('button', { name: '内容を確認する ↗' }).click()
+    await expect(page.getByRole('heading', { name: '送信内容の確認' })).toBeVisible()
+    await page.getByRole('button', { name: '送信する ↗' }).click()
 
     await expect(page.getByRole('status')).toContainText(
       'Deploy Previewでは実メールは送信されません。',
     )
     await expect(page.getByLabel('問い合わせ内容')).toHaveValue('')
+  })
+
+  test('shows a confirmation step and lets the visitor go back to edit', async ({ page }) => {
+    await page.goto('/contact')
+
+    await page.getByLabel('お名前').fill('Review Visitor')
+    await page.getByLabel('メールアドレス').fill('visitor@example.com')
+    await page.getByLabel('カテゴリ').selectOption('job')
+    await page.getByLabel('件名').fill('Review subject')
+    await page.getByLabel('問い合わせ内容').fill('確認画面のテストです。')
+
+    await page.getByRole('button', { name: '内容を確認する ↗' }).click()
+
+    const review = page.getByRole('region', { name: '送信内容の確認' })
+    await expect(review).toContainText('Review Visitor')
+    await expect(review).toContainText('Job / Work')
+    await expect(review).toContainText('確認画面のテストです。')
+
+    await page.getByRole('button', { name: '← 修正する' }).click()
+    await expect(page.getByLabel('件名')).toHaveValue('Review subject')
+    await expect(page.getByLabel('問い合わせ内容')).toHaveValue('確認画面のテストです。')
   })
 
   test('keeps user input visible when delivery fails', async ({ page }) => {
@@ -40,7 +63,9 @@ test.describe('Contact form', () => {
     await page.getByLabel('件名').fill('Keep this message')
     await page.getByLabel('問い合わせ内容').fill('失敗時にも残してほしい問い合わせ内容です。')
 
-    await page.getByRole('button', { name: 'Send message ↗' }).click()
+    await page.getByRole('button', { name: '内容を確認する ↗' }).click()
+    await expect(page.getByRole('heading', { name: '送信内容の確認' })).toBeVisible()
+    await page.getByRole('button', { name: '送信する ↗' }).click()
 
     await expect(page.locator('.contact-feedback-error')).toContainText('入力内容は残っています。')
     await expect(page.getByLabel('件名')).toHaveValue('Keep this message')

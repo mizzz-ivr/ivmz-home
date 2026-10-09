@@ -17,7 +17,19 @@ const categories = [
   ['security', 'Security'],
 ] as const
 
-type SubmitState = 'idle' | 'submitting' | 'success' | 'preview' | 'error'
+type SubmitState = 'idle' | 'review' | 'submitting' | 'success' | 'preview' | 'error'
+
+type Draft = {
+  attachments: string[]
+  category: string
+  email: string
+  message: string
+  name: string
+  subject: string
+  website: string
+}
+
+const categoryLabels: Record<string, string> = Object.fromEntries(categories)
 
 type ContactResponse = {
   code?: string
@@ -34,6 +46,8 @@ type ContactFormProps = {
 
 export function ContactForm({ generalEmail, securityEmail }: ContactFormProps) {
   const feedbackRef = useRef<HTMLDivElement>(null)
+  const formRef = useRef<HTMLFormElement>(null)
+  const [draft, setDraft] = useState<Draft | null>(null)
   // Idempotency key: kept across failed retries of the same content, dropped when the content changes.
   const attemptIdRef = useRef<string | null>(null)
   // Edits made while a request is in flight must survive the success reset.
@@ -64,13 +78,38 @@ export function ContactForm({ generalEmail, securityEmail }: ContactFormProps) {
     })
   }
 
-  const submit = async (event: React.FormEvent<HTMLFormElement>) => {
+  // Step 1: the browser has already validated the form; show a read-only confirmation first.
+  const review = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
     if (state === 'submitting' || attachmentState.busy) return
 
-    const form = event.currentTarget
-    const formData = new FormData(form)
+    const formData = new FormData(event.currentTarget)
+    const text = (key: string) => String(formData.get(key) ?? '')
+    setDraft({
+      attachments: attachmentState.tokens,
+      category: text('category'),
+      email: text('email'),
+      message: text('message'),
+      name: text('name'),
+      subject: text('subject'),
+      website: text('website'),
+    })
+    setFieldErrors({})
+    setState('review')
+    focusFeedback()
+  }
+
+  const backToEdit = () => {
+    setState('idle')
+    requestAnimationFrame(() => document.getElementById('contact-name')?.focus())
+  }
+
+  // Step 2: send exactly what was shown on the confirmation screen.
+  const submit = async () => {
+    if (state === 'submitting' || !draft) return
+
+    const form = formRef.current
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), 10_000)
 
@@ -83,14 +122,14 @@ export function ContactForm({ generalEmail, securityEmail }: ContactFormProps) {
     try {
       const response = await fetch('/api/contact', {
         body: JSON.stringify({
-          attachments: attachmentState.tokens,
-          category: formData.get('category'),
-          email: formData.get('email'),
-          message: formData.get('message'),
-          name: formData.get('name'),
+          attachments: draft.attachments,
+          category: draft.category,
+          email: draft.email,
+          message: draft.message,
+          name: draft.name,
           requestId: attemptIdRef.current,
-          subject: formData.get('subject'),
-          website: formData.get('website'),
+          subject: draft.subject,
+          website: draft.website,
         }),
         headers: {
           'Content-Type': 'application/json',
@@ -122,9 +161,10 @@ export function ContactForm({ generalEmail, securityEmail }: ContactFormProps) {
 
       attemptIdRef.current = null
       if (!editedWhileSubmittingRef.current) {
-        form.reset()
+        form?.reset()
         setAttachmentsKey((value) => value + 1)
       }
+      setDraft(null)
       focusFeedback()
     } catch {
       setState('error')
@@ -134,6 +174,8 @@ export function ContactForm({ generalEmail, securityEmail }: ContactFormProps) {
       clearTimeout(timeout)
     }
   }
+
+  const confirming = (state === 'review' || state === 'submitting') && draft !== null
 
   const feedback =
     state === 'success'
@@ -148,11 +190,13 @@ export function ContactForm({ generalEmail, securityEmail }: ContactFormProps) {
     <div className="contact-form-shell">
       <form
         className="contact-form"
+        hidden={confirming}
+        ref={formRef}
         onChange={() => {
           attemptIdRef.current = null
           if (submittingRef.current) editedWhileSubmittingRef.current = true
         }}
-        onSubmit={submit}
+        onSubmit={review}
       >
         <div className="contact-field-grid">
           <div className="contact-field">
@@ -269,20 +313,65 @@ export function ContactForm({ generalEmail, securityEmail }: ContactFormProps) {
         </div>
 
         <div className="contact-submit-row">
-          <button
-            className="contact-submit"
-            disabled={state === 'submitting' || attachmentState.busy}
-            type="submit"
-          >
-            {state === 'submitting'
-              ? 'Sending…'
-              : attachmentState.busy
-                ? 'Scanning files…'
-                : 'Send message ↗'}
+          <button className="contact-submit" disabled={attachmentState.busy} type="submit">
+            {attachmentState.busy ? 'Scanning files…' : '内容を確認する ↗'}
           </button>
           <p>配送先はカテゴリからserver-sideで決定され、入力内容から変更できません。</p>
         </div>
       </form>
+
+      {confirming && draft ? (
+        <section aria-labelledby="contact-review-title" className="contact-review">
+          <h2 id="contact-review-title">送信内容の確認</h2>
+          <p>この内容で送信します。間違いがなければ「送信する」を押してください。</p>
+          <dl>
+            <div>
+              <dt>お名前</dt>
+              <dd>{draft.name}</dd>
+            </div>
+            <div>
+              <dt>メールアドレス</dt>
+              <dd>{draft.email}</dd>
+            </div>
+            <div>
+              <dt>カテゴリ</dt>
+              <dd>{categoryLabels[draft.category] ?? draft.category}</dd>
+            </div>
+            <div>
+              <dt>件名</dt>
+              <dd>{draft.subject}</dd>
+            </div>
+            <div>
+              <dt>問い合わせ内容</dt>
+              <dd className="contact-review-message">{draft.message}</dd>
+            </div>
+            {draft.attachments.length > 0 ? (
+              <div>
+                <dt>添付ファイル</dt>
+                <dd>{draft.attachments.length} 件（スキャン済み）</dd>
+              </div>
+            ) : null}
+          </dl>
+          <div className="contact-submit-row">
+            <button
+              className="contact-review-back"
+              disabled={state === 'submitting'}
+              onClick={backToEdit}
+              type="button"
+            >
+              ← 修正する
+            </button>
+            <button
+              className="contact-submit"
+              disabled={state === 'submitting'}
+              onClick={submit}
+              type="button"
+            >
+              {state === 'submitting' ? 'Sending…' : '送信する ↗'}
+            </button>
+          </div>
+        </section>
+      ) : null}
 
       {feedback ? (
         <div

@@ -87,7 +87,9 @@ test.describe('Contact attachments', () => {
     await expect(page.getByRole('button', { name: /Scanning files/ })).toBeDisabled()
     await expect(page.getByText('安全を確認済み')).toBeVisible({ timeout: 20_000 })
 
-    await page.getByRole('button', { name: 'Send message ↗' }).click()
+    await page.getByRole('button', { name: '内容を確認する ↗' }).click()
+    await expect(page.getByRole('heading', { name: '送信内容の確認' })).toBeVisible()
+    await page.getByRole('button', { name: '送信する ↗' }).click()
     await expect(page.getByRole('status').filter({ hasText: '送信しました' })).toBeVisible()
     expect(api.submitted()?.attachments).toEqual(['attachment-token'])
   })
@@ -112,7 +114,9 @@ test.describe('Contact attachments', () => {
       timeout: 20_000,
     })
 
-    await page.getByRole('button', { name: 'Send message ↗' }).click()
+    await page.getByRole('button', { name: '内容を確認する ↗' }).click()
+    await expect(page.getByRole('heading', { name: '送信内容の確認' })).toBeVisible()
+    await page.getByRole('button', { name: '送信する ↗' }).click()
     await expect(page.getByRole('status').filter({ hasText: '送信しました' })).toBeVisible()
     expect(api.submitted()?.attachments).toEqual([])
   })
