@@ -298,7 +298,7 @@ export interface ContactSubmission {
   /**
    * Email notification state (server-owned). The submission is stored regardless.
    */
-  notification: 'pending' | 'sent' | 'failed' | 'skipped';
+  notification: 'pending' | 'sent' | 'failed' | 'unknown' | 'skipped';
   notificationError?: string | null;
   /**
    * Private triage note. Never shown publicly.

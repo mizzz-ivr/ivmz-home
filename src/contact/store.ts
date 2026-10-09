@@ -1,6 +1,7 @@
 import type { ContactDeliveryMessage } from './delivery'
 
-export type ContactNotificationState = 'failed' | 'sent' | 'skipped'
+/** `unknown`: the send timed out and was aborted, so SES may or may not have accepted it. */
+export type ContactNotificationState = 'failed' | 'sent' | 'skipped' | 'unknown'
 
 export interface ContactStore {
   /** `duplicate` means this requestId was already stored (a retry); nothing new was written. */

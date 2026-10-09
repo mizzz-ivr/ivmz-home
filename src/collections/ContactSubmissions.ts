@@ -110,6 +110,7 @@ export const ContactSubmissions: CollectionConfig = {
         { label: 'Pending', value: 'pending' },
         { label: 'Sent', value: 'sent' },
         { label: 'Failed', value: 'failed' },
+        { label: 'Unknown (timed out; check the mailbox)', value: 'unknown' },
         { label: 'Skipped (not configured)', value: 'skipped' },
       ],
       required: true,

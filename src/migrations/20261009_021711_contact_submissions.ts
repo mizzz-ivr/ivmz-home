@@ -4,7 +4,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
    CREATE TYPE "ivmz_home"."enum_contact_submissions_status" AS ENUM('new', 'read', 'replied', 'archived', 'spam');
   CREATE TYPE "ivmz_home"."enum_contact_submissions_category" AS ENUM('personal', 'development', 'job', 'collaboration', 'media', 'community', 'team', 'security');
-  CREATE TYPE "ivmz_home"."enum_contact_submissions_notification" AS ENUM('pending', 'sent', 'failed', 'skipped');
+  CREATE TYPE "ivmz_home"."enum_contact_submissions_notification" AS ENUM('pending', 'sent', 'failed', 'unknown', 'skipped');
   CREATE TABLE "ivmz_home"."contact_submissions" (
   	"id" serial PRIMARY KEY NOT NULL,
   	"status" "ivmz_home"."enum_contact_submissions_status" DEFAULT 'new' NOT NULL,

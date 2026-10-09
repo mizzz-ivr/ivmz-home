@@ -214,13 +214,15 @@ source of truth** and email as a best-effort notification.
 validated submission
   -> save to `contact-submissions` (Payload Local API, overrideAccess)   -- failure => 502
   -> if CONTACT_* SES variables are present: send notification email    -- failure => stored anyway
-  -> mark `notification` = sent | failed | skipped
+  -> mark `notification` = sent | failed | unknown | skipped
 ```
 
 - Deploy Preview / Branch Deploy are unchanged: validation-only, nothing is stored or sent.
 - The collection has `create: false`; only the server route creates records. Reading, triage
   (`status`, `internalNote`) and deletion require an authenticated Payload user (`/admin` → Inbox).
 - `notification = skipped` means SES is not configured yet. The submission is still in the inbox.
+- `notification = unknown` means the send exceeded its time budget and the request was aborted; SES
+  may or may not have accepted it, so check the mailbox before assuming it was not sent.
 - Email never makes an already-stored submission fail; failures log only `requestId`, notifier
   kind and error class (no address or body).
 

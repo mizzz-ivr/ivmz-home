@@ -221,3 +221,35 @@ describe('PersistingContactDelivery deadline', () => {
     vi.useRealTimers()
   })
 })
+
+describe('notification timeout', () => {
+  it('aborts the provider request and records an indeterminate state', async () => {
+    vi.useFakeTimers()
+    const marks: Array<[number | string, string, string | undefined]> = []
+    const store: ContactStore = {
+      markNotification: async (id, state, errorName) => {
+        marks.push([id, state, errorName])
+      },
+      save: async () => ({ id: 11 }),
+    }
+    let received: AbortSignal | undefined
+    const notifier: ContactNotifier = {
+      kind: 'ses',
+      notify: (_message, signal) => {
+        received = signal
+        return new Promise<void>(() => {})
+      },
+    }
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    const pending = new PersistingContactDelivery(store, notifier).deliver(message)
+    await vi.advanceTimersByTimeAsync(5_100)
+    const result = await pending
+
+    expect(result.mode).toBe('sent')
+    expect(received?.aborted).toBe(true)
+    expect(marks).toEqual([[11, 'unknown', 'NotificationTimeout']])
+    spy.mockRestore()
+    vi.useRealTimers()
+  })
+})

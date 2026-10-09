@@ -4,7 +4,8 @@ import type { ContactDeliveryMessage } from './delivery'
 
 export interface ContactNotifier {
   readonly kind: string
-  notify(message: ContactDeliveryMessage): Promise<void>
+  /** `signal` aborts the in-flight provider request when the delivery budget runs out. */
+  notify(message: ContactDeliveryMessage, signal?: AbortSignal): Promise<void>
 }
 
 /** Used until SES is configured; the submission is already stored, so nothing is lost. */
@@ -61,9 +62,10 @@ export class SesContactNotifier implements ContactNotifier {
     private readonly configurationSet: string,
   ) {}
 
-  async notify(message: ContactDeliveryMessage): Promise<void> {
+  async notify(message: ContactDeliveryMessage, signal?: AbortSignal): Promise<void> {
     await this.client.send(
       new SendEmailCommand(buildNotificationEmail(message, this.from, this.configurationSet)),
+      { abortSignal: signal },
     )
   }
 }

@@ -1,6 +1,6 @@
 import { createContactNotifier, type ContactNotifier } from './notify'
 import type { ContactSubmission } from './schema'
-import { PayloadContactStore, type ContactStore } from './store'
+import { PayloadContactStore, type ContactNotificationState, type ContactStore } from './store'
 
 export type ContactDeliveryMessage = ContactSubmission & {
   recipient: string
@@ -75,10 +75,11 @@ export class PersistingContactDelivery implements ContactDelivery {
     }
 
     try {
-      await withTimeout(this.notifier.notify(message), notifyBudget)
+      await notifyWithTimeout(this.notifier, message, notifyBudget)
       await this.mark(id, remaining(), 'sent')
     } catch (error) {
       const errorName = error instanceof Error ? error.name : 'UnknownError'
+      const timedOut = error instanceof NotificationTimeoutError
       console.error(
         'CONTACT_NOTIFY_FAILED',
         JSON.stringify({
@@ -87,7 +88,7 @@ export class PersistingContactDelivery implements ContactDelivery {
           requestId: message.requestId,
         }),
       )
-      await this.mark(id, remaining(), 'failed', errorName)
+      await this.mark(id, remaining(), timedOut ? 'unknown' : 'failed', errorName)
     }
 
     return result
@@ -100,7 +101,7 @@ export class PersistingContactDelivery implements ContactDelivery {
   private async mark(
     id: number | string,
     remainingMs: number,
-    state: 'failed' | 'sent' | 'skipped',
+    state: ContactNotificationState,
     errorName?: string,
   ) {
     if (remainingMs <= MIN_STATUS_WRITE_MS) return
@@ -113,6 +114,37 @@ export class PersistingContactDelivery implements ContactDelivery {
     } catch {
       // The submission itself is stored; a status write failure must not surface to the visitor.
     }
+  }
+}
+
+class NotificationTimeoutError extends Error {
+  constructor() {
+    super('Notification timed out.')
+    this.name = 'NotificationTimeout'
+  }
+}
+
+/** Aborts the provider request when the budget runs out, so a late success cannot contradict the recorded state. */
+async function notifyWithTimeout(
+  notifier: ContactNotifier,
+  message: ContactDeliveryMessage,
+  timeoutMs: number,
+) {
+  const controller = new AbortController()
+  let timeout: ReturnType<typeof setTimeout> | undefined
+
+  try {
+    await Promise.race([
+      notifier.notify(message, controller.signal),
+      new Promise<never>((_, reject) => {
+        timeout = setTimeout(() => {
+          controller.abort()
+          reject(new NotificationTimeoutError())
+        }, timeoutMs)
+      }),
+    ])
+  } finally {
+    if (timeout) clearTimeout(timeout)
   }
 }
 
