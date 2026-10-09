@@ -473,3 +473,73 @@
     background-size: 100% 100% !important;
   }
 }
+
+/* ---- Header: current page name + entrance motion ---- */
+.brand-word-route {
+  font: 800 0.7rem/1 var(--font-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.brand-word {
+  display: inline-block;
+  animation: brand-in 520ms var(--ease-signal) both;
+}
+.brand-glyph {
+  display: inline-block;
+  animation: glyph-pop 640ms cubic-bezier(0.34, 1.56, 0.64, 1) 120ms both;
+}
+.brand-mark:hover .brand-glyph {
+  animation: glyph-wiggle 500ms ease;
+}
+.signal-header {
+  animation: header-drop 700ms var(--ease-signal) 150ms both;
+}
+html.ivmz-signature-seen .signal-header {
+  animation-delay: 0ms;
+}
+.desktop-nav a[aria-current='page']::after {
+  animation: nav-dot 380ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes brand-in {
+  from {
+    opacity: 0;
+    transform: translateY(70%);
+    filter: blur(3px);
+  }
+}
+@keyframes glyph-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.4) rotate(-25deg);
+  }
+}
+@keyframes glyph-wiggle {
+  25% {
+    transform: rotate(-12deg) scale(1.15);
+  }
+  60% {
+    transform: rotate(8deg);
+  }
+}
+@keyframes header-drop {
+  from {
+    opacity: 0;
+    translate: 0 -24px;
+  }
+}
+@keyframes nav-dot {
+  from {
+    transform: translateX(-50%) rotate(45deg) scale(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .brand-word,
+  .brand-glyph,
+  .signal-header,
+  .desktop-nav a[aria-current='page']::after {
+    animation: none;
+  }
+  .brand-mark:hover .brand-glyph {
+    animation: none;
+  }
+}
