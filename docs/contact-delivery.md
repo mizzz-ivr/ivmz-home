@@ -231,6 +231,11 @@ validated submission
 - Email never makes an already-stored submission fail; failures log only `requestId`, notifier
   kind and error class (no address or body).
 
+### Attachments
+
+File attachments (malware-scanned, admin-configurable) are documented in
+[`contact-attachments.md`](./contact-attachments.md). They are off until configured.
+
 ### Retry safety (idempotency)
 
 The form generates a `requestId` (UUID) per submission and reuses it when the same content is

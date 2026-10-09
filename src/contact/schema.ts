@@ -21,7 +21,7 @@ export type ContactSubmission = {
   subject: string
 }
 
-export type ContactField = 'category' | 'email' | 'message' | 'name' | 'subject'
+export type ContactField = 'attachments' | 'category' | 'email' | 'message' | 'name' | 'subject'
 
 export type ContactValidationErrors = Partial<Record<ContactField, string>>
 

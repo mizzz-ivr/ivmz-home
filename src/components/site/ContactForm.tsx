@@ -1,8 +1,10 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 
 import type { ContactField, ContactValidationErrors } from '@/contact/schema'
+
+import { ContactAttachments } from './ContactAttachments'
 
 const categories = [
   ['personal', 'General / Personal'],
@@ -39,6 +41,15 @@ export function ContactForm({ generalEmail, securityEmail }: ContactFormProps) {
   const editedWhileSubmittingRef = useRef(false)
   const [fieldErrors, setFieldErrors] = useState<ContactValidationErrors>({})
   const [state, setState] = useState<SubmitState>('idle')
+  const [attachmentState, setAttachmentState] = useState<{ busy: boolean; tokens: string[] }>({
+    busy: false,
+    tokens: [],
+  })
+  const [attachmentsKey, setAttachmentsKey] = useState(0)
+  const handleAttachmentsChange = useCallback(
+    (next: { busy: boolean; tokens: string[] }) => setAttachmentState(next),
+    [],
+  )
 
   const focusFeedback = () => {
     requestAnimationFrame(() => feedbackRef.current?.focus())
@@ -56,7 +67,7 @@ export function ContactForm({ generalEmail, securityEmail }: ContactFormProps) {
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
-    if (state === 'submitting') return
+    if (state === 'submitting' || attachmentState.busy) return
 
     const form = event.currentTarget
     const formData = new FormData(form)
@@ -72,6 +83,7 @@ export function ContactForm({ generalEmail, securityEmail }: ContactFormProps) {
     try {
       const response = await fetch('/api/contact', {
         body: JSON.stringify({
+          attachments: attachmentState.tokens,
           category: formData.get('category'),
           email: formData.get('email'),
           message: formData.get('message'),
@@ -109,7 +121,10 @@ export function ContactForm({ generalEmail, securityEmail }: ContactFormProps) {
       }
 
       attemptIdRef.current = null
-      if (!editedWhileSubmittingRef.current) form.reset()
+      if (!editedWhileSubmittingRef.current) {
+        form.reset()
+        setAttachmentsKey((value) => value + 1)
+      }
       focusFeedback()
     } catch {
       setState('error')
@@ -246,14 +261,24 @@ export function ContactForm({ generalEmail, securityEmail }: ContactFormProps) {
           ) : null}
         </div>
 
+        <ContactAttachments key={attachmentsKey} onChange={handleAttachmentsChange} />
+
         <div aria-hidden="true" className="contact-honeypot">
           <label htmlFor="contact-website">Website</label>
           <input autoComplete="off" id="contact-website" name="website" tabIndex={-1} type="text" />
         </div>
 
         <div className="contact-submit-row">
-          <button className="contact-submit" disabled={state === 'submitting'} type="submit">
-            {state === 'submitting' ? 'Sending…' : 'Send message ↗'}
+          <button
+            className="contact-submit"
+            disabled={state === 'submitting' || attachmentState.busy}
+            type="submit"
+          >
+            {state === 'submitting'
+              ? 'Sending…'
+              : attachmentState.busy
+                ? 'Scanning files…'
+                : 'Send message ↗'}
           </button>
           <p>配送先はカテゴリからserver-sideで決定され、入力内容から変更できません。</p>
         </div>

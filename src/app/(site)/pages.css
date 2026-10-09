@@ -633,3 +633,124 @@
     width: 100%;
   }
 }
+
+/* Contact attachments (scanned before they can be attached) */
+.contact-attachments {
+  margin: 0;
+  padding: 18px 20px;
+  display: grid;
+  gap: 14px;
+  border: 1px dashed var(--color-line-strong);
+  border-radius: var(--radius-md);
+}
+.contact-attachments legend {
+  padding: 0 8px;
+  color: var(--color-text-soft);
+  font: 700 0.78rem/1.2 var(--font-ui);
+}
+.contact-attachments-picker {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+}
+.contact-attachments-picker p {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.8rem;
+}
+.contact-attachments-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.contact-attachments-button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 2px solid var(--color-line-strong);
+  border-radius: 999px;
+  cursor: pointer;
+  font: 700 0.8rem/1 var(--font-mono);
+  transition:
+    border-color var(--duration-fast) ease,
+    background var(--duration-fast) ease;
+}
+.contact-attachments-button:hover,
+.contact-attachments-input:focus-visible + p,
+.contact-attachments-input:focus-visible ~ .contact-attachments-button {
+  border-color: var(--color-primary);
+  background: var(--color-selection);
+}
+.contact-attachments-picker:focus-within .contact-attachments-button {
+  outline: 2px solid var(--color-cyan);
+  outline-offset: 3px;
+}
+.contact-attachments-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.contact-attachment {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+}
+.contact-attachment strong {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.contact-attachment small {
+  color: var(--color-muted);
+}
+.contact-attachment-clean {
+  border-color: var(--color-cyan);
+}
+.contact-attachment-rejected,
+.contact-attachment-error {
+  border-color: var(--color-pink);
+  color: var(--color-pink);
+}
+.contact-attachment button {
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--color-line-strong);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  font: 700 0.7rem/1 var(--font-mono);
+}
+.contact-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+@media (max-width: 640px) {
+  .contact-attachment {
+    grid-template-columns: 1fr auto;
+  }
+  .contact-attachment > span {
+    grid-column: 1 / -1;
+    order: 3;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .contact-attachments-button {
+    transition: none;
+  }
+}

@@ -1,6 +1,7 @@
 import * as migration_20260826_021855_initial_payload_foundation from './20260826_021855_initial_payload_foundation';
 import * as migration_20260826_100916_payload_content_model_foundation from './20260826_100916_payload_content_model_foundation';
 import * as migration_20261009_021711_contact_submissions from './20261009_021711_contact_submissions';
+import * as migration_20261009_042936_contact_attachments from './20261009_042936_contact_attachments';
 
 export const migrations = [
   {
@@ -16,6 +17,11 @@ export const migrations = [
   {
     up: migration_20261009_021711_contact_submissions.up,
     down: migration_20261009_021711_contact_submissions.down,
-    name: '20261009_021711_contact_submissions'
+    name: '20261009_021711_contact_submissions',
+  },
+  {
+    up: migration_20261009_042936_contact_attachments.up,
+    down: migration_20261009_042936_contact_attachments.down,
+    name: '20261009_042936_contact_attachments'
   },
 ];

@@ -5,6 +5,8 @@ import {
   type ContactDeliveryMessage,
 } from '@/contact/delivery'
 import { CONTACT_BODY_LIMIT_BYTES, parseContactSubmission } from '@/contact/schema'
+import { getAttachmentRuntime } from '@/contact/attachments/runtime'
+import { verifyAttachmentTokens } from '@/contact/attachments/service'
 import { recipientFor } from '@/lib/contact-routing'
 import { isAllowedContactOrigin } from '@/security/contact-origin'
 
@@ -17,6 +19,10 @@ class ContactDeliveryTimeoutError extends Error {
     super('Contact delivery timed out.')
     this.name = 'ContactDeliveryTimeoutError'
   }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
 function json(body: unknown, status: number) {
@@ -129,11 +135,44 @@ export async function POST(request: Request) {
     )
   }
 
+  const attachmentTokens = isRecord(input) ? input.attachments : undefined
+  let attachments: ContactDeliveryMessage['attachments']
+
+  if (
+    attachmentTokens !== undefined &&
+    !(Array.isArray(attachmentTokens) && attachmentTokens.length === 0)
+  ) {
+    const runtimeDeps = await getAttachmentRuntime()
+    const verified = runtimeDeps
+      ? await verifyAttachmentTokens(runtimeDeps, attachmentTokens).catch(() => undefined)
+      : undefined
+
+    if (!verified?.ok) {
+      return json(
+        {
+          code: 'attachment_invalid',
+          errors: { attachments: '添付ファイルを確認してください。' },
+          ok: false,
+        },
+        422,
+      )
+    }
+
+    attachments = verified.attachments.map((attachment) => ({
+      contentType: attachment.mime,
+      filename: attachment.name,
+      key: attachment.key,
+      sha256: attachment.sha256,
+      size: attachment.size,
+    }))
+  }
+
   // A retry of the same submission carries the same id, so a timed-out-but-committed save is not duplicated.
   const requestId = parsed.value.requestId ?? crypto.randomUUID()
   const delivery = createContactDelivery()
   const message: ContactDeliveryMessage = {
     ...parsed.value,
+    ...(attachments ? { attachments } : {}),
     recipient: recipientFor(parsed.value.category),
     requestId,
   }
