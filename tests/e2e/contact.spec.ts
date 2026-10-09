@@ -34,6 +34,7 @@ test.describe('Contact form', () => {
     await page.getByRole('button', { name: '内容を確認する ↗' }).click()
 
     const review = page.getByRole('region', { name: '送信内容の確認' })
+    await expect(review).toBeFocused()
     await expect(review).toContainText('Review Visitor')
     await expect(review).toContainText('Job / Work')
     await expect(review).toContainText('確認画面のテストです。')

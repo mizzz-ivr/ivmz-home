@@ -47,6 +47,7 @@ type ContactFormProps = {
 export function ContactForm({ generalEmail, securityEmail }: ContactFormProps) {
   const feedbackRef = useRef<HTMLDivElement>(null)
   const formRef = useRef<HTMLFormElement>(null)
+  const reviewRef = useRef<HTMLElement>(null)
   const [draft, setDraft] = useState<Draft | null>(null)
   // Idempotency key: kept across failed retries of the same content, dropped when the content changes.
   const attemptIdRef = useRef<string | null>(null)
@@ -97,7 +98,8 @@ export function ContactForm({ generalEmail, securityEmail }: ContactFormProps) {
     })
     setFieldErrors({})
     setState('review')
-    focusFeedback()
+    // The form (and the focused button) is hidden now: move focus to the confirmation panel.
+    requestAnimationFrame(() => reviewRef.current?.focus())
   }
 
   const backToEdit = () => {
@@ -321,7 +323,12 @@ export function ContactForm({ generalEmail, securityEmail }: ContactFormProps) {
       </form>
 
       {confirming && draft ? (
-        <section aria-labelledby="contact-review-title" className="contact-review">
+        <section
+          aria-labelledby="contact-review-title"
+          className="contact-review"
+          ref={reviewRef}
+          tabIndex={-1}
+        >
           <h2 id="contact-review-title">送信内容の確認</h2>
           <p>この内容で送信します。間違いがなければ「送信する」を押してください。</p>
           <dl>

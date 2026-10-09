@@ -106,6 +106,8 @@ export function buildAcknowledgementEmail(
   }
 }
 
+const RECEIPT_TIMEOUT_MS = 3_000
+
 export class SesContactNotifier implements ContactNotifier {
   readonly kind = 'ses'
 
@@ -128,12 +130,18 @@ export class SesContactNotifier implements ContactNotifier {
       return
     }
 
-    // The owner notification decides success; a failed receipt email is only logged.
+    // The owner notification decides success; a failed receipt email is only logged. The receipt has
+    // its own shorter deadline so a slow receipt can never push the owner result past the budget.
+    const receiptSignal = AbortSignal.any(
+      signal
+        ? [signal, AbortSignal.timeout(RECEIPT_TIMEOUT_MS)]
+        : [AbortSignal.timeout(RECEIPT_TIMEOUT_MS)],
+    )
     const [owner, receipt] = await Promise.allSettled([
       notification,
       this.client.send(
         new SendEmailCommand(buildAcknowledgementEmail(message, this.from, this.configurationSet)),
-        options,
+        { abortSignal: receiptSignal },
       ),
     ])
     if (receipt.status === 'rejected') {
