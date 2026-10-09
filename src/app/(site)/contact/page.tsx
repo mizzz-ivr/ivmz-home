@@ -31,7 +31,13 @@ export default function ContactPage() {
         <ContactForm
           generalEmail={site.contactEmail}
           securityEmail={site.securityEmail}
-          turnstileSiteKey={process.env.TURNSTILE_SITE_KEY || undefined}
+          // The widget is only shown when the server can also verify it (secret present); otherwise the
+          // form would look protected while the API accepts anything.
+          turnstileSiteKey={
+            process.env.TURNSTILE_SECRET_KEY
+              ? process.env.TURNSTILE_SITE_KEY || undefined
+              : undefined
+          }
         />
       </PageSection>
 

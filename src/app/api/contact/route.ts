@@ -15,9 +15,9 @@ export const runtime = 'nodejs'
 
 // Whole-request budget, measured from the start of the request. It stays under the browser's 10 s
 // abort so a stored submission is never reported as a failure, and it covers the Turnstile check
-// (<= 2 s) plus attachment verification before delivery gets what is left (>= 1 s).
+// (<= 2 s) plus attachment verification; delivery only starts if at least 1.5 s are left.
 const REQUEST_BUDGET_MS = 9_000
-const MIN_DELIVERY_TIMEOUT_MS = 1_000
+const MIN_DELIVERY_TIMEOUT_MS = 1_500
 
 class ContactDeliveryTimeoutError extends Error {
   constructor() {
@@ -199,11 +199,12 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await deliverWithTimeout(
-      delivery,
-      message,
-      Math.max(MIN_DELIVERY_TIMEOUT_MS, REQUEST_BUDGET_MS - (Date.now() - startedAt)),
-    )
+    const remainingMs = REQUEST_BUDGET_MS - (Date.now() - startedAt)
+    // Too little time left to deliver safely: fail before any side effect. The client retries with
+    // the same requestId, so nothing is duplicated.
+    if (remainingMs < MIN_DELIVERY_TIMEOUT_MS) throw new ContactDeliveryTimeoutError()
+
+    const result = await deliverWithTimeout(delivery, message, remainingMs)
 
     return json(
       {
