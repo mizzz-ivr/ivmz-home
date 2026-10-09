@@ -136,3 +136,28 @@ describe('PersistingContactDelivery', () => {
     ).resolves.toMatchObject({ mode: 'sent' })
   })
 })
+
+describe('PersistingContactDelivery deadline', () => {
+  it('skips the notification when the save consumed the budget', async () => {
+    vi.useFakeTimers()
+    const marks: Array<[number | string, string, string | undefined]> = []
+    const store: ContactStore = {
+      markNotification: async (id, state, errorName) => {
+        marks.push([id, state, errorName])
+      },
+      save: async () => {
+        vi.advanceTimersByTime(6_500)
+        return { id: 3 }
+      },
+    }
+    const notify = vi.fn()
+    const notifier: ContactNotifier = { kind: 'ses', notify }
+
+    const result = await new PersistingContactDelivery(store, notifier).deliver(message)
+
+    expect(result.mode).toBe('sent')
+    expect(notify).not.toHaveBeenCalled()
+    expect(marks).toEqual([[3, 'failed', 'NotificationDeadlineExceeded']])
+    vi.useRealTimers()
+  })
+})

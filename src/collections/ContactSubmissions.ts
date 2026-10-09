@@ -4,6 +4,8 @@ import { isAuthenticated } from '@/access/is-authenticated'
 import { contactCategories } from '@/contact/schema'
 
 const submittedFieldAdmin = { readOnly: true } as const
+/** Submitted content is immutable through the Admin UI, REST and Local API (server uses overrideAccess). */
+const submittedFieldAccess = { create: () => false, update: () => false }
 
 /**
  * Inbox for /contact. Records are created only by the server route through the Local API
@@ -40,6 +42,7 @@ export const ContactSubmissions: CollectionConfig = {
     {
       name: 'subject',
       type: 'text',
+      access: submittedFieldAccess,
       admin: submittedFieldAdmin,
       maxLength: 160,
       required: true,
@@ -47,6 +50,7 @@ export const ContactSubmissions: CollectionConfig = {
     {
       name: 'name',
       type: 'text',
+      access: submittedFieldAccess,
       admin: submittedFieldAdmin,
       maxLength: 80,
       required: true,
@@ -54,6 +58,7 @@ export const ContactSubmissions: CollectionConfig = {
     {
       name: 'email',
       type: 'text',
+      access: submittedFieldAccess,
       admin: submittedFieldAdmin,
       maxLength: 254,
       required: true,
@@ -61,6 +66,7 @@ export const ContactSubmissions: CollectionConfig = {
     {
       name: 'category',
       type: 'select',
+      access: submittedFieldAccess,
       admin: submittedFieldAdmin,
       index: true,
       options: contactCategories.map((value) => ({ label: value, value })),
@@ -69,6 +75,7 @@ export const ContactSubmissions: CollectionConfig = {
     {
       name: 'message',
       type: 'textarea',
+      access: submittedFieldAccess,
       admin: submittedFieldAdmin,
       maxLength: 8_000,
       required: true,
@@ -76,12 +83,14 @@ export const ContactSubmissions: CollectionConfig = {
     {
       name: 'recipient',
       type: 'text',
+      access: submittedFieldAccess,
       admin: { ...submittedFieldAdmin, description: 'Server-side routed destination mailbox.' },
       required: true,
     },
     {
       name: 'requestId',
       type: 'text',
+      access: submittedFieldAccess,
       admin: submittedFieldAdmin,
       index: true,
       required: true,

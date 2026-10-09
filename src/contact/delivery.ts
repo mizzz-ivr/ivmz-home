@@ -13,6 +13,10 @@ export type ContactDeliveryResult = {
 }
 
 const NOTIFY_TIMEOUT_MS = 5_000
+// The route aborts at 8s. Everything after the save (notification + status write) must finish
+// inside this budget so an already-stored submission is never reported as a timeout.
+const DELIVERY_BUDGET_MS = 7_000
+const STATUS_WRITE_RESERVE_MS = 1_000
 
 export interface ContactDelivery {
   readonly kind: string
@@ -50,6 +54,7 @@ export class PersistingContactDelivery implements ContactDelivery {
   ) {}
 
   async deliver(message: ContactDeliveryMessage): Promise<ContactDeliveryResult> {
+    const startedAt = Date.now()
     const { id } = await this.store.save(message)
 
     if (this.notifier.kind === 'none') {
@@ -57,8 +62,17 @@ export class PersistingContactDelivery implements ContactDelivery {
       return { deliveryId: message.requestId, mode: 'sent' }
     }
 
+    const notifyBudget = Math.min(
+      NOTIFY_TIMEOUT_MS,
+      DELIVERY_BUDGET_MS - (Date.now() - startedAt) - STATUS_WRITE_RESERVE_MS,
+    )
+    if (notifyBudget <= 0) {
+      await this.mark(id, 'failed', 'NotificationDeadlineExceeded')
+      return { deliveryId: message.requestId, mode: 'sent' }
+    }
+
     try {
-      await withTimeout(this.notifier.notify(message), NOTIFY_TIMEOUT_MS)
+      await withTimeout(this.notifier.notify(message), notifyBudget)
       await this.mark(id, 'sent')
     } catch (error) {
       const errorName = error instanceof Error ? error.name : 'UnknownError'
@@ -82,7 +96,7 @@ export class PersistingContactDelivery implements ContactDelivery {
     errorName?: string,
   ) {
     try {
-      await this.store.markNotification(id, state, errorName)
+      await withTimeout(this.store.markNotification(id, state, errorName), STATUS_WRITE_RESERVE_MS)
     } catch {
       // The submission itself is stored; a status write failure must not surface to the visitor.
     }

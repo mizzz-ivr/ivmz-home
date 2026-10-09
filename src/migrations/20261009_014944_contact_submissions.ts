@@ -34,12 +34,11 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
 
 export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
   await db.execute(sql`
-   ALTER TABLE "ivmz_home"."contact_submissions" DISABLE ROW LEVEL SECURITY;
-  DROP TABLE "ivmz_home"."contact_submissions" CASCADE;
-  ALTER TABLE "ivmz_home"."payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_contact_submissions_fk";
-  
+   ALTER TABLE "ivmz_home"."payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_contact_submissions_fk";
   DROP INDEX "ivmz_home"."payload_locked_documents_rels_contact_submissions_id_idx";
   ALTER TABLE "ivmz_home"."payload_locked_documents_rels" DROP COLUMN "contact_submissions_id";
+  ALTER TABLE "ivmz_home"."contact_submissions" DISABLE ROW LEVEL SECURITY;
+  DROP TABLE "ivmz_home"."contact_submissions" CASCADE;
   DROP TYPE "ivmz_home"."enum_contact_submissions_status";
   DROP TYPE "ivmz_home"."enum_contact_submissions_category";
   DROP TYPE "ivmz_home"."enum_contact_submissions_notification";`)
