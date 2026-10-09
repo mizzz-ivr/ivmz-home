@@ -11,6 +11,8 @@ export default async function contactRateLimit(
 
 export const config = {
   path: '/api/contact',
+  // Only submissions count against the quota; stray GETs must not lock out a real visitor.
+  method: 'POST',
   rateLimit: {
     action: 'rate_limit',
     windowLimit: 5,

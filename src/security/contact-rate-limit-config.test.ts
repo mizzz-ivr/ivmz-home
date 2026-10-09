@@ -6,6 +6,7 @@ describe('contact rate-limit edge function', () => {
   it('applies a narrow rate limit to the contact endpoint', () => {
     expect(config).toEqual({
       path: '/api/contact',
+      method: 'POST',
       rateLimit: {
         action: 'rate_limit',
         windowLimit: 5,
