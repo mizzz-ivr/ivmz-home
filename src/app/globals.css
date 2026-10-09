@@ -77,10 +77,8 @@
 
 * { box-sizing: border-box; }
 html {
-  /* Pop confetti tile (plus / ring / triangle / squiggle) over the base colour; glows live on body::before. */
-  background:
-    url("/bg-pop.svg") 0 0 / 340px 340px,
-    var(--color-bg);
+  /* Clean base colour; the colour comes from the soft mesh glows on body::before. */
+  background: var(--color-bg);
   scroll-behavior: smooth;
   scroll-padding-top: 88px;
 }
@@ -99,14 +97,14 @@ body {
 body::before {
   content: '';
   position: fixed;
-  inset: -8%;
+  inset: -10%;
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(38rem 30rem at 10% 6%, color-mix(in srgb, var(--color-primary) 24%, transparent), transparent 70%),
-    radial-gradient(34rem 28rem at 94% 20%, color-mix(in srgb, var(--color-cyan) 16%, transparent), transparent 70%),
-    radial-gradient(34rem 26rem at 76% 98%, color-mix(in srgb, var(--color-pink) 16%, transparent), transparent 70%),
-    radial-gradient(22rem 18rem at 4% 82%, color-mix(in srgb, var(--color-pop, #ffd84a) 12%, transparent), transparent 70%);
+    radial-gradient(44rem 34rem at 8% 4%, color-mix(in srgb, var(--color-primary) 30%, transparent), transparent 70%),
+    radial-gradient(38rem 30rem at 96% 14%, color-mix(in srgb, var(--color-cyan) 22%, transparent), transparent 70%),
+    radial-gradient(40rem 30rem at 82% 100%, color-mix(in srgb, var(--color-pink) 22%, transparent), transparent 70%),
+    radial-gradient(30rem 24rem at 0% 90%, color-mix(in srgb, var(--color-pop, #ffd84a) 16%, transparent), transparent 70%);
 }
 @media (prefers-reduced-motion: no-preference) {
   body::before { animation: aurora-drift 28s ease-in-out infinite alternate; }
@@ -302,8 +300,7 @@ main { overflow: clip; }
   content-visibility: visible;
 }
 .hero::before { display: none; }
-/* decorative drift target: pattern now lives on html */
-.hero-grid { position: absolute; inset: 15% 0 7%; mask-image: linear-gradient(to bottom, transparent, #000 20%, #000 80%, transparent); opacity: 0.35; pointer-events: none; }
+.hero-grid { display: none; }
 .hero-pointer-layer { position: absolute; inset: 0; pointer-events: none; z-index: 0; --pointer-x: 0; --pointer-y: 0; }
 .hero-pointer-layer::before, .hero-pointer-layer::after { content: ''; position: absolute; border: 1px solid var(--color-line); transition: transform var(--duration-ui) var(--ease-signal); }
 .hero-pointer-layer::before { width: 36%; aspect-ratio: 1; right: 5%; top: 17%; transform: translate(calc(var(--pointer-x) * 16px), calc(var(--pointer-y) * 16px)) rotate(8deg); }
@@ -469,7 +466,6 @@ main { overflow: clip; }
 
 @media (max-width: 640px) {
   html { scroll-padding-top: 76px; }
-  html { background-size: 260px 260px, auto; }
   .signal-header { width: calc(100% - 20px); }
   .section-shell { padding: 88px max(18px, env(safe-area-inset-left)) 78px max(18px, env(safe-area-inset-right)); }
   .section-shell::before { left: 18px; right: 18px; }
