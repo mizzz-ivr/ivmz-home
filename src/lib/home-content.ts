@@ -68,6 +68,15 @@ const staticHomeViewModel: HomeViewModel = {
       href: 'https://github.com/mizzz-ivr/site-sentry-go',
       signal: 'OPS / GO',
     },
+    {
+      title: 'ivRooom',
+      summary:
+        'コミュニティ・チームの運営母体。場づくりから運用・発信までを一つの仕組みとして育てる。',
+      role: 'Community / Operations',
+      stack: 'Community · Team · Operations',
+      href: 'https://ivrm.jp',
+      signal: 'COMMUNITY',
+    },
   ],
   capabilities: [
     {

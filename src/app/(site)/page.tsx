@@ -3,6 +3,7 @@ import { SectionIndex, ToolboxMarquee } from '@/components/site/SiteEnhancements
 import { HeroPointerSignal } from '@/components/site/SiteExperience'
 import { getHomeViewModel } from '@/lib/home-content'
 import { site } from '@/lib/site'
+import { workAreas } from '@/lib/work-areas'
 
 export const revalidate = 300
 
@@ -127,6 +128,12 @@ export default async function HomePage() {
             <span />
             <span />
           </div>
+          <span className="pop-sticker sticker-a" aria-hidden="true">
+            ✦ BUILD · SHIP · POLISH
+          </span>
+          <span className="pop-sticker sticker-b" aria-hidden="true">
+            ivmz ★
+          </span>
           <span className="floating-note note-a" aria-hidden="true">
             [ creator / engineer ]
           </span>
@@ -151,7 +158,7 @@ export default async function HomePage() {
         <div className="section-intro" data-reveal>
           <p className="signal-label">01 / SELECTED WORKS</p>
           <h2 id="works-title">
-            Built in public.
+            Built in <mark className="marker">public.</mark>
             <br />
             Decisions included.
           </h2>
@@ -160,6 +167,16 @@ export default async function HomePage() {
             View all Works →
           </a>
         </div>
+        <ul className="area-chips" aria-label="Work areas">
+          {workAreas.map((area) => (
+            <li key={area.id}>
+              <a href={`/works#area-${area.id}`}>
+                <b>{area.index}</b>
+                {area.title}
+              </a>
+            </li>
+          ))}
+        </ul>
         <div className="works-rail">
           {home.works.map((work, index) => (
             <article
@@ -203,7 +220,7 @@ export default async function HomePage() {
           <h2 id="capability-title">
             From interface
             <br />
-            to operation.
+            to <mark className="marker">operation.</mark>
           </h2>
         </div>
         <div className="capability-lines">
@@ -233,7 +250,7 @@ export default async function HomePage() {
           <h2 id="process-title">
             Understand,
             <br />
-            ship, refine.
+            ship, <mark className="marker">refine.</mark>
           </h2>
           <p>作って終わりにしない。公開してから磨く、一周ぶんの開発の流れです。</p>
         </div>
@@ -431,7 +448,7 @@ export default async function HomePage() {
           <h2 id="contact-title">
             Let’s make something
             <br />
-            people can use.
+            people <mark className="marker">can use.</mark>
           </h2>
           <p>
             開発相談、仕事、コラボ、取材など。配送先を選ばせず、Contactを一つの正式destinationへ整理します。
