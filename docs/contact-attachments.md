@@ -87,7 +87,12 @@ notification email (it only states the count).
 
 1. **AWS** — review and apply `infra/contact-attachments/` (private bucket, TLS-only policy, CORS,
    lifecycle, GuardDuty Malware Protection plan for `quarantine/`, least-privilege IAM user).
-   It has not been applied or `terraform validate`d from this repository: review it first.
+   **Applied by hand on 2026-10-09** (equivalent resources created through the AWS API in `us-east-2`,
+   not via Terraform state): bucket `ivmz-home-contact-attachments-911291529944`, GuardDuty plan
+   `d8d090129ed4a71e3993` (ACTIVE, tagging enabled), role `ivmz-home-attach-guardduty`, IAM user
+   `ivmz-home-contact-attachments-911291529944-app` (no access key yet), clean retention 90 days.
+   The Terraform files describe the same layout (not `terraform validate`d). IAM role names are
+   limited to 64 characters, hence the separate `guardduty_role_name`.
 2. Create an access key for the IAM user **out-of-band** and put it only in Netlify.
 3. Netlify (Production, optionally Preview) environment variables — all four required:
    `CONTACT_ATTACH_BUCKET`, `CONTACT_ATTACH_REGION`, `CONTACT_ATTACH_ACCESS_KEY_ID`,
