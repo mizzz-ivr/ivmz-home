@@ -107,6 +107,23 @@ describe('PersistingContactDelivery', () => {
     spy.mockRestore()
   })
 
+  it('treats a retry of an already-stored submission as success without notifying again', async () => {
+    const markNotification = vi.fn()
+    const store: ContactStore = {
+      markNotification,
+      save: async () => ({ duplicate: true, id: 9 }),
+    }
+    const notify = vi.fn()
+
+    const result = await new PersistingContactDelivery(store, { kind: 'ses', notify }).deliver(
+      message,
+    )
+
+    expect(result).toEqual({ deliveryId: 'request-id', mode: 'sent' })
+    expect(notify).not.toHaveBeenCalled()
+    expect(markNotification).not.toHaveBeenCalled()
+  })
+
   it('fails the request when the submission cannot be stored', async () => {
     const store: ContactStore = {
       markNotification: async () => {},

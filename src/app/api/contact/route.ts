@@ -129,7 +129,8 @@ export async function POST(request: Request) {
     )
   }
 
-  const requestId = crypto.randomUUID()
+  // A retry of the same submission carries the same id, so a timed-out-but-committed save is not duplicated.
+  const requestId = parsed.value.requestId ?? crypto.randomUUID()
   const delivery = createContactDelivery()
   const message: ContactDeliveryMessage = {
     ...parsed.value,

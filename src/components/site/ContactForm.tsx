@@ -32,6 +32,8 @@ type ContactFormProps = {
 
 export function ContactForm({ generalEmail, securityEmail }: ContactFormProps) {
   const feedbackRef = useRef<HTMLDivElement>(null)
+  // Idempotency key: kept across failed retries of the same content, dropped when the content changes.
+  const attemptIdRef = useRef<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<ContactValidationErrors>({})
   const [state, setState] = useState<SubmitState>('idle')
 
@@ -60,6 +62,7 @@ export function ContactForm({ generalEmail, securityEmail }: ContactFormProps) {
 
     setFieldErrors({})
     setState('submitting')
+    attemptIdRef.current ??= crypto.randomUUID()
 
     try {
       const response = await fetch('/api/contact', {
@@ -68,6 +71,7 @@ export function ContactForm({ generalEmail, securityEmail }: ContactFormProps) {
           email: formData.get('email'),
           message: formData.get('message'),
           name: formData.get('name'),
+          requestId: attemptIdRef.current,
           subject: formData.get('subject'),
           website: formData.get('website'),
         }),
@@ -99,6 +103,7 @@ export function ContactForm({ generalEmail, securityEmail }: ContactFormProps) {
         setState('success')
       }
 
+      attemptIdRef.current = null
       form.reset()
       focusFeedback()
     } catch {
@@ -120,7 +125,13 @@ export function ContactForm({ generalEmail, securityEmail }: ContactFormProps) {
 
   return (
     <div className="contact-form-shell">
-      <form className="contact-form" onSubmit={submit}>
+      <form
+        className="contact-form"
+        onChange={() => {
+          attemptIdRef.current = null
+        }}
+        onSubmit={submit}
+      >
         <div className="contact-field-grid">
           <div className="contact-field">
             <label htmlFor="contact-name">お名前</label>

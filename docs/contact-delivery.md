@@ -224,6 +224,14 @@ validated submission
 - Email never makes an already-stored submission fail; failures log only `requestId`, notifier
   kind and error class (no address or body).
 
+### Retry safety (idempotency)
+
+The form generates a `requestId` (UUID) per submission and reuses it when the same content is
+retried after a failure; editing any field starts a new one. The server stores with a unique
+`requestId` and treats an already-stored id as success (no second record, no second email). This
+covers a save that finishes after the route has already answered 504 — a visitor retry does not
+create a duplicate. A malformed or missing id is ignored and a server-side id is generated.
+
 ### Enabling the email notification
 
 Set all of these in the Netlify **Production** environment (they are intentionally not `AWS_*`,

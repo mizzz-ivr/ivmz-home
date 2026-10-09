@@ -72,3 +72,27 @@ describe('parseContactSubmission', () => {
     expect(CONTACT_BODY_LIMIT_BYTES).toBe(16 * 1024)
   })
 })
+
+describe('requestId idempotency key', () => {
+  const base = {
+    category: 'personal',
+    email: 'visitor@example.com',
+    message: 'Hello',
+    name: 'Visitor',
+    subject: 'Hello',
+  }
+
+  it('keeps a valid UUID so retries are idempotent', () => {
+    const requestId = '3f2b8f0e-1c52-4c1e-9b8a-6a1d2e5f7c90'
+    const result = parseContactSubmission({ ...base, requestId })
+
+    expect(result).toMatchObject({ kind: 'valid', value: { requestId } })
+  })
+
+  it('ignores a malformed key instead of rejecting the submission', () => {
+    const result = parseContactSubmission({ ...base, requestId: 'not-a-uuid' })
+
+    expect(result.kind).toBe('valid')
+    expect(result.kind === 'valid' && result.value).not.toHaveProperty('requestId')
+  })
+})

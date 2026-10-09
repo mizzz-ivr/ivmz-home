@@ -16,6 +16,8 @@ export type ContactSubmission = {
   email: string
   message: string
   name: string
+  /** Client-generated idempotency key; reused when the same submission is retried. */
+  requestId?: string
   subject: string
 }
 
@@ -75,6 +77,13 @@ function isEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
 }
 
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
+function parseRequestId(value: unknown) {
+  const candidate = normalizeSingleLine(value)
+  return UUID_PATTERN.test(candidate) ? candidate.toLowerCase() : undefined
+}
+
 function isCategory(value: string): value is ContactCategory {
   return contactCategories.includes(value as ContactCategory)
 }
@@ -98,6 +107,7 @@ export function parseContactSubmission(input: unknown): ContactSubmissionParseRe
   const message = normalizeMessage(input.message)
   const name = normalizeSingleLine(input.name)
   const subject = normalizeSingleLine(input.subject)
+  const requestId = parseRequestId(input.requestId)
 
   const errors: ContactValidationErrors = {}
 
@@ -138,6 +148,7 @@ export function parseContactSubmission(input: unknown): ContactSubmissionParseRe
       email,
       message,
       name,
+      ...(requestId ? { requestId } : {}),
       subject,
     },
   }

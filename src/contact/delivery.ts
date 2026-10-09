@@ -57,8 +57,11 @@ export class PersistingContactDelivery implements ContactDelivery {
   async deliver(message: ContactDeliveryMessage): Promise<ContactDeliveryResult> {
     const startedAt = Date.now()
     const remaining = () => DELIVERY_BUDGET_MS - (Date.now() - startedAt)
-    const { id } = await this.store.save(message)
+    const { duplicate, id } = await this.store.save(message)
     const result: ContactDeliveryResult = { deliveryId: message.requestId, mode: 'sent' }
+
+    // A retry of an already-stored submission: it was handled (and notified) the first time.
+    if (duplicate) return result
 
     if (this.notifier.kind === 'none') {
       await this.mark(id, remaining(), 'skipped')
