@@ -74,6 +74,7 @@ export interface Config {
     news: News;
     schedule: Schedule;
     'social-links': SocialLink;
+    'contact-submissions': ContactSubmission;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -88,6 +89,7 @@ export interface Config {
     news: NewsSelect<false> | NewsSelect<true>;
     schedule: ScheduleSelect<false> | ScheduleSelect<true>;
     'social-links': SocialLinksSelect<false> | SocialLinksSelect<true>;
+    'contact-submissions': ContactSubmissionsSelect<false> | ContactSubmissionsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -278,6 +280,35 @@ export interface SocialLink {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "contact-submissions".
+ */
+export interface ContactSubmission {
+  id: number;
+  status: 'new' | 'read' | 'replied' | 'archived' | 'spam';
+  subject: string;
+  name: string;
+  email: string;
+  category: 'personal' | 'development' | 'job' | 'collaboration' | 'media' | 'community' | 'team' | 'security';
+  message: string;
+  /**
+   * Server-side routed destination mailbox.
+   */
+  recipient: string;
+  requestId: string;
+  /**
+   * Email notification state. The submission is stored regardless.
+   */
+  notification: 'pending' | 'sent' | 'failed' | 'skipped';
+  notificationError?: string | null;
+  /**
+   * Private triage note. Never shown publicly.
+   */
+  internalNote?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -327,6 +358,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'social-links';
         value: number | SocialLink;
+      } | null)
+    | ({
+        relationTo: 'contact-submissions';
+        value: number | ContactSubmission;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -493,6 +528,25 @@ export interface SocialLinksSelect<T extends boolean = true> {
   handle?: T;
   enabled?: T;
   order?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "contact-submissions_select".
+ */
+export interface ContactSubmissionsSelect<T extends boolean = true> {
+  status?: T;
+  subject?: T;
+  name?: T;
+  email?: T;
+  category?: T;
+  message?: T;
+  recipient?: T;
+  requestId?: T;
+  notification?: T;
+  notificationError?: T;
+  internalNote?: T;
   updatedAt?: T;
   createdAt?: T;
 }

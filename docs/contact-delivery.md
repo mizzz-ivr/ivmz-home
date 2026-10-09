@@ -204,3 +204,52 @@ Do not switch `createContactDelivery()` to SES until all of these are true:
   https://docs.aws.amazon.com/ses/latest/dg/monitor-sending-activity-using-notifications.html
 - SES pricing:
   https://aws.amazon.com/ses/pricing/
+
+## CMS inbox and email notification (Production)
+
+Production no longer fails closed. `/api/contact` now treats the **Payload CMS inbox as the
+source of truth** and email as a best-effort notification.
+
+```text
+validated submission
+  -> save to `contact-submissions` (Payload Local API, overrideAccess)   -- failure => 502
+  -> if CONTACT_* SES variables are present: send notification email    -- failure => stored anyway
+  -> mark `notification` = sent | failed | skipped
+```
+
+- Deploy Preview / Branch Deploy are unchanged: validation-only, nothing is stored or sent.
+- The collection has `create: false`; only the server route creates records. Reading, triage
+  (`status`, `internalNote`) and deletion require an authenticated Payload user (`/admin` → Inbox).
+- `notification = skipped` means SES is not configured yet. The submission is still in the inbox.
+- Email never makes an already-stored submission fail; failures log only `requestId`, notifier
+  kind and error class (no address or body).
+
+### Enabling the email notification
+
+Set all of these in the Netlify **Production** environment (they are intentionally not `AWS_*`,
+which Netlify reserves). Until all four exist the notifier stays disabled.
+
+| Variable | Example |
+| --- | --- |
+| `CONTACT_SES_REGION` | `us-east-2` |
+| `CONTACT_SES_ACCESS_KEY_ID` | IAM user limited to `ses:SendEmail` on the `ivrm.jp` identity |
+| `CONTACT_SES_SECRET_ACCESS_KEY` | secret for the same IAM user |
+| `CONTACT_FROM_EMAIL` | an address on the verified `ivrm.jp` identity |
+
+Email additionally requires SES production access (sandbox only delivers to verified addresses).
+The visitor's address is only ever used as `Reply-To`.
+
+### Production release gate for this change
+
+This change adds a table. Per `docs/database-runtime.md` Production migration is a separate
+release step, **not** part of the build:
+
+1. Back up the Production database.
+2. Review `src/migrations/*_contact_submissions.ts` (additive: new table/enums plus a nullable
+   column on `payload_locked_documents_rels`).
+3. Run `pnpm db:migrate` against Production.
+4. Deploy the same revision from `main`.
+5. Submit a test message and confirm it appears in `/admin` → Inbox.
+
+If the code is deployed before step 3, submissions return a generic failure (502) and nothing is
+lost silently.

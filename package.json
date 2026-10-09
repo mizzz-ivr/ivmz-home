@@ -26,6 +26,7 @@
     "db:migrate:create": "pnpm payload migrate:create"
   },
   "dependencies": {
+    "@aws-sdk/client-sesv2": "^3.1148.0",
     "@payloadcms/db-postgres": "3.88.0",
     "@payloadcms/next": "3.88.0",
     "@payloadcms/ui": "3.88.0",
