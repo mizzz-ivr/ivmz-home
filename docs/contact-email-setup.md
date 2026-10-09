@@ -11,10 +11,10 @@
 
 | 項目 | 状態 | 担当 |
 | --- | --- | --- |
-| SES アイデンティティ `ivrm.jp`（us-east-2） | 作成済み。ただし **DKIM 未確認（FAILED）** | あなた（DNS） |
+| SES アイデンティティ `ivrm.jp`（us-east-2） | **確認済み（DKIM: SUCCESS、2026-10-09）** | 完了 |
 | 構成セット `ivmz-contact` | 作成済み（CloudWatch にバウンス・苦情・配信イベントを記録） | 完了 |
 | 送信専用 IAM ユーザー `ivmz-home-contact-ses` | 作成済み・最小権限の送信ポリシー付き（アクセスキーは未発行） | 完了 |
-| 本番利用申請（サンドボックス解除） | 申請済みだが **DENIED（ケース ID 179153501400846）** | 下の手順 4 |
+| 本番利用申請（サンドボックス解除） | **DENIED（ケース ID 179153501400846）**。API からの再申請は `ConflictException` で不可 | 手順 2（あなた） |
 | Netlify 環境変数 | 未設定 | 手順 5 |
 
 ### 注意: AWS の操作がルートアカウントで行われていた
@@ -23,10 +23,10 @@
 日常運用では使わず、管理者用 IAM ユーザー（または IAM Identity Center）に切り替えることを強くおすすめします。
 ルートユーザーには MFA を設定し、アクセスキーは削除してください。
 
-## 手順 1. DKIM の DNS レコードを追加する（あなたの作業）
+## 手順 1. DKIM の DNS レコードを追加する（完了）
 
-`ivrm.jp` の DNS 管理画面（ネームサーバーを管理している場所）で、次の CNAME を3件追加します。
-`ivrm.jp` は Route 53 には登録されていないため、私は代行できません。
+2026-10-09 に `ivrm.jp` の DNS へ次の CNAME を3件追加し、SES の DKIM が SUCCESS、アイデンティティが確認済みになりました。
+この手順は再作業不要です。DNS を作り直す場合の参照として残します。
 
 | 種類 | 名前（ホスト） | 値 |
 | --- | --- | --- |
@@ -34,14 +34,8 @@
 | CNAME | `64xgrjizfiyoqje2qakzddcciiycqtd4._domainkey.ivrm.jp` | `64xgrjizfiyoqje2qakzddcciiycqtd4.dkim.amazonses.com` |
 | CNAME | `qkm2vlmnmoxxxvv2mqaa5jfqemrgy3lt._domainkey.ivrm.jp` | `qkm2vlmnmoxxxvv2mqaa5jfqemrgy3lt.dkim.amazonses.com` |
 
-- DNS サービスによっては、名前欄に `ivrm.jp` を含めず `<トークン>._domainkey` だけを入力します。
 - 既存の DMARC（`_dmarc.ivrm.jp`）は、SES を通すために緩めないでください。
-- 追加後、反映まで数分〜数時間かかります。
-
-> 現在のアイデンティティは、確認期限（作成から72時間）を過ぎて FAILED になっています。
-> DNS を追加した後に、SES コンソールの **ID → ivrm.jp → DKIM** で「再確認」を実行するか、私に「DNS を追加した」と伝えてください。再確認を実行します。
-
-任意（推奨）: カスタム MAIL FROM ドメイン（例: `mail.ivrm.jp`）を設定すると、SPF のアラインメントが取れます。
+- 任意（推奨）: カスタム MAIL FROM ドメイン（例: `mail.ivrm.jp`）を設定すると、SPF のアラインメントが取れます。
 
 ## 手順 2. 本番利用申請（サンドボックス解除）
 
@@ -50,7 +44,7 @@
 私が Support/SES 経由で申請しましたが、結果は **DENIED（ケース ID 179153501400846）** でした。
 多くの場合、ドメインが未確認の状態や、用途説明の不足が理由です。次の順で対応します。
 
-1. 手順 1 で `ivrm.jp` を「確認済み」にします。
+1. `ivrm.jp` は手順 1 で確認済みです（**完了**）。API での再申請は競合エラーになるため、サポートケースへの返信で再審査を依頼します。
 2. AWS サポート（ケース ID 179153501400846 に返信）へ、次の内容で再審査を依頼します。
 
 > Contact form on a personal website (https://ivmz.ivrm.jp/contact). Each submission sends one

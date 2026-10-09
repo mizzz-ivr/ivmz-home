@@ -76,21 +76,42 @@
 }
 
 * { box-sizing: border-box; }
-html { background: var(--color-bg); scroll-behavior: smooth; scroll-padding-top: 88px; }
+html {
+  /* Clean base colour; the colour comes from the soft mesh glows on body::before. */
+  background: var(--color-bg);
+  scroll-behavior: smooth;
+  scroll-padding-top: 88px;
+}
 body {
   margin: 0;
   min-width: 0;
   overflow-wrap: anywhere;
   color: var(--color-text);
-  background:
-    linear-gradient(var(--color-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--color-line) 1px, transparent 1px),
-    radial-gradient(circle at 83% 8%, var(--color-selection), transparent 28rem),
-    var(--color-bg);
-  background-size: 46px 46px, 46px 46px, auto, auto;
+  background: transparent;
   font-family: var(--font-ui);
   line-height: 1.6;
   transition: background-color var(--duration-ui) ease, color var(--duration-ui) ease;
+}
+
+/* Aurora glows: fixed, decorative, behind all content. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: -10%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(44rem 34rem at 8% 4%, color-mix(in srgb, var(--color-primary) 30%, transparent), transparent 70%),
+    radial-gradient(38rem 30rem at 96% 14%, color-mix(in srgb, var(--color-cyan) 22%, transparent), transparent 70%),
+    radial-gradient(40rem 30rem at 82% 100%, color-mix(in srgb, var(--color-pink) 22%, transparent), transparent 70%),
+    radial-gradient(30rem 24rem at 0% 90%, color-mix(in srgb, var(--color-pop, #ffd84a) 16%, transparent), transparent 70%);
+}
+@media (prefers-reduced-motion: no-preference) {
+  body::before { animation: aurora-drift 28s ease-in-out infinite alternate; }
+}
+@keyframes aurora-drift {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to { transform: translate3d(-2%, 2.5%, 0) scale(1.06); }
 }
 
 a { color: inherit; text-decoration: none; }
@@ -112,7 +133,7 @@ button { font: inherit; }
 }
 .skip-link:focus { transform: translateY(0); }
 
-/* Signature intro: visual only, never blocks interaction. */
+/* Signature intro: visual only, never blocks interaction. A pen writes "ivmz" once per session. */
 .signature-intro {
   position: fixed;
   inset: 0;
@@ -121,20 +142,43 @@ button { font: inherit; }
   display: grid;
   place-items: center;
   align-content: center;
-  gap: 10px;
+  gap: 12px;
   background: var(--color-bg);
-  animation: signature-exit 900ms var(--ease-signal) forwards;
+  overflow: hidden;
+  animation: signature-exit 1500ms var(--ease-signal) forwards;
 }
-.signature-intro svg { width: min(52vw, 220px); height: auto; overflow: visible; }
-.signature-intro path { fill: none; stroke: var(--color-primary-soft); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
-.signature-path { stroke-dasharray: 420; stroke-dashoffset: 420; animation: signature-write 620ms var(--ease-signal) forwards; }
-.signature-slash { stroke-dasharray: 60; stroke-dashoffset: 60; animation: signature-write 220ms 480ms ease-out forwards; }
-.signature-intro span { color: var(--color-muted); font: 600 0.64rem/1 var(--font-mono); letter-spacing: 0.22em; text-transform: uppercase; opacity: 0; animation: signature-label 280ms 420ms ease-out forwards; }
+.signature-intro-grid {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, color-mix(in srgb, var(--color-primary) 38%, transparent) 1px, transparent 1.4px);
+  background-size: 26px 26px;
+  -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 0%, transparent 62%);
+  mask-image: radial-gradient(circle at 50% 50%, #000 0%, transparent 62%);
+  opacity: 0;
+  animation: signature-label 500ms 80ms ease-out forwards;
+}
+.signature-intro svg { position: relative; width: min(64vw, 300px); height: auto; overflow: visible; }
+.signature-intro path { fill: none; stroke: var(--color-primary-soft); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.signature-path { stroke-dasharray: 1; stroke-dashoffset: 1; animation: signature-write 900ms 120ms var(--ease-signal) forwards; }
+.signature-intro .signature-dot { stroke-dasharray: 1; stroke-dashoffset: 1; stroke-width: 4.4; animation: signature-write 120ms 1000ms ease-out forwards; }
+.signature-intro .signature-slash { stroke: var(--color-pop, #ffd84a); stroke-width: 4.4; stroke-dasharray: 1; stroke-dashoffset: 1; animation: signature-write 320ms 780ms ease-out forwards; }
+.signature-pen {
+  fill: var(--color-pop, #ffd84a);
+  offset-path: path('M16 82 C20 66 24 54 27 46 C28 42 26 44 25 56 C24 68 29 80 41 68 C47 58 51 52 55 54 C59 56 55 70 61 78 C65 72 75 54 81 52 C85 52 83 64 85 72 C87 58 95 50 101 54 C105 58 101 70 103 74 C105 60 113 50 119 54 C123 58 119 72 125 76 C131 70 135 56 139 52 C149 48 161 50 151 60 C141 70 127 84 141 84 C153 84 165 72 178 60');
+  offset-distance: 0%;
+  opacity: 0;
+  animation: signature-pen 900ms 120ms var(--ease-signal) forwards;
+}
+.signature-intro span { position: relative; color: var(--color-muted); font: 600 0.64rem/1 var(--font-mono); letter-spacing: 0.22em; text-transform: uppercase; opacity: 0; animation: signature-label 280ms 520ms ease-out forwards; }
+.signature-meter { position: relative; width: 96px; height: 2px; background: var(--color-line); overflow: hidden; }
+.signature-meter::after { content: ''; position: absolute; inset: 0; background: var(--color-primary); transform: scaleX(0); transform-origin: left; animation: signature-meter 1000ms 120ms var(--ease-signal) forwards; }
 .signature-intro-skip { animation-duration: 1ms; }
-.signature-intro-skip .signature-path, .signature-intro-skip .signature-slash, .signature-intro-skip span { animation-duration: 1ms; animation-delay: 0ms; }
+.signature-intro-skip .signature-path, .signature-intro-skip .signature-dot, .signature-intro-skip .signature-slash, .signature-intro-skip .signature-pen, .signature-intro-skip .signature-intro-grid, .signature-intro-skip span, .signature-intro-skip .signature-meter::after { animation-duration: 1ms; animation-delay: 0ms; }
 @keyframes signature-write { to { stroke-dashoffset: 0; } }
+@keyframes signature-pen { 0% { offset-distance: 0%; opacity: 1; } 96% { opacity: 1; } 100% { offset-distance: 100%; opacity: 0; } }
+@keyframes signature-meter { to { transform: scaleX(1); } }
 @keyframes signature-label { to { opacity: 1; } }
-@keyframes signature-exit { 0%, 72% { opacity: 1; visibility: visible; } 100% { opacity: 0; visibility: hidden; } }
+@keyframes signature-exit { 0%, 76% { opacity: 1; visibility: visible; clip-path: inset(0 0 0 0); } 100% { opacity: 0; visibility: hidden; clip-path: inset(0 0 100% 0); } }
 
 /* Floating desktop header. */
 .signal-header {
@@ -256,7 +300,7 @@ main { overflow: clip; }
   content-visibility: visible;
 }
 .hero::before { display: none; }
-.hero-grid { position: absolute; inset: 15% 0 7%; background: repeating-linear-gradient(0deg, transparent 0 39px, var(--color-line) 40px), repeating-linear-gradient(90deg, transparent 0 39px, var(--color-line) 40px); mask-image: linear-gradient(to bottom, transparent, #000 20%, #000 80%, transparent); opacity: 0.35; pointer-events: none; }
+.hero-grid { display: none; }
 .hero-pointer-layer { position: absolute; inset: 0; pointer-events: none; z-index: 0; --pointer-x: 0; --pointer-y: 0; }
 .hero-pointer-layer::before, .hero-pointer-layer::after { content: ''; position: absolute; border: 1px solid var(--color-line); transition: transform var(--duration-ui) var(--ease-signal); }
 .hero-pointer-layer::before { width: 36%; aspect-ratio: 1; right: 5%; top: 17%; transform: translate(calc(var(--pointer-x) * 16px), calc(var(--pointer-y) * 16px)) rotate(8deg); }
@@ -422,7 +466,6 @@ main { overflow: clip; }
 
 @media (max-width: 640px) {
   html { scroll-padding-top: 76px; }
-  body { background-size: 34px 34px, 34px 34px, auto, auto; }
   .signal-header { width: calc(100% - 20px); }
   .section-shell { padding: 88px max(18px, env(safe-area-inset-left)) 78px max(18px, env(safe-area-inset-right)); }
   .section-shell::before { left: 18px; right: 18px; }
