@@ -1,4 +1,6 @@
 import { EmptyState, PageCTA, PageHero, PageSection } from '@/components/site/PageFoundation'
+import { RepoStats } from '@/components/site/RepoStats'
+import { getGitHubRepoStatsByUrl } from '@/lib/github-repo'
 import { createPageMetadata } from '@/lib/metadata'
 import { workAreas } from '@/lib/work-areas'
 import { getWorksListContent } from '@/lib/public-list-content'
@@ -20,6 +22,7 @@ const copy = {
 
 export default async function WorksPage() {
   const content = await getWorksListContent()
+  const repoStats = await getGitHubRepoStatsByUrl(content.items.map((work) => work.githubUrl))
 
   return (
     <main id="main-content" className="route-page">
@@ -77,6 +80,7 @@ export default async function WorksPage() {
                 <div className="content-row-meta">
                   <span>{work.role}</span>
                   <small>{work.stack.join(' · ')}</small>
+                  <RepoStats stats={work.githubUrl ? repoStats.get(work.githubUrl) : undefined} />
                   <a href={`/works/${encodeURIComponent(work.slug)}`}>View case study →</a>
                   {work.githubUrl && (
                     <a href={work.githubUrl} target="_blank" rel="noreferrer">

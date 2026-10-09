@@ -823,3 +823,24 @@
     transition: none;
   }
 }
+
+/* GitHub repository facts next to a Work's repo link */
+.repo-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--color-muted);
+  font: 650 0.68rem/1.4 var(--font-mono);
+  letter-spacing: 0.04em;
+}
+.repo-stats li + li::before {
+  content: '·';
+  margin-right: 10px;
+  color: var(--color-line-strong);
+}
+.repo-stats-archived {
+  color: var(--color-pink);
+}

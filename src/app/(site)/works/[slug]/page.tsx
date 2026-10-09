@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation'
 
 import { StructuredData } from '@/components/seo/StructuredData'
 import { EmptyState, PageCTA, PageHero, PageSection } from '@/components/site/PageFoundation'
+import { RepoStats } from '@/components/site/RepoStats'
+import { getGitHubRepoStatsByUrl } from '@/lib/github-repo'
 import { createPageMetadata } from '@/lib/metadata'
 import { getPublishedWorkBySlug } from '@/lib/payload-content'
 import { createWorkStructuredData } from '@/lib/structured-data'
@@ -37,6 +39,7 @@ export default async function WorkDetailPage({ params }: DetailPageProps) {
   const { slug } = await params
   const work = await getPublishedWorkBySlug(slug)
   if (!work) notFound()
+  const repoStats = await getGitHubRepoStatsByUrl([work.githubUrl])
 
   const mediaCount = work.gallery?.length ?? 0
 
@@ -114,6 +117,7 @@ export default async function WorkDetailPage({ params }: DetailPageProps) {
       </PageSection>
       {(work.githubUrl || work.liveUrl) && (
         <PageSection title="Links" description={<p>内部Case Studyとは別の外部destinationです。</p>}>
+          {work.githubUrl ? <RepoStats stats={repoStats.get(work.githubUrl)} /> : null}
           <div className="detail-actions">
             {work.githubUrl && (
               <a href={work.githubUrl} target="_blank" rel="noreferrer">
