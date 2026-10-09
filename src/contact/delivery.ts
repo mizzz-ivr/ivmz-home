@@ -17,6 +17,7 @@ const NOTIFY_TIMEOUT_MS = 5_000
 // inside this budget so an already-stored submission is never reported as a timeout.
 const DELIVERY_BUDGET_MS = 7_000
 const STATUS_WRITE_RESERVE_MS = 1_000
+const MIN_STATUS_WRITE_MS = 100
 
 export interface ContactDelivery {
   readonly kind: string
@@ -55,29 +56,24 @@ export class PersistingContactDelivery implements ContactDelivery {
 
   async deliver(message: ContactDeliveryMessage): Promise<ContactDeliveryResult> {
     const startedAt = Date.now()
+    const remaining = () => DELIVERY_BUDGET_MS - (Date.now() - startedAt)
     const { id } = await this.store.save(message)
+    const result: ContactDeliveryResult = { deliveryId: message.requestId, mode: 'sent' }
 
     if (this.notifier.kind === 'none') {
-      await this.mark(id, 'skipped')
-      return { deliveryId: message.requestId, mode: 'sent' }
+      await this.mark(id, remaining(), 'skipped')
+      return result
     }
 
-    const notifyBudget = Math.min(
-      NOTIFY_TIMEOUT_MS,
-      DELIVERY_BUDGET_MS - (Date.now() - startedAt) - STATUS_WRITE_RESERVE_MS,
-    )
+    const notifyBudget = Math.min(NOTIFY_TIMEOUT_MS, remaining() - STATUS_WRITE_RESERVE_MS)
     if (notifyBudget <= 0) {
-      // Never push the route past its deadline for a status write; the record stays `pending`.
-      const remaining = DELIVERY_BUDGET_MS - (Date.now() - startedAt)
-      if (remaining > 100) {
-        await this.mark(id, 'failed', 'NotificationDeadlineExceeded', remaining)
-      }
-      return { deliveryId: message.requestId, mode: 'sent' }
+      await this.mark(id, remaining(), 'failed', 'NotificationDeadlineExceeded')
+      return result
     }
 
     try {
       await withTimeout(this.notifier.notify(message), notifyBudget)
-      await this.mark(id, 'sent')
+      await this.mark(id, remaining(), 'sent')
     } catch (error) {
       const errorName = error instanceof Error ? error.name : 'UnknownError'
       console.error(
@@ -88,22 +84,28 @@ export class PersistingContactDelivery implements ContactDelivery {
           requestId: message.requestId,
         }),
       )
-      await this.mark(id, 'failed', errorName)
+      await this.mark(id, remaining(), 'failed', errorName)
     }
 
-    return { deliveryId: message.requestId, mode: 'sent' }
+    return result
   }
 
+  /**
+   * Best-effort status write bounded by the time left in the delivery budget. With (almost) no time
+   * left it is skipped, leaving the record `pending`, so the route can never time out on it.
+   */
   private async mark(
     id: number | string,
+    remainingMs: number,
     state: 'failed' | 'sent' | 'skipped',
     errorName?: string,
-    budgetMs: number = STATUS_WRITE_RESERVE_MS,
   ) {
+    if (remainingMs <= MIN_STATUS_WRITE_MS) return
+
     try {
       await withTimeout(
         this.store.markNotification(id, state, errorName),
-        Math.min(STATUS_WRITE_RESERVE_MS, budgetMs),
+        Math.min(STATUS_WRITE_RESERVE_MS, remainingMs),
       )
     } catch {
       // The submission itself is stored; a status write failure must not surface to the visitor.

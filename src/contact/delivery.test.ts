@@ -182,4 +182,25 @@ describe('PersistingContactDelivery deadline', () => {
     expect(markNotification).not.toHaveBeenCalled()
     vi.useRealTimers()
   })
+
+  it('also skips the "skipped" status write when email is unconfigured and the save was slow', async () => {
+    vi.useFakeTimers()
+    const markNotification = vi.fn()
+    const store: ContactStore = {
+      markNotification,
+      save: async () => {
+        vi.advanceTimersByTime(7_500)
+        return { id: 5 }
+      },
+    }
+
+    const result = await new PersistingContactDelivery(store, {
+      kind: 'none',
+      notify: vi.fn(),
+    }).deliver(message)
+
+    expect(result.mode).toBe('sent')
+    expect(markNotification).not.toHaveBeenCalled()
+    vi.useRealTimers()
+  })
 })
