@@ -34,6 +34,9 @@ export function ContactForm({ generalEmail, securityEmail }: ContactFormProps) {
   const feedbackRef = useRef<HTMLDivElement>(null)
   // Idempotency key: kept across failed retries of the same content, dropped when the content changes.
   const attemptIdRef = useRef<string | null>(null)
+  // Edits made while a request is in flight must survive the success reset.
+  const submittingRef = useRef(false)
+  const editedWhileSubmittingRef = useRef(false)
   const [fieldErrors, setFieldErrors] = useState<ContactValidationErrors>({})
   const [state, setState] = useState<SubmitState>('idle')
 
@@ -63,6 +66,8 @@ export function ContactForm({ generalEmail, securityEmail }: ContactFormProps) {
     setFieldErrors({})
     setState('submitting')
     attemptIdRef.current ??= crypto.randomUUID()
+    submittingRef.current = true
+    editedWhileSubmittingRef.current = false
 
     try {
       const response = await fetch('/api/contact', {
@@ -104,12 +109,13 @@ export function ContactForm({ generalEmail, securityEmail }: ContactFormProps) {
       }
 
       attemptIdRef.current = null
-      form.reset()
+      if (!editedWhileSubmittingRef.current) form.reset()
       focusFeedback()
     } catch {
       setState('error')
       focusFeedback()
     } finally {
+      submittingRef.current = false
       clearTimeout(timeout)
     }
   }
@@ -129,6 +135,7 @@ export function ContactForm({ generalEmail, securityEmail }: ContactFormProps) {
         className="contact-form"
         onChange={() => {
           attemptIdRef.current = null
+          if (submittingRef.current) editedWhileSubmittingRef.current = true
         }}
         onSubmit={submit}
       >

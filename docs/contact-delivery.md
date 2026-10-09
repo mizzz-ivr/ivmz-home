@@ -65,11 +65,16 @@ Deploy Preview at the Production database to make validation pass.
 
 ### Production
 
-Production fails closed with `503 delivery_unavailable` until a real delivery provider is
-configured. The UI retains the submitted values on failure and keeps direct `mailto:`
-fallbacks visible.
+Production stores every valid submission in the CMS inbox (`/admin` → Inbox) and returns success.
+See [CMS inbox and email notification](#cms-inbox-and-email-notification-production) below.
 
-Do not change this fail-closed behavior merely to make Production appear complete.
+- With the five `CONTACT_*` variables unset, the submission is stored and `notification` is
+  `skipped`; there is no email. **Monitor the Inbox** until SES is enabled.
+- If the database is unavailable, or the migration has not been applied, the route returns a
+  generic failure (`502`). The UI retains the submitted values and keeps direct `mailto:`
+  fallbacks visible.
+- Production never returns `503 delivery_unavailable` for a configured deployment. That response
+  remains only when the runtime context is unexpectedly missing (fail closed).
 
 ## AWS SES account evidence — 2026-09-26
 
