@@ -4,7 +4,9 @@ import '../responsive-foundation.css'
 import '../reduced-motion.css'
 import './pages.css'
 import './site-shell.css'
+import './enhance.css'
 import { StructuredData } from '@/components/seo/StructuredData'
+import { SiteEnhancements } from '@/components/site/SiteEnhancements'
 import { SignatureIntro, SiteHeader } from '@/components/site/SiteExperience'
 import { SiteFooter } from '@/components/site/SiteFooter'
 import { createSiteStructuredData } from '@/lib/structured-data'
@@ -56,6 +58,7 @@ export default function SiteLayout({ children }: Readonly<{ children: React.Reac
         </a>
         <SignatureIntro />
         <SiteHeader />
+        <SiteEnhancements />
         {children}
         <SiteFooter />
       </body>
