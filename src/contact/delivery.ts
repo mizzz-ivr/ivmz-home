@@ -67,7 +67,11 @@ export class PersistingContactDelivery implements ContactDelivery {
       DELIVERY_BUDGET_MS - (Date.now() - startedAt) - STATUS_WRITE_RESERVE_MS,
     )
     if (notifyBudget <= 0) {
-      await this.mark(id, 'failed', 'NotificationDeadlineExceeded')
+      // Never push the route past its deadline for a status write; the record stays `pending`.
+      const remaining = DELIVERY_BUDGET_MS - (Date.now() - startedAt)
+      if (remaining > 100) {
+        await this.mark(id, 'failed', 'NotificationDeadlineExceeded', remaining)
+      }
       return { deliveryId: message.requestId, mode: 'sent' }
     }
 
@@ -94,9 +98,13 @@ export class PersistingContactDelivery implements ContactDelivery {
     id: number | string,
     state: 'failed' | 'sent' | 'skipped',
     errorName?: string,
+    budgetMs: number = STATUS_WRITE_RESERVE_MS,
   ) {
     try {
-      await withTimeout(this.store.markNotification(id, state, errorName), STATUS_WRITE_RESERVE_MS)
+      await withTimeout(
+        this.store.markNotification(id, state, errorName),
+        Math.min(STATUS_WRITE_RESERVE_MS, budgetMs),
+      )
     } catch {
       // The submission itself is stored; a status write failure must not surface to the visitor.
     }

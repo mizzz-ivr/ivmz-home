@@ -160,4 +160,26 @@ describe('PersistingContactDelivery deadline', () => {
     expect(marks).toEqual([[3, 'failed', 'NotificationDeadlineExceeded']])
     vi.useRealTimers()
   })
+
+  it('does not even write a status when the save used the whole budget', async () => {
+    vi.useFakeTimers()
+    const markNotification = vi.fn()
+    const store: ContactStore = {
+      markNotification,
+      save: async () => {
+        vi.advanceTimersByTime(7_500)
+        return { id: 4 }
+      },
+    }
+    const notify = vi.fn()
+
+    const result = await new PersistingContactDelivery(store, { kind: 'ses', notify }).deliver(
+      message,
+    )
+
+    expect(result.mode).toBe('sent')
+    expect(notify).not.toHaveBeenCalled()
+    expect(markNotification).not.toHaveBeenCalled()
+    vi.useRealTimers()
+  })
 })
