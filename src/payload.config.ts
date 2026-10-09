@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { buildConfig } from 'payload'
 import sharp from 'sharp'
 
+import { ContactSubmissions } from './collections/ContactSubmissions'
 import { Media } from './collections/Media'
 import { News } from './collections/News'
 import { Posts } from './collections/Posts'
@@ -32,7 +33,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Works, Posts, News, Schedule, SocialLinks],
+  collections: [Users, Media, Works, Posts, News, Schedule, SocialLinks, ContactSubmissions],
   cors: {
     origins: allowedOrigins,
   },
