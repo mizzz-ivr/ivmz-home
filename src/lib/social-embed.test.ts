@@ -17,6 +17,9 @@ describe('parseSocialEmbed', () => {
     expect(parseSocialEmbed('https://www.tiktok.com/@ivmz/video/7000000000000')?.src).toBe(
       'https://www.tiktok.com/embed/v2/7000000000000',
     )
+    expect(parseSocialEmbed('https://www.tiktok.com/@my_name.v2/video/7000000000001')?.src).toBe(
+      'https://www.tiktok.com/embed/v2/7000000000001',
+    )
     expect(parseSocialEmbed('https://youtu.be/abcdefghijk')?.src).toBe(
       'https://www.youtube-nocookie.com/embed/abcdefghijk',
     )
