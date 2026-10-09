@@ -14,7 +14,7 @@ const STATUS: Record<string, number> = {
 
 /** Step 1: validate the declared file and hand back a presigned POST into the quarantine prefix. */
 export async function POST(request: Request) {
-  const guarded = await readGuardedJson(request)
+  const guarded = await readGuardedJson(request, { limit: 20, scope: 'attachments-init' })
   if (!guarded.ok) return guarded.response
 
   const attachments = await getAttachmentRuntime()

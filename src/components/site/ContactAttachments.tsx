@@ -37,6 +37,7 @@ const REJECTION_MESSAGES: Record<string, string> = {
 const INIT_MESSAGES: Record<string, string> = {
   disabled: '現在、添付ファイルは受け付けていません。',
   invalid_size: 'ファイルサイズを確認してください。',
+  rate_limited: '短時間に操作が集中しています。少し待ってからお試しください。',
   too_large: 'ファイルが大きすぎます。',
   type_not_allowed: 'この形式のファイルは添付できません。',
 }

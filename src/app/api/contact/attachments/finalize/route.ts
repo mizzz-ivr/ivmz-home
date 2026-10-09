@@ -6,7 +6,7 @@ export const runtime = 'nodejs'
 
 /** Step 3 (polled): reports scan progress, and only on a clean + verified file returns the attachment token. */
 export async function POST(request: Request) {
-  const guarded = await readGuardedJson(request)
+  const guarded = await readGuardedJson(request, { limit: 120, scope: 'attachments-finalize' })
   if (!guarded.ok) return guarded.response
 
   const attachments = await getAttachmentRuntime()

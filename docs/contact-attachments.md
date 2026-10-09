@@ -132,12 +132,14 @@ any deployment without AWS.
 | Attaching someone else's/arbitrary object | HMAC-signed tokens bound to id/key/size/hash; `clean/` prefix only |
 | Public exposure of files | private bucket, public-access block, no public URLs; admin-only 60 s presigned download |
 | Swapping a scanned object for an unscanned one (the presigned POST stays valid for 15 min) | the scan tag is re-checked after the bytes are read; a replaced object has no tag and is rejected; promotion uses the bytes we verified, never a re-read |
-| Abuse / scan cost (GuardDuty bills per GB scanned) | exact-size presigns, attachments off by default (no edge rate limit yet: see "Known gap" note), 1-day quarantine expiry; add an AWS Budgets alert for GuardDuty/S3 |
+| Abuse / scan cost (GuardDuty bills per GB scanned) | exact-size presigns, attachments off by default (in-app per-IP limiter, see "Rate limiting"), 1-day quarantine expiry; add an AWS Budgets alert for GuardDuty/S3 |
 | Admin mis-configuration | hard ceilings and a vetted type catalog in code |
 
-## Known gap: edge rate limit for the attachment endpoints
+## Rate limiting
 
-A dedicated Netlify rate-limit edge function for `/api/contact/attachments*` was removed from this change:
-with it deployed, the preview smoke check for the Payload login rate limit (`/api/users/login`) stopped
-returning 429 on three consecutive runs. Until that is understood, enable attachments only after adding
-a rate limit for these paths (e.g. a Netlify/WAF rule or an in-app limiter) and an AWS Budgets alert.
+A Netlify rate-limit edge function for `/api/contact/attachments*` cannot be deployed with this site:
+with it present, the preview smoke check for the Payload login rate limit (`/api/users/login`) stopped
+returning 429 on three consecutive runs (cause not identified). Instead the routes use an in-app
+per-client limiter (`src/contact/attachments/rate-limit.ts`): 20 upload starts and 120 scan polls per
+minute per IP. It is per serverless instance, so it is best effort; the backstops are the hard caps on
+size and count, the 1-day quarantine expiry and an AWS Budgets alert for GuardDuty/S3.
