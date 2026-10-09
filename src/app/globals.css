@@ -76,21 +76,44 @@
 }
 
 * { box-sizing: border-box; }
-html { background: var(--color-bg); scroll-behavior: smooth; scroll-padding-top: 88px; }
+html {
+  /* Dot matrix instead of graph paper; soft colour glows live on body::before. */
+  background:
+    radial-gradient(circle, color-mix(in srgb, var(--color-text) 15%, transparent) 1px, transparent 1.6px) 0 0 / 28px 28px,
+    var(--color-bg);
+  scroll-behavior: smooth;
+  scroll-padding-top: 88px;
+}
 body {
   margin: 0;
   min-width: 0;
   overflow-wrap: anywhere;
   color: var(--color-text);
-  background:
-    linear-gradient(var(--color-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--color-line) 1px, transparent 1px),
-    radial-gradient(circle at 83% 8%, var(--color-selection), transparent 28rem),
-    var(--color-bg);
-  background-size: 46px 46px, 46px 46px, auto, auto;
+  background: transparent;
   font-family: var(--font-ui);
   line-height: 1.6;
   transition: background-color var(--duration-ui) ease, color var(--duration-ui) ease;
+}
+
+/* Aurora glows: fixed, decorative, behind all content. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: -8%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(38rem 30rem at 10% 6%, color-mix(in srgb, var(--color-primary) 24%, transparent), transparent 70%),
+    radial-gradient(34rem 28rem at 94% 20%, color-mix(in srgb, var(--color-cyan) 16%, transparent), transparent 70%),
+    radial-gradient(34rem 26rem at 76% 98%, color-mix(in srgb, var(--color-pink) 16%, transparent), transparent 70%),
+    radial-gradient(22rem 18rem at 4% 82%, color-mix(in srgb, var(--color-pop, #ffd84a) 12%, transparent), transparent 70%);
+}
+@media (prefers-reduced-motion: no-preference) {
+  body::before { animation: aurora-drift 28s ease-in-out infinite alternate; }
+}
+@keyframes aurora-drift {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to { transform: translate3d(-2%, 2.5%, 0) scale(1.06); }
 }
 
 a { color: inherit; text-decoration: none; }
@@ -279,7 +302,7 @@ main { overflow: clip; }
   content-visibility: visible;
 }
 .hero::before { display: none; }
-.hero-grid { position: absolute; inset: 15% 0 7%; background: repeating-linear-gradient(0deg, transparent 0 39px, var(--color-line) 40px), repeating-linear-gradient(90deg, transparent 0 39px, var(--color-line) 40px); mask-image: linear-gradient(to bottom, transparent, #000 20%, #000 80%, transparent); opacity: 0.35; pointer-events: none; }
+.hero-grid { position: absolute; inset: 15% 0 7%; background: radial-gradient(circle, var(--color-primary-soft) 1.3px, transparent 1.8px) 0 0 / 44px 44px; mask-image: linear-gradient(to bottom, transparent, #000 20%, #000 80%, transparent); opacity: 0.35; pointer-events: none; }
 .hero-pointer-layer { position: absolute; inset: 0; pointer-events: none; z-index: 0; --pointer-x: 0; --pointer-y: 0; }
 .hero-pointer-layer::before, .hero-pointer-layer::after { content: ''; position: absolute; border: 1px solid var(--color-line); transition: transform var(--duration-ui) var(--ease-signal); }
 .hero-pointer-layer::before { width: 36%; aspect-ratio: 1; right: 5%; top: 17%; transform: translate(calc(var(--pointer-x) * 16px), calc(var(--pointer-y) * 16px)) rotate(8deg); }
@@ -445,7 +468,7 @@ main { overflow: clip; }
 
 @media (max-width: 640px) {
   html { scroll-padding-top: 76px; }
-  body { background-size: 34px 34px, 34px 34px, auto, auto; }
+  html { background-size: 22px 22px, auto; }
   .signal-header { width: calc(100% - 20px); }
   .section-shell { padding: 88px max(18px, env(safe-area-inset-left)) 78px max(18px, env(safe-area-inset-right)); }
   .section-shell::before { left: 18px; right: 18px; }
