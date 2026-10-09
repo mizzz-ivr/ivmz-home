@@ -46,6 +46,18 @@ export class PayloadContactStore implements ContactStore {
       doc = await payload.create({
         collection: 'contact-submissions',
         data: {
+          // Verified references only (never bytes): they feed the Inbox download links.
+          ...(message.attachments?.length
+            ? {
+                attachments: message.attachments.map((file) => ({
+                  contentType: file.contentType,
+                  filename: file.filename,
+                  key: file.key,
+                  sha256: file.sha256,
+                  size: file.size,
+                })),
+              }
+            : {}),
           category: message.category,
           email: message.email,
           message: message.message,
