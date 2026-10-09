@@ -17,8 +17,8 @@
 3. Netlify の環境変数（**Production** のみ）に追加します。
    | 変数名 | 値 | Secret |
    | --- | --- | --- |
-   | `TURNSTILE_SITE_KEY` | サイトキー（公開してよい値） | いいえ（スコープに **Builds** を含める） |
-   | `TURNSTILE_SECRET_KEY` | シークレットキー | **はい**（Production のみ。dev には入れない） |
+   | `TURNSTILE_SITE_KEY` | サイトキー（公開してよい値） | いいえ（スコープは **Functions と Runtime**） |
+   | `TURNSTILE_SECRET_KEY` | シークレットキー | **はい**（Production のみ。スコープは **Functions と Runtime**。dev には入れない） |
 4. 再デプロイします（Deploys → Trigger deploy → Deploy site）。
 
 ## 動作確認

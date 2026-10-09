@@ -3,6 +3,10 @@ import { PageHero, PageSection } from '@/components/site/PageFoundation'
 import { createPageMetadata } from '@/lib/metadata'
 import { site } from '@/lib/site'
 
+// Decide at request time whether the bot check is on, so the widget and the API (which reads the
+// secret at runtime) can never disagree because of build-time vs runtime environment scopes.
+export const dynamic = 'force-dynamic'
+
 export const metadata = createPageMetadata({
   title: 'Contact',
   description: '仕事、開発相談、コラボ、取材等の正式なContact destination。',
