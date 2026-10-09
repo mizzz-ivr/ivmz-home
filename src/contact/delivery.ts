@@ -79,7 +79,10 @@ export class PersistingContactDelivery implements ContactDelivery {
       await this.mark(id, remaining(), 'sent')
     } catch (error) {
       const errorName = error instanceof Error ? error.name : 'UnknownError'
-      const timedOut = error instanceof NotificationTimeoutError
+      // Only this code aborts the request, so an AbortError is always a timeout (outcome unknown).
+      const timedOut =
+        error instanceof NotificationTimeoutError ||
+        (error instanceof Error && error.name === 'AbortError')
       console.error(
         'CONTACT_NOTIFY_FAILED',
         JSON.stringify({
@@ -138,8 +141,10 @@ async function notifyWithTimeout(
       notifier.notify(message, controller.signal),
       new Promise<never>((_, reject) => {
         timeout = setTimeout(() => {
-          controller.abort()
+          // Settle the race with the timeout error FIRST: aborting notifies the provider's abort
+          // listeners synchronously and its rejection must not win and be recorded as a plain failure.
           reject(new NotificationTimeoutError())
+          controller.abort()
         }, timeoutMs)
       }),
     ])

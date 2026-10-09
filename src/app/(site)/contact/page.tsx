@@ -74,8 +74,8 @@ export default function ContactPage() {
           <div className="profile-line">
             <span>DELIVERY</span>
             <p>
-              Deploy Previewでは実メールを送らず、Productionは実delivery
-              providerが設定されるまでfail closedします。
+              Deploy Previewでは実メールを送りません。Productionでは送信内容をCMSの受信箱へ保存し、
+              メール通知が有効な場合のみ通知します（通知が未設定でも受付は継続します）。
             </p>
           </div>
         </div>
