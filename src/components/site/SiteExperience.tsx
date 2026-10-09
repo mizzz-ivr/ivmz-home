@@ -44,17 +44,22 @@ function ThemeToggle({ compact = false }: { compact?: boolean }) {
   )
 }
 
+/** Single-stroke "ivmz" signature, drawn once per session. Visual only (aria-hidden, no pointer events). */
+export const SIGNATURE_PATH =
+  'M16 82 C20 66 24 54 27 46 C28 42 26 44 25 56 C24 68 29 80 41 68 C47 58 51 52 55 54 C59 56 55 70 61 78 C65 72 75 54 81 52 C85 52 83 64 85 72 C87 58 95 50 101 54 C105 58 101 70 103 74 C105 60 113 50 119 54 C123 58 119 72 125 76 C131 70 135 56 139 52 C149 48 161 50 151 60 C141 70 127 84 141 84 C153 84 165 72 178 60'
+
 export function SignatureIntro() {
   return (
     <div className="signature-intro" aria-hidden="true">
-      <svg viewBox="0 0 220 76" role="presentation">
-        <path
-          className="signature-path"
-          d="M12 54 C28 17 35 22 31 52 C29 69 46 63 57 42 C71 15 65 62 80 58 C95 54 102 29 106 24 C106 44 101 64 119 57 C137 50 140 24 151 22 C158 29 145 58 165 56 C184 55 194 42 207 28"
-        />
-        <path className="signature-slash" d="M158 66 L208 66" />
+      <div className="signature-intro-grid" />
+      <svg viewBox="0 18 210 92" role="presentation">
+        <path className="signature-path" d={SIGNATURE_PATH} pathLength={1} />
+        <path className="signature-dot" d="M27 28 L29 26" pathLength={1} />
+        <path className="signature-slash" d="M10 98 C60 90 120 102 196 92" pathLength={1} />
+        <circle className="signature-pen" cx="0" cy="0" r="3.4" />
       </svg>
       <span>ivmz / signal</span>
+      <i className="signature-meter" />
     </div>
   )
 }
