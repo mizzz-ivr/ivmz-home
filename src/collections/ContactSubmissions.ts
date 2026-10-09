@@ -112,15 +112,6 @@ export const ContactSubmissions: CollectionConfig = {
         { name: 'contentType', type: 'text', required: true },
         { name: 'sha256', type: 'text', required: true },
         {
-          name: 'downloadLink',
-          type: 'ui',
-          admin: {
-            components: {
-              Field: '/components/admin/AttachmentDownloadLink#AttachmentDownloadLink',
-            },
-          },
-        },
-        {
           name: 'downloadPath',
           type: 'text',
           admin: {
@@ -138,6 +129,17 @@ export const ContactSubmissions: CollectionConfig = {
           virtual: true,
         },
       ],
+    },
+    {
+      // Rendered outside the array on purpose: custom `Field` components nested in array rows are not
+      // honoured by the pinned Payload version. It lists one download link per stored attachment.
+      name: 'attachmentDownloads',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: '/components/admin/AttachmentDownloads#AttachmentDownloads',
+        },
+      },
     },
     {
       name: 'notification',

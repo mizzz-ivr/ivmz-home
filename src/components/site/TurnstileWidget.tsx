@@ -71,7 +71,11 @@ export function TurnstileWidget({
         if (cancelled || !ref.current) return
         widgetId = api.render(ref.current, {
           callback: (token) => report(token),
-          'error-callback': () => report(null),
+          'error-callback': () => {
+            // Non-retryable challenge/config errors (e.g. invalid site key): tell the visitor.
+            if (!cancelled) setFailed(true)
+            report(null)
+          },
           'expired-callback': () => report(null),
           language: 'ja',
           sitekey: siteKey,
