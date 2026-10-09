@@ -235,7 +235,7 @@ create a duplicate. A malformed or missing id is ignored and a server-side id is
 ### Enabling the email notification
 
 Set all of these in the Netlify **Production** environment (they are intentionally not `AWS_*`,
-which Netlify reserves). Until all four exist the notifier stays disabled.
+which Netlify reserves). Until all five exist the notifier stays disabled.
 
 | Variable | Example |
 | --- | --- |
@@ -243,6 +243,7 @@ which Netlify reserves). Until all four exist the notifier stays disabled.
 | `CONTACT_SES_ACCESS_KEY_ID` | IAM user limited to `ses:SendEmail` on the `ivrm.jp` identity |
 | `CONTACT_SES_SECRET_ACCESS_KEY` | secret for the same IAM user |
 | `CONTACT_FROM_EMAIL` | an address on the verified `ivrm.jp` identity |
+| `CONTACT_SES_CONFIGURATION_SET` | SES configuration set with event publishing, so delivery / bounce / complaint events reach the monitored destination |
 
 Email additionally requires SES production access (sandbox only delivers to verified addresses).
 The visitor's address is only ever used as `Reply-To`.

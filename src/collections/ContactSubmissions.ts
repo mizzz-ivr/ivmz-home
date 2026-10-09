@@ -99,7 +99,12 @@ export const ContactSubmissions: CollectionConfig = {
     {
       name: 'notification',
       type: 'select',
-      admin: { description: 'Email notification state. The submission is stored regardless.' },
+      access: submittedFieldAccess,
+      admin: {
+        description:
+          'Email notification state (server-owned). The submission is stored regardless.',
+        readOnly: true,
+      },
       defaultValue: 'pending',
       options: [
         { label: 'Pending', value: 'pending' },
@@ -112,6 +117,7 @@ export const ContactSubmissions: CollectionConfig = {
     {
       name: 'notificationError',
       type: 'text',
+      access: submittedFieldAccess,
       admin: { readOnly: true },
       maxLength: 120,
     },

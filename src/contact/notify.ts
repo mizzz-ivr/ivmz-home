@@ -16,12 +16,17 @@ export class NoopContactNotifier implements ContactNotifier {
 
 type SesEnvironment = {
   CONTACT_FROM_EMAIL?: string
+  CONTACT_SES_CONFIGURATION_SET?: string
   CONTACT_SES_ACCESS_KEY_ID?: string
   CONTACT_SES_REGION?: string
   CONTACT_SES_SECRET_ACCESS_KEY?: string
 }
 
-export function buildNotificationEmail(message: ContactDeliveryMessage, from: string) {
+export function buildNotificationEmail(
+  message: ContactDeliveryMessage,
+  from: string,
+  configurationSet: string,
+) {
   const body = [
     `Category: ${message.category}`,
     `From: ${message.name} <${message.email}>`,
@@ -33,6 +38,8 @@ export function buildNotificationEmail(message: ContactDeliveryMessage, from: st
   ].join('\n')
 
   return {
+    // Required so delivery / bounce / complaint events reach the monitored event destination.
+    ConfigurationSetName: configurationSet,
     Destination: { ToAddresses: [message.recipient] },
     FromEmailAddress: from,
     ReplyToAddresses: [message.email],
@@ -51,10 +58,13 @@ export class SesContactNotifier implements ContactNotifier {
   constructor(
     private readonly client: Pick<SESv2Client, 'send'>,
     private readonly from: string,
+    private readonly configurationSet: string,
   ) {}
 
   async notify(message: ContactDeliveryMessage): Promise<void> {
-    await this.client.send(new SendEmailCommand(buildNotificationEmail(message, this.from)))
+    await this.client.send(
+      new SendEmailCommand(buildNotificationEmail(message, this.from, this.configurationSet)),
+    )
   }
 }
 
@@ -62,15 +72,27 @@ export class SesContactNotifier implements ContactNotifier {
 export function createContactNotifier(
   env: SesEnvironment = {
     CONTACT_FROM_EMAIL: process.env.CONTACT_FROM_EMAIL,
+    CONTACT_SES_CONFIGURATION_SET: process.env.CONTACT_SES_CONFIGURATION_SET,
     CONTACT_SES_ACCESS_KEY_ID: process.env.CONTACT_SES_ACCESS_KEY_ID,
     CONTACT_SES_REGION: process.env.CONTACT_SES_REGION,
     CONTACT_SES_SECRET_ACCESS_KEY: process.env.CONTACT_SES_SECRET_ACCESS_KEY,
   },
 ): ContactNotifier {
-  const { CONTACT_FROM_EMAIL, CONTACT_SES_ACCESS_KEY_ID, CONTACT_SES_REGION } = env
+  const {
+    CONTACT_FROM_EMAIL,
+    CONTACT_SES_ACCESS_KEY_ID,
+    CONTACT_SES_CONFIGURATION_SET,
+    CONTACT_SES_REGION,
+  } = env
   const secret = env.CONTACT_SES_SECRET_ACCESS_KEY
 
-  if (!CONTACT_FROM_EMAIL || !CONTACT_SES_ACCESS_KEY_ID || !CONTACT_SES_REGION || !secret) {
+  if (
+    !CONTACT_FROM_EMAIL ||
+    !CONTACT_SES_ACCESS_KEY_ID ||
+    !CONTACT_SES_CONFIGURATION_SET ||
+    !CONTACT_SES_REGION ||
+    !secret
+  ) {
     return new NoopContactNotifier()
   }
 
@@ -78,5 +100,5 @@ export function createContactNotifier(
     credentials: { accessKeyId: CONTACT_SES_ACCESS_KEY_ID, secretAccessKey: secret },
     region: CONTACT_SES_REGION,
   })
-  return new SesContactNotifier(client, CONTACT_FROM_EMAIL)
+  return new SesContactNotifier(client, CONTACT_FROM_EMAIL, CONTACT_SES_CONFIGURATION_SET)
 }

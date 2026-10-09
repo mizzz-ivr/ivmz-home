@@ -296,7 +296,7 @@ export interface ContactSubmission {
   recipient: string;
   requestId: string;
   /**
-   * Email notification state. The submission is stored regardless.
+   * Email notification state (server-owned). The submission is stored regardless.
    */
   notification: 'pending' | 'sent' | 'failed' | 'skipped';
   notificationError?: string | null;
