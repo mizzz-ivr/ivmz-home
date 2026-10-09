@@ -21,6 +21,8 @@ type SesEnvironment = {
   CONTACT_SES_ACCESS_KEY_ID?: string
   CONTACT_SES_REGION?: string
   CONTACT_SES_SECRET_ACCESS_KEY?: string
+  /** Set to `off` to stop sending the receipt email to the visitor. */
+  CONTACT_AUTOREPLY?: string
 }
 
 export function buildNotificationEmail(
@@ -58,6 +60,54 @@ export function buildNotificationEmail(
   }
 }
 
+/**
+ * Receipt email for the visitor. It deliberately contains only fixed text and the receipt id:
+ * nothing the visitor typed is echoed back, so the form cannot be used to mail arbitrary content
+ * to a third party's address.
+ */
+export function buildAcknowledgementEmail(
+  message: ContactDeliveryMessage,
+  from: string,
+  configurationSet: string,
+) {
+  const body = [
+    'お問い合わせありがとうございます。メッセージを受け付けました。',
+    '',
+    `受付番号: ${message.requestId}`,
+    '',
+    '内容を確認のうえ、返信が必要な場合は、このメールに返信する形でご連絡します。',
+    'しばらくお待ちください。',
+    '',
+    '※このメールはフォーム送信時に自動で送られています。',
+    '　心当たりがない場合は、このメールを破棄してください。',
+    '',
+    '— ivmz (https://ivmz.ivrm.jp)',
+    '',
+    '---',
+    'Thanks for your message. It has been received (reference above).',
+    'If a reply is needed, I will answer by replying to this email.',
+    'If you did not submit the form, please ignore this message.',
+  ].join('\n')
+
+  return {
+    ConfigurationSetName: configurationSet,
+    Destination: { ToAddresses: [message.email] },
+    FromEmailAddress: from,
+    ReplyToAddresses: [message.recipient],
+    Content: {
+      Simple: {
+        Subject: {
+          Charset: 'UTF-8',
+          Data: '[ivmz] お問い合わせを受け付けました / Message received',
+        },
+        Body: { Text: { Charset: 'UTF-8', Data: body } },
+      },
+    },
+  }
+}
+
+const RECEIPT_TIMEOUT_MS = 3_000
+
 export class SesContactNotifier implements ContactNotifier {
   readonly kind = 'ses'
 
@@ -65,13 +115,45 @@ export class SesContactNotifier implements ContactNotifier {
     private readonly client: Pick<SESv2Client, 'send'>,
     private readonly from: string,
     private readonly configurationSet: string,
+    private readonly autoReply = true,
   ) {}
 
   async notify(message: ContactDeliveryMessage, signal?: AbortSignal): Promise<void> {
-    await this.client.send(
+    const options = { abortSignal: signal }
+    const notification = this.client.send(
       new SendEmailCommand(buildNotificationEmail(message, this.from, this.configurationSet)),
-      { abortSignal: signal },
+      options,
     )
+
+    if (!this.autoReply) {
+      await notification
+      return
+    }
+
+    // The owner notification decides success; a failed receipt email is only logged. The receipt has
+    // its own shorter deadline so a slow receipt can never push the owner result past the budget.
+    const receiptSignal = AbortSignal.any(
+      signal
+        ? [signal, AbortSignal.timeout(RECEIPT_TIMEOUT_MS)]
+        : [AbortSignal.timeout(RECEIPT_TIMEOUT_MS)],
+    )
+    const [owner, receipt] = await Promise.allSettled([
+      notification,
+      this.client.send(
+        new SendEmailCommand(buildAcknowledgementEmail(message, this.from, this.configurationSet)),
+        { abortSignal: receiptSignal },
+      ),
+    ])
+    if (receipt.status === 'rejected') {
+      console.error(
+        'CONTACT_ACK_FAILED',
+        JSON.stringify({
+          error: receipt.reason instanceof Error ? receipt.reason.name : 'UnknownError',
+          requestId: message.requestId,
+        }),
+      )
+    }
+    if (owner.status === 'rejected') throw owner.reason
   }
 }
 
@@ -83,6 +165,7 @@ export function createContactNotifier(
     CONTACT_SES_ACCESS_KEY_ID: process.env.CONTACT_SES_ACCESS_KEY_ID,
     CONTACT_SES_REGION: process.env.CONTACT_SES_REGION,
     CONTACT_SES_SECRET_ACCESS_KEY: process.env.CONTACT_SES_SECRET_ACCESS_KEY,
+    CONTACT_AUTOREPLY: process.env.CONTACT_AUTOREPLY,
   },
 ): ContactNotifier {
   const {
@@ -107,5 +190,10 @@ export function createContactNotifier(
     credentials: { accessKeyId: CONTACT_SES_ACCESS_KEY_ID, secretAccessKey: secret },
     region: CONTACT_SES_REGION,
   })
-  return new SesContactNotifier(client, CONTACT_FROM_EMAIL, CONTACT_SES_CONFIGURATION_SET)
+  return new SesContactNotifier(
+    client,
+    CONTACT_FROM_EMAIL,
+    CONTACT_SES_CONFIGURATION_SET,
+    env.CONTACT_AUTOREPLY !== 'off',
+  )
 }

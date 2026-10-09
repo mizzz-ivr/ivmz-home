@@ -605,6 +605,70 @@
   color: var(--color-muted);
 }
 
+.contact-review {
+  display: grid;
+  gap: 18px;
+  padding: 22px;
+  border: 1px solid var(--color-line);
+  background: color-mix(in srgb, var(--color-bg) 94%, var(--color-primary) 6%);
+}
+
+.contact-review h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.contact-review > p {
+  margin: 0;
+  color: var(--color-muted);
+}
+
+.contact-review dl {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+}
+
+.contact-review dl > div {
+  display: grid;
+  gap: 4px;
+}
+
+.contact-review dt {
+  color: var(--color-muted);
+  font: 750 0.7rem/1.2 var(--font-mono);
+  letter-spacing: 0.07em;
+}
+
+.contact-review dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.contact-review-message {
+  white-space: pre-wrap;
+}
+
+.contact-review-back {
+  min-height: 48px;
+  padding: 12px 20px;
+  border: 1px solid var(--color-line);
+  background: transparent;
+  color: var(--color-text);
+  font: 750 0.78rem/1 var(--font-mono);
+  letter-spacing: 0.07em;
+  cursor: pointer;
+}
+
+.contact-review-back:disabled {
+  opacity: 0.6;
+}
+
+.contact-review .contact-submit-row {
+  grid-template-columns: auto auto;
+  justify-content: start;
+}
+
 .contact-feedback {
   padding: 18px 20px;
   border-left: 2px solid var(--color-primary);
@@ -629,8 +693,13 @@
     grid-template-columns: 1fr;
   }
 
-  .contact-submit {
+  .contact-submit,
+  .contact-review-back {
     width: 100%;
+  }
+
+  .contact-review .contact-submit-row {
+    grid-template-columns: 1fr;
   }
 }
 

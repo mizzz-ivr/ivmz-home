@@ -1,5 +1,7 @@
 import { isAllowedContactOrigin } from '@/security/contact-origin'
 
+import { isRateLimited } from './rate-limit'
+
 export function json(body: unknown, status: number) {
   return Response.json(body, { headers: { 'Cache-Control': 'no-store' }, status })
 }
@@ -9,9 +11,13 @@ const MAX_JSON_BYTES = 4 * 1024
 /** Same-origin JSON POST guard shared by the attachment endpoints. */
 export async function readGuardedJson(
   request: Request,
+  rateLimit?: { limit: number; scope: string },
 ): Promise<{ ok: true; body: Record<string, unknown> } | { ok: false; response: Response }> {
   if (!isAllowedContactOrigin(request.headers.get('origin'))) {
     return { ok: false, response: json({ code: 'forbidden_origin', ok: false }, 403) }
+  }
+  if (rateLimit && isRateLimited(rateLimit.scope, request, rateLimit.limit)) {
+    return { ok: false, response: json({ code: 'rate_limited', ok: false }, 429) }
   }
   if (!(request.headers.get('content-type') ?? '').toLowerCase().startsWith('application/json')) {
     return { ok: false, response: json({ code: 'unsupported_media_type', ok: false }, 415) }
