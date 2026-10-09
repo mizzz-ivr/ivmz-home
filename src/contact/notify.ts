@@ -32,6 +32,11 @@ export function buildNotificationEmail(
     `Category: ${message.category}`,
     `From: ${message.name} <${message.email}>`,
     `Request ID: ${message.requestId}`,
+    ...(message.attachments?.length
+      ? [
+          `Attachments: ${message.attachments.length} (scanned; open them from the CMS inbox, not attached here)`,
+        ]
+      : []),
     '',
     message.message,
     '',

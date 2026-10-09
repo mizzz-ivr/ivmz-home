@@ -9,6 +9,14 @@ const payloadBuildOrigin =
       ? (process.env.DEPLOY_PRIME_URL ?? '')
       : ''
 
+// Browser-direct attachment uploads go to the private quarantine bucket (presigned POST).
+const attachmentBucket = process.env.CONTACT_ATTACH_BUCKET
+const attachmentRegion = process.env.CONTACT_ATTACH_REGION
+const attachmentOrigin =
+  attachmentBucket && attachmentRegion
+    ? `https://${attachmentBucket}.s3.${attachmentRegion}.amazonaws.com`
+    : ''
+
 const securityHeaders = [
   {
     key: 'Strict-Transport-Security',
@@ -32,7 +40,9 @@ const securityHeaders = [
   },
   {
     key: 'Content-Security-Policy-Report-Only',
-    value: "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'",
+    value: `default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'${
+      attachmentOrigin ? `; connect-src 'self' ${attachmentOrigin}` : ''
+    }`,
   },
 ]
 

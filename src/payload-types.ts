@@ -99,8 +99,12 @@ export interface Config {
     defaultIDType: number;
   };
   fallbackLocale: null;
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    'contact-settings': ContactSetting;
+  };
+  globalsSelect: {
+    'contact-settings': ContactSettingsSelect<false> | ContactSettingsSelect<true>;
+  };
   locale: null;
   widgets: {
     collections: CollectionsWidget;
@@ -295,6 +299,23 @@ export interface ContactSubmission {
    */
   recipient: string;
   requestId: string;
+  /**
+   * Files that passed the malware scan and content checks. Stored privately; open them with the download path (admin login required).
+   */
+  attachments?:
+    | {
+        filename: string;
+        key: string;
+        size: number;
+        contentType: string;
+        sha256: string;
+        /**
+         * Admin-only download link (short-lived redirect).
+         */
+        downloadPath?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   /**
    * Email notification state (server-owned). The submission is stored regardless.
    */
@@ -544,6 +565,17 @@ export interface ContactSubmissionsSelect<T extends boolean = true> {
   message?: T;
   recipient?: T;
   requestId?: T;
+  attachments?:
+    | T
+    | {
+        filename?: T;
+        key?: T;
+        size?: T;
+        contentType?: T;
+        sha256?: T;
+        downloadPath?: T;
+        id?: T;
+      };
   notification?: T;
   notificationError?: T;
   internalNote?: T;
@@ -589,6 +621,49 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "contact-settings".
+ */
+export interface ContactSetting {
+  id: number;
+  /**
+   * Off by default. Files are uploaded to a private quarantine bucket, scanned by AWS GuardDuty Malware Protection for S3, then content-checked before they can be attached. Has no effect until the storage environment variables are configured.
+   */
+  attachmentsEnabled?: boolean | null;
+  /**
+   * 1–20 MB. Higher values are clamped by the server.
+   */
+  maxFileSizeMB?: number | null;
+  /**
+   * 1–5.
+   */
+  maxFiles?: number | null;
+  /**
+   * 1–50 MB across all files in one message.
+   */
+  maxTotalSizeMB?: number | null;
+  /**
+   * Choose from the vetted list only. Office files are accepted without macros, embedded objects or external templates. Images are re-encoded to strip metadata; PDFs with scripts or launch actions are rejected.
+   */
+  allowedTypes?: ('png' | 'jpeg' | 'webp' | 'pdf' | 'txt' | 'md' | 'csv' | 'docx' | 'xlsx' | 'pptx')[] | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "contact-settings_select".
+ */
+export interface ContactSettingsSelect<T extends boolean = true> {
+  attachmentsEnabled?: T;
+  maxFileSizeMB?: T;
+  maxFiles?: T;
+  maxTotalSizeMB?: T;
+  allowedTypes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

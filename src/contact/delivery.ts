@@ -2,7 +2,17 @@ import { createContactNotifier, type ContactNotifier } from './notify'
 import type { ContactSubmission } from './schema'
 import { PayloadContactStore, type ContactNotificationState, type ContactStore } from './store'
 
+export type ContactDeliveryAttachment = {
+  contentType: string
+  filename: string
+  key: string
+  sha256: string
+  size: number
+}
+
 export type ContactDeliveryMessage = ContactSubmission & {
+  /** Scanned + verified files; the stored references, never the bytes. */
+  attachments?: ContactDeliveryAttachment[]
   recipient: string
   requestId: string
 }

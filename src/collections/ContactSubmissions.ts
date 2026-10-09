@@ -97,6 +97,40 @@ export const ContactSubmissions: CollectionConfig = {
       unique: true,
     },
     {
+      name: 'attachments',
+      type: 'array',
+      access: submittedFieldAccess,
+      admin: {
+        description:
+          'Files that passed the malware scan and content checks. Stored privately; open them with the download path (admin login required).',
+        readOnly: true,
+      },
+      fields: [
+        { name: 'filename', type: 'text', required: true, maxLength: 160 },
+        { name: 'key', type: 'text', required: true },
+        { name: 'size', type: 'number', required: true },
+        { name: 'contentType', type: 'text', required: true },
+        { name: 'sha256', type: 'text', required: true },
+        {
+          name: 'downloadPath',
+          type: 'text',
+          admin: {
+            description: 'Admin-only download link (short-lived redirect).',
+            readOnly: true,
+          },
+          hooks: {
+            afterRead: [
+              ({ siblingData }) =>
+                siblingData?.id
+                  ? `/api/contact/attachments/download?row=${encodeURIComponent(String(siblingData.id))}`
+                  : undefined,
+            ],
+          },
+          virtual: true,
+        },
+      ],
+    },
+    {
       name: 'notification',
       type: 'select',
       access: submittedFieldAccess,

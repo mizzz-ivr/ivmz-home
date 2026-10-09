@@ -12,6 +12,7 @@ import { Schedule } from './collections/Schedule'
 import { SocialLinks } from './collections/SocialLinks'
 import { Users } from './collections/Users'
 import { Works } from './collections/Works'
+import { ContactSettings } from './globals/ContactSettings'
 import { getDatabasePoolConfig, resolveDatabasePoolMode } from './lib/database-connection'
 import { resolvePayloadAllowedOrigins } from './security/payload-origins'
 
@@ -47,6 +48,7 @@ export default buildConfig({
   }),
   defaultDepth: 1,
   defaultMaxTextLength: 10_000,
+  globals: [ContactSettings],
   graphQL: {
     disable: true,
   },
