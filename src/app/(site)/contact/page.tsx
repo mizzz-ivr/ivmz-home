@@ -28,7 +28,11 @@ export default function ContactPage() {
         title="Send a message"
         description={<p>入力内容はserver-sideで検証し、カテゴリに応じて配送先を決定します。</p>}
       >
-        <ContactForm generalEmail={site.contactEmail} securityEmail={site.securityEmail} />
+        <ContactForm
+          generalEmail={site.contactEmail}
+          securityEmail={site.securityEmail}
+          turnstileSiteKey={process.env.TURNSTILE_SITE_KEY || undefined}
+        />
       </PageSection>
 
       <PageSection

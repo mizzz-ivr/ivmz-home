@@ -90,6 +90,7 @@ export function ContactAttachments({ disabled = false, onChange }: Props) {
   const [policy, setPolicy] = useState<PublicAttachmentPolicy | null>(null)
   const [items, setItems] = useState<Item[]>([])
   const [announcement, setAnnouncement] = useState('')
+  const [dragging, setDragging] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const controllers = useRef(new Map<string, AbortController>())
   const itemsRef = useRef<Item[]>([])
@@ -207,8 +208,8 @@ export function ContactAttachments({ disabled = false, onChange }: Props) {
     [update],
   )
 
-  const addFiles = (files: FileList | null) => {
-    if (!policy || !files) return
+  const addFiles = (files: ArrayLike<File> | null) => {
+    if (!policy || !files || disabled) return
 
     const added: Item[] = []
     let count = itemsRef.current.filter(
@@ -279,7 +280,29 @@ export function ContactAttachments({ disabled = false, onChange }: Props) {
     <fieldset className="contact-attachments" disabled={disabled}>
       <legend>ファイルを添付（任意）</legend>
 
-      <div className="contact-attachments-picker">
+      <div
+        className={`contact-attachments-picker${dragging ? ' is-dragging' : ''}`}
+        onDragEnter={(event) => {
+          event.preventDefault()
+          setDragging(true)
+        }}
+        onDragLeave={(event) => {
+          // Ignore leave events that only move between children of the drop zone.
+          if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDragging(false)
+        }}
+        onDragOver={(event) => {
+          event.preventDefault()
+          event.dataTransfer.dropEffect = 'copy'
+        }}
+        onDrop={(event) => {
+          event.preventDefault()
+          setDragging(false)
+          addFiles(event.dataTransfer.files)
+        }}
+      >
+        <p className="contact-attachments-drop" aria-hidden="true">
+          ここにファイルをドラッグ＆ドロップ、または
+        </p>
         <label className="contact-attachments-button" htmlFor="contact-attachments-input">
           ファイルを選択
         </label>

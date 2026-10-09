@@ -721,6 +721,20 @@
   display: grid;
   gap: 10px;
   justify-items: start;
+  padding: 14px;
+  border: 2px dashed transparent;
+  border-radius: var(--radius-md);
+  transition:
+    border-color var(--duration-fast) ease,
+    background var(--duration-fast) ease;
+}
+.contact-attachments-picker.is-dragging {
+  border-color: var(--color-primary);
+  background: var(--color-selection);
+}
+.contact-attachments-picker .contact-attachments-drop {
+  color: var(--color-text-soft);
+  font-weight: 650;
 }
 .contact-attachments-picker p {
   margin: 0;
@@ -917,4 +931,16 @@
   color: var(--color-bg);
   font: 750 0.74rem/1 var(--font-mono);
   cursor: pointer;
+}
+
+/* Cloudflare Turnstile slot inside the contact confirmation step */
+.contact-captcha {
+  display: grid;
+  gap: 8px;
+  min-height: 0;
+}
+.contact-captcha p {
+  margin: 0;
+  color: var(--color-pink);
+  font-size: 0.82rem;
 }

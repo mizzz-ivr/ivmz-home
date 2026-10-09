@@ -9,6 +9,7 @@ import { getAttachmentRuntime } from '@/contact/attachments/runtime'
 import { verifyAttachmentTokens } from '@/contact/attachments/service'
 import { recipientFor } from '@/lib/contact-routing'
 import { isAllowedContactOrigin } from '@/security/contact-origin'
+import { verifyTurnstile } from '@/security/turnstile'
 
 export const runtime = 'nodejs'
 
@@ -133,6 +134,16 @@ export async function POST(request: Request) {
       },
       422,
     )
+  }
+
+  // Bot check (only when TURNSTILE_SECRET_KEY is set). Runs after validation so a validation error
+  // does not spend the visitor's single-use token.
+  const captcha = await verifyTurnstile(
+    isRecord(input) ? input.turnstileToken : undefined,
+    request.headers.get('x-nf-client-connection-ip'),
+  )
+  if (captcha === 'failed') {
+    return json({ code: 'captcha_failed', ok: false }, 403)
   }
 
   const attachmentTokens = isRecord(input) ? input.attachments : undefined

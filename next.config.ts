@@ -19,7 +19,7 @@ const attachmentOrigin =
 
 // Read-only report of what the optional social integrations load (YouTube thumbnails, click-to-load embeds).
 const embedFrameOrigins =
-  'https://www.youtube-nocookie.com https://platform.twitter.com https://www.instagram.com https://www.tiktok.com'
+  'https://www.youtube-nocookie.com https://platform.twitter.com https://www.instagram.com https://www.tiktok.com https://challenges.cloudflare.com'
 
 const securityHeaders = [
   {
@@ -44,7 +44,7 @@ const securityHeaders = [
   },
   {
     key: 'Content-Security-Policy-Report-Only',
-    value: `default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; frame-src ${embedFrameOrigins}; img-src 'self' data: https://i.ytimg.com https://avatars.githubusercontent.com${
+    value: `default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; frame-src ${embedFrameOrigins}; img-src 'self' data: https://i.ytimg.com https://avatars.githubusercontent.com${
       attachmentOrigin ? `; connect-src 'self' ${attachmentOrigin}` : ''
     }`,
   },

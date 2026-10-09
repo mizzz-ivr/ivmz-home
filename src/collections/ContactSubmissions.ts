@@ -112,6 +112,15 @@ export const ContactSubmissions: CollectionConfig = {
         { name: 'contentType', type: 'text', required: true },
         { name: 'sha256', type: 'text', required: true },
         {
+          name: 'downloadLink',
+          type: 'ui',
+          admin: {
+            components: {
+              Field: '/components/admin/AttachmentDownloadLink#AttachmentDownloadLink',
+            },
+          },
+        },
+        {
           name: 'downloadPath',
           type: 'text',
           admin: {
