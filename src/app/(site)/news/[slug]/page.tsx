@@ -64,7 +64,7 @@ export default async function NewsDetailPage({ params }: DetailPageProps) {
         description={<p>{description}</p>}
         signal="ACTIVITY / RELEASE"
       />
-      <PageSection title="Update profile" description={<p>公開済みNewsのtypeと公開日。</p>}>
+      <PageSection title="Update profile" description={<p>お知らせの種類と公開日です。</p>}>
         <dl className="detail-facts">
           <div>
             <dt>Type</dt>
@@ -76,23 +76,23 @@ export default async function NewsDetailPage({ params }: DetailPageProps) {
           </div>
         </dl>
       </PageSection>
-      <PageSection title="Update" description={<p>News本文を安全なテキストとして表示します。</p>}>
+      <PageSection title="Update" description={<p>お知らせの内容です。</p>}>
         <div className="detail-prose">
           <p>{item.body}</p>
         </div>
       </PageSection>
       {item.externalUrl && (
-        <PageSection title="Source" description={<p>内部News detailとは別の外部参照先です。</p>}>
+        <PageSection title="Source" description={<p>詳しくは、こちらをご覧ください。</p>}>
           <div className="detail-actions">
             <a href={item.externalUrl} target="_blank" rel="noreferrer">
-              Open external source <span aria-hidden="true">↗</span>
+              Open the source <span aria-hidden="true">↗</span>
             </a>
           </div>
         </PageSection>
       )}
       <PageCTA
-        title="See what comes next."
-        body="公開予定・イベント・リリース予定はScheduleへ。"
+        title="これからの予定"
+        body="公開できるイベントやリリースの予定はScheduleにまとめています。"
         href="/schedule"
         label="Open Schedule"
       />

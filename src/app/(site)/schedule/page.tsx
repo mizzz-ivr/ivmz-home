@@ -9,7 +9,7 @@ export const revalidate = 300
 
 export const metadata = createPageMetadata({
   title: 'Schedule',
-  description: '外部公開してよいイベント、リリース、publication等だけを扱うPublic Schedule。',
+  description: '公開しているイベントやリリースなどの予定。',
   path: '/schedule',
 })
 
@@ -40,22 +40,17 @@ export default async function SchedulePage() {
       <PageHero
         index="SCHEDULE / 05"
         title={<>Public plans, only.</>}
-        description={
-          <p>個人の全カレンダーではなく、サイトで公開してよい予定だけをCMSから表示します。</p>
-        }
+        description={<p>イベントやリリースなど、公開できる予定をお知らせします。</p>}
         signal="TIME / PUBLIC"
       />
-      <PageSection
-        title="Upcoming"
-        description={<p>`visibility = public` かつ現在以降のScheduleだけを取得します。</p>}
-      >
+      <PageSection title="Upcoming" description={<p>これからの予定です。</p>}>
         {content.state === 'error' ? (
-          <EmptyState title="Schedule is temporarily unavailable.">
-            CMS queryに失敗しました。非公開予定へフォールバックすることはありません。
+          <EmptyState title="予定を読み込めませんでした">
+            時間をおいて、もう一度お試しください。
           </EmptyState>
         ) : content.items.length === 0 ? (
-          <EmptyState title="Nothing public is scheduled.">
-            CMSは正常です。公開予定がない状態をそのまま表示しています。
+          <EmptyState title="現在、公開している予定はありません">
+            予定が決まり次第、こちらに掲載します。
           </EmptyState>
         ) : (
           <div className="content-list">
@@ -64,7 +59,7 @@ export default async function SchedulePage() {
                 <div className="content-row-copy">
                   <span>{item.type}</span>
                   <h3>{item.title}</h3>
-                  <p>{item.description || 'Public schedule item.'}</p>
+                  <p>{item.description || ''}</p>
                 </div>
                 <div className="content-row-meta">
                   <span>{formatScheduleRange(item.startAt, item.endAt, item.timezone)}</span>
@@ -80,7 +75,7 @@ export default async function SchedulePage() {
       {calendarEvents.length > 0 && (
         <PageSection
           title="Calendar"
-          description={<p>公開設定のGoogleカレンダーから、これからの予定を自動で表示します。</p>}
+          description={<p>Googleカレンダーの公開予定を、自動で表示しています。</p>}
         >
           <div className="content-list">
             {calendarEvents.map((event) => (
@@ -105,8 +100,8 @@ export default async function SchedulePage() {
         </PageSection>
       )}
       <PageCTA
-        title="Need to reach out?"
-        body="仕事・開発相談・コラボ等の正式な入口はContactへ集約します。"
+        title="ご相談はこちらから"
+        body="お仕事・開発のご相談、コラボレーションなどはContactからご連絡ください。"
         href="/contact"
         label="Open Contact"
       />

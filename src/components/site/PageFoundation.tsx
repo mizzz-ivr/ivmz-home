@@ -80,7 +80,3 @@ export function PageCTA({
     </aside>
   )
 }
-
-export function LegalLayout({ children }: { children: ReactNode }) {
-  return <div className="legal-layout">{children}</div>
-}

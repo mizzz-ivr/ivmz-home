@@ -511,3 +511,17 @@ main { overflow: clip; }
   .timeline-rail { padding-left: 30px; }.timeline-rail > div { grid-template-columns: 22px 68px minmax(0, 1fr); }.timeline-rail i { left: -29px; }
   .social-links a { grid-template-columns: 24px 1fr 18px; }.social-links small { grid-column: 2; }.social-links b { grid-column: 3; grid-row: 1 / span 2; }
 }
+
+/* Japanese line breaking: wrap at phrase boundaries (Chromium) and avoid one-character orphans. */
+body {
+  line-break: strict;
+}
+:where(h1, h2, h3, h4, p, li, dd, small, figcaption) {
+  word-break: auto-phrase;
+}
+:where(h2, h3, h4) {
+  text-wrap: balance;
+}
+:where(p, li, dd) {
+  text-wrap: pretty;
+}

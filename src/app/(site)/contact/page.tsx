@@ -10,7 +10,8 @@ export const dynamic = 'force-dynamic'
 
 export const metadata = createPageMetadata({
   title: 'Contact',
-  description: '仕事、開発相談、コラボ、取材等の正式なContact destination。',
+  description:
+    'お仕事・開発のご相談、コラボレーション、取材・登壇のご依頼などのお問い合わせフォーム。',
   path: '/contact',
 })
 
@@ -19,19 +20,18 @@ export default function ContactPage() {
     <main id="main-content" className="route-page">
       <PageHero
         index="CONTACT / 06"
-        title={<>One entrance. Clear routing.</>}
+        title={<>Let’s talk.</>}
         description={
           <p>
-            問い合わせカテゴリからserver-sideで適切なIdentityへroutingします。
-            配送先メールアドレスを利用者が直接指定することはありません。
+            お仕事・開発のご相談、コラボレーション、取材・登壇のご依頼などはこちらから。内容を確認のうえ、順次ご返信します。
           </p>
         }
-        signal="CONTACT / ROUTING"
+        signal="CONTACT / FORM"
       />
 
       <PageSection
         title="Send a message"
-        description={<p>入力内容はserver-sideで検証し、カテゴリに応じて配送先を決定します。</p>}
+        description={<p>必要事項をご入力ください。送信前に内容を確認できます。</p>}
       >
         <ContactForm
           generalEmail={site.contactEmail}
@@ -52,7 +52,9 @@ export default function ContactPage() {
           <div className="contact-primary">
             <div>
               <span>GENERAL / PERSONAL</span>
-              <strong>{site.contactEmail}</strong>
+              <strong>
+                <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a>
+              </strong>
             </div>
             <a className="action-link action-primary" href={`mailto:${site.contactEmail}`}>
               Open mail app ↗
@@ -65,32 +67,6 @@ export default function ContactPage() {
             </a>{' '}
             を利用してください。
           </p>
-        </div>
-      </PageSection>
-
-      <PageSection
-        title="Delivery boundary"
-        description={<p>問い合わせ処理はhostingやmail providerへ密結合しない境界を維持します。</p>}
-      >
-        <div className="profile-lines">
-          <div className="profile-line">
-            <span>ROUTING</span>
-            <p>カテゴリからserver-side routingし、recipientをclient inputとして受け取りません。</p>
-          </div>
-          <div className="profile-line">
-            <span>VALIDATION</span>
-            <p>
-              server-side validation、origin check、honeypot、size limit、edge rate
-              limitを適用します。
-            </p>
-          </div>
-          <div className="profile-line">
-            <span>DELIVERY</span>
-            <p>
-              Deploy Previewでは実メールを送りません。Productionでは送信内容をCMSの受信箱へ保存し、
-              メール通知が有効な場合のみ通知します（通知が未設定でも受付は継続します）。
-            </p>
-          </div>
         </div>
       </PageSection>
     </main>

@@ -57,7 +57,7 @@ export default async function WorkDetailPage({ params }: DetailPageProps) {
       />
       <PageSection
         title="Project profile"
-        description={<p>役割・状態・公開日と、公開Content Modelに登録された技術情報です。</p>}
+        description={<p>役割、現在の状態、公開日、使用している技術です。</p>}
       >
         <dl className="detail-facts">
           <div>
@@ -85,10 +85,7 @@ export default async function WorkDetailPage({ params }: DetailPageProps) {
           ))}
         </ul>
       </PageSection>
-      <PageSection
-        title="Highlights"
-        description={<p>実装・設計上の要点を短く追えるようにします。</p>}
-      >
+      <PageSection title="Highlights" description={<p>実装・設計のポイントです。</p>}>
         {work.highlights && work.highlights.length > 0 ? (
           <ul className="detail-list">
             {work.highlights.map((highlight) => (
@@ -96,27 +93,25 @@ export default async function WorkDetailPage({ params }: DetailPageProps) {
             ))}
           </ul>
         ) : (
-          <EmptyState title="No highlights published yet.">
-            Highlightsが公開された時点でここに反映されます。
-          </EmptyState>
+          <EmptyState title="ハイライトを準備中です">公開され次第、こちらに掲載します。</EmptyState>
         )}
       </PageSection>
       <PageSection
         title="Case study"
-        description={<p>CMS上のCase Study本文を安全なテキストとして表示します。</p>}
+        description={<p>このプロジェクトの背景、判断、成果をまとめています。</p>}
       >
         {work.caseStudy ? (
           <div className="detail-prose">
             <p>{work.caseStudy}</p>
           </div>
         ) : (
-          <EmptyState title="Case study is being prepared.">
-            routeとmetadataは利用可能なまま、本文未登録を明示します。
+          <EmptyState title="ケーススタディを準備中です">
+            公開され次第、こちらに掲載します。
           </EmptyState>
         )}
       </PageSection>
       {(work.githubUrl || work.liveUrl) && (
-        <PageSection title="Links" description={<p>内部Case Studyとは別の外部destinationです。</p>}>
+        <PageSection title="Links" description={<p>ソースコードや公開サイトはこちらから。</p>}>
           {work.githubUrl ? <RepoStats stats={repoStats.get(work.githubUrl)} /> : null}
           <div className="detail-actions">
             {work.githubUrl && (
@@ -133,8 +128,8 @@ export default async function WorkDetailPage({ params }: DetailPageProps) {
         </PageSection>
       )}
       <PageCTA
-        title="Read the implementation notes."
-        body="技術的な判断やBuild LogはBlogへ分離して蓄積します。"
+        title="実装の裏側も読む"
+        body="技術的な判断や開発ログはBlogにまとめています。"
         href="/blog"
         label="Open Blog"
       />

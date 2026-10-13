@@ -17,7 +17,7 @@ test.describe('Contact form', () => {
     await page.getByRole('button', { name: '送信する ↗' }).click()
 
     await expect(page.getByRole('status')).toContainText(
-      'Deploy Previewでは実メールは送信されません。',
+      'テスト環境のため、実際のメールは送信されません',
     )
     await expect(page.getByLabel('問い合わせ内容')).toHaveValue('')
   })

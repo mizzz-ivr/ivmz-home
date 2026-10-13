@@ -84,7 +84,7 @@ test.describe('Contact attachments', () => {
     })
 
     await expect(page.getByText('ウイルススキャン中…').first()).toBeVisible()
-    await expect(page.getByRole('button', { name: /Scanning files/ })).toBeDisabled()
+    await expect(page.getByRole('button', { name: /ファイルを確認中/ })).toBeDisabled()
     await expect(page.getByText('安全を確認済み')).toBeVisible({ timeout: 20_000 })
 
     await page.getByRole('button', { name: '内容を確認する ↗' }).click()

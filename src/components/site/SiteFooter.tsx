@@ -34,7 +34,6 @@ export function SiteFooter() {
 
         <div className="footer-meta">
           <span>© 2026 ivmz</span>
-          <span>Canonical / ivmz.ivrm.jp</span>
           <span className="footer-legal-links">
             <a href="/legal/privacy">PRIVACY</a>
             <span aria-hidden="true"> / </span>
