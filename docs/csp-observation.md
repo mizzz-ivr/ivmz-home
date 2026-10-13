@@ -110,7 +110,34 @@ Exact-head Deploy Preview Smoke run `#309` / commit `cc26be416ce6ade0a1810d974c2
 
 Productionへの観測も同じspecを使用する。read-only public routesと`/admin` login surfaceにはcredential不要。
 
-PowerShell:
+PR #43で`.github/workflows/csp-production-observation.yml`を追加し、GitHub ActionsからProductionへread-only observationできるようにする。PR runは現在deploy済みProductionに対するobserver regression checkとして扱い、CSP policy変更そのもののpost-deploy validationとはみなさない。
+
+CSP policy変更をmergeした後は、通常のNetlify Git deployがexact current `main`としてProductionへ反映されたことを確認してから、`CSP Production Observation`を`workflow_dispatch`で実行する。
+
+2026-09-18のProduction baseline observation:
+
+- Production commit: `01fc137f5f44d200fadd43a6a2c95e22a2c1bab9`
+- CSP Production Observation run `#1` / `35285257069`: GREEN
+- Chromium / mobile WebKit: GREEN
+- Payload public API: HTTP 200 / Report-Only継続
+- enforcing `Content-Security-Policy`: absent
+- Production write / credential injection: none
+
+両browserで共通して観測したsanitized inventory:
+
+| Surface | Effective directive / blocked category | Classification |
+| --- | --- | --- |
+| `/` | `script-src-elem` / `inline` | Next.js / React framework requirement candidate |
+| `/` | `style-src-attr` / `inline` | application / rendering requirement candidate |
+| `/about`, `/works`, `/blog`, `/news`, `/schedule`, `/links`, `/contact` | `script-src-elem` / `inline` | Next.js / React framework requirement candidate |
+| `/admin` login surface | `script-src-elem` / `inline` | shared Next.js / React requirement candidate |
+| `/admin` login surface | `style-src-elem` / `inline` | Payload Admin-specific requirement candidate |
+
+Production observationでは`unsafe-eval`、外部`script` / `style` / `img` / `font` / `connect` / `worker` origin、Deploy Preview固有`frame-src https://app.netlify.com`はいずれも観測していない。したがってPreview固有Netlify sourceをProduction allowlistへ昇格させず、broad external allowlistも追加しない。
+
+詳細記録は`docs/csp-production-observation-2026-09-18.md`を参照する。
+
+ローカルPowerShellでも同じread-only observationを実行できる:
 
 ```powershell
 $env:E2E_BASE_URL="https://ivmz.ivrm.jp"
@@ -250,7 +277,7 @@ SRIはexternal JavaScript integrityとinline script/style CSP許可を同一問�
 
 - [x] Chromium Deploy Preview inventory
 - [x] mobile WebKit Deploy Preview inventory
-- [ ] Production public/login-surface inventory
+- [x] Production public/login-surface inventory
 - [ ] authenticated Admin inventory
 - [x] Previewのframework / Payload / application / third-party初期分類
 - [ ] authenticated Adminを含むrequired origin / inline requirementに証拠がある
@@ -260,7 +287,8 @@ SRIはexternal JavaScript integrityとinline script/style CSP許可を同一問�
 ## Validation history
 
 - Iteration head `16378105fa3861bf821bdc4bfc187d7632b210f1`: CI `#343` success。format / lint / typecheck / unit / migration / generated artifacts / buildを通過。
-- Final exact-head Deploy PreviewはこのRunbook更新commitを対象に、PR titleから`[skip netlify]`を外した状態で実施する。
+- Deploy Preview baseline: run `#309` / commit `cc26be416ce6ade0a1810d974c25fda9422a5fd4`、Chromium / mobile WebKit GREEN。
+- Production baseline: CSP Production Observation run `#1` / Production commit `01fc137f5f44d200fadd43a6a2c95e22a2c1bab9`、Chromium / mobile WebKit GREEN。
 
 ## Official references
 
