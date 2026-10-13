@@ -1,0 +1,126 @@
+name: Ops Health
+
+# Scheduled production health check and weekly retention report for the contact inbox.
+# Needs the repository secret OPS_HEALTH_TOKEN (same value as the Netlify variable); without it the
+# jobs only print a notice and succeed. A failed run is e-mailed to you by GitHub automatically.
+# Optional: secret OPS_ALERT_WEBHOOK_URL (Discord/Slack), variables SITE_URL and RETENTION_APPLY.
+
+on:
+  schedule:
+    - cron: '7,37 * * * *'
+    - cron: '23 3 * * 1'
+  workflow_dispatch:
+    inputs:
+      task:
+        description: 'health or retention'
+        default: 'health'
+        type: choice
+        options: [health, retention]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ops-health-${{ github.event.schedule || github.event.inputs.task }}
+  cancel-in-progress: false
+
+env:
+  SITE_URL: ${{ vars.SITE_URL || 'https://ivmz.ivrm.jp' }}
+
+jobs:
+  health:
+    if: ${{ github.event.schedule == '7,37 * * * *' || (github.event_name == 'workflow_dispatch' && github.event.inputs.task == 'health') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check the production health endpoint
+        env:
+          OPS_HEALTH_TOKEN: ${{ secrets.OPS_HEALTH_TOKEN }}
+          OPS_ALERT_WEBHOOK_URL: ${{ secrets.OPS_ALERT_WEBHOOK_URL }}
+        run: |
+          if [ -z "$OPS_HEALTH_TOKEN" ]; then
+            echo "::notice::OPS_HEALTH_TOKEN is not set; skipping the health check."
+            exit 0
+          fi
+
+          code=$(curl -sS --max-time 30 --retry 3 --retry-delay 15 --retry-all-errors \
+            -H "Authorization: Bearer $OPS_HEALTH_TOKEN" \
+            -o health.json -w '%{http_code}' "$SITE_URL/api/ops/health" || echo "000")
+          status=$(jq -r '.status // "unreachable"' health.json 2>/dev/null || echo "unreachable")
+
+          {
+            echo "### Ops health: ${status} (HTTP ${code})"
+            if [ -s health.json ]; then
+              echo '```json'
+              jq '{status, checkedAt, received: .stats.received, notification: .stats.notification, failures24h: .stats.failures24h, unread: .stats.unread, retention: .stats.retention, config}' health.json 2>/dev/null || true
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$code" = "200" ] && [ "$status" = "ok" ]; then
+            echo "healthy"
+            exit 0
+          fi
+
+          # When the endpoint answered with its own status (degraded/down) it already alerted the
+          # webhook itself; only post here when the site could not be reached or rejected the call.
+          if [ "$status" = "unreachable" ] && [ -n "$OPS_ALERT_WEBHOOK_URL" ]; then
+            text="🔴 [ivmz] Ops health check could not reach the site (HTTP ${code}) - see the GitHub Actions run."
+            curl -sS --max-time 10 -H 'Content-Type: application/json' \
+              -d "$(jq -n --arg t "$text" '{content: $t, text: $t}')" "$OPS_ALERT_WEBHOOK_URL" || true
+          fi
+          echo "::error::Health check reported ${status} (HTTP ${code})"
+          exit 1
+
+  retention:
+    if: ${{ github.event.schedule == '23 3 * * 1' || (github.event_name == 'workflow_dispatch' && github.event.inputs.task == 'retention') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Report (and optionally apply) contact retention
+        env:
+          OPS_HEALTH_TOKEN: ${{ secrets.OPS_HEALTH_TOKEN }}
+          RETENTION_APPLY: ${{ vars.RETENTION_APPLY }}
+        run: |
+          if [ -z "$OPS_HEALTH_TOKEN" ]; then
+            echo "::notice::OPS_HEALTH_TOKEN is not set; skipping retention."
+            exit 0
+          fi
+
+          # --fail-with-body: HTTP 4xx/5xx (expired token, purge disabled, server error) fail the step
+          # but keep the response body for the log.
+          call() {
+            curl -sS --fail-with-body --max-time 60 -X POST \
+              -H "Authorization: Bearer $OPS_HEALTH_TOKEN" \
+              -H 'Content-Type: application/json' -d "$1" "$SITE_URL/api/ops/retention"
+          }
+
+          if ! report=$(call '{}'); then
+            echo "::error::Retention report failed: $report"
+            exit 1
+          fi
+          echo "dry run: $report"
+          {
+            echo "### Retention report"
+            echo '```json'
+            echo "$report"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$RETENTION_APPLY" = "true" ]; then
+            if ! result=$(call '{"apply":true}'); then
+              echo "::error::Retention purge failed: $result"
+              exit 1
+            fi
+            echo "apply: $result"
+            {
+              echo "### Retention purge"
+              echo '```json'
+              echo "$result"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            if [ "$(echo "$result" | jq -r '.failed // 0')" != "0" ]; then
+              echo "::error::Some records could not be deleted: $result"
+              exit 1
+            fi
+          fi

@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
 
+const { scheduleOpsAlert } = vi.hoisted(() => ({ scheduleOpsAlert: vi.fn() }))
+vi.mock('@/ops/schedule-alert', () => ({ scheduleOpsAlert }))
+
 import {
   ContactDeliveryUnavailableError,
   PersistingContactDelivery,
@@ -104,6 +107,11 @@ describe('PersistingContactDelivery', () => {
     })
     expect(marks).toEqual([[7, 'failed', 'Error']])
     expect(JSON.stringify(spy.mock.calls)).not.toContain('visitor@example.com')
+    expect(scheduleOpsAlert).toHaveBeenCalledTimes(1)
+    const alert = scheduleOpsAlert.mock.calls[0][0]
+    expect(alert).toMatchObject({ key: 'contact-notify-failed', severity: 'warning' })
+    expect(JSON.stringify(alert)).not.toContain('visitor@example.com')
+    expect(JSON.stringify(alert)).not.toContain('Hello')
     spy.mockRestore()
   })
 

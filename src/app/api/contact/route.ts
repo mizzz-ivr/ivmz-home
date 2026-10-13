@@ -1,3 +1,4 @@
+import { scheduleOpsAlert } from '@/ops/schedule-alert'
 import {
   ContactDeliveryUnavailableError,
   createContactDelivery,
@@ -227,6 +228,16 @@ export async function POST(request: Request) {
         requestId,
       }),
     )
+
+    scheduleOpsAlert({
+      detail: `原因: ${errorName}`,
+      key: `contact-delivery-${errorName}`,
+      severity: error instanceof ContactDeliveryTimeoutError ? 'warning' : 'critical',
+      title:
+        error instanceof ContactDeliveryTimeoutError
+          ? '問い合わせの送信がタイムアウトしました'
+          : '問い合わせの保存に失敗しました',
+    })
 
     if (error instanceof ContactDeliveryUnavailableError) {
       return json(
