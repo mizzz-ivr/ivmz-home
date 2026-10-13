@@ -85,5 +85,8 @@ describe('sendOpsAlert', () => {
       throw new Error('network')
     }) as unknown as typeof fetch
     expect(await sendOpsAlert({ ...alert, key: 'b' }, { ...base, fetcher: broken })).toBe('failed')
+    // A failed delivery must not start the throttle window: the retry goes out.
+    expect(await sendOpsAlert({ ...alert, key: 'b' }, base)).toBe('sent')
+    expect(await sendOpsAlert({ ...alert, key: 'b' }, base)).toBe('throttled')
   })
 })

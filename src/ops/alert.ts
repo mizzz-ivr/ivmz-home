@@ -83,10 +83,14 @@ export async function sendOpsAlert(
       method: 'POST',
       signal: AbortSignal.timeout(TIMEOUT_MS),
     })
-    return response.ok ? 'sent' : 'failed'
+    if (response.ok) return 'sent'
   } catch {
-    return 'failed'
+    // fall through: an undelivered alert must not suppress the next attempt
   }
+  // Give the slot back so a retry within the window is allowed after a failed delivery.
+  if (previous === undefined) lastSent.delete(alert.key)
+  else lastSent.set(alert.key, previous)
+  return 'failed'
 }
 
 /** Test helper: forget the throttle state. */
