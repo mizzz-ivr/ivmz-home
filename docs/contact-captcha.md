@@ -34,3 +34,8 @@
 ## 無効にするには
 
 `TURNSTILE_SECRET_KEY` と `TURNSTILE_SITE_KEY` を削除して再デプロイします。
+
+
+## Deploy Preview では無効
+
+Deploy Preview / ブランチデプロイでは、実メールを送らず、自動ブラウザ（Playwright）でテストするため、環境変数にキーがあっても Turnstile は無効になります（画面にも出ず、API も検証しません）。本番（`CONTEXT=production`）でだけ有効です。

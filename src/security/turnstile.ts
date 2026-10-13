@@ -11,12 +11,35 @@ const VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify'
 const TIMEOUT_MS = 2_000
 const MAX_TOKEN_LENGTH = 2_048
 
+type TurnstileEnvironment = {
+  CONTEXT?: string | undefined
+  PAYLOAD_BUILD_CONTEXT?: string | undefined
+  TURNSTILE_SECRET_KEY?: string | undefined
+}
+
+/**
+ * The secret to verify with, or undefined when the bot check is off. Deploy Previews and branch
+ * deploys never deliver real messages (see createContactDelivery) and are driven by automated
+ * browsers that cannot solve a challenge, so the check only applies to production.
+ */
+export function getTurnstileSecret(
+  env: TurnstileEnvironment = {
+    CONTEXT: process.env.CONTEXT,
+    PAYLOAD_BUILD_CONTEXT: process.env.PAYLOAD_BUILD_CONTEXT,
+    TURNSTILE_SECRET_KEY: process.env.TURNSTILE_SECRET_KEY,
+  },
+): string | undefined {
+  const context = env.PAYLOAD_BUILD_CONTEXT || env.CONTEXT
+  if (context === 'deploy-preview' || context === 'branch-deploy') return undefined
+  return env.TURNSTILE_SECRET_KEY || undefined
+}
+
 export async function verifyTurnstile(
   token: unknown,
   remoteIp: string | null | undefined,
   options: { fetcher?: typeof fetch; secret?: string | undefined } = {},
 ): Promise<TurnstileResult> {
-  const secret = 'secret' in options ? options.secret : process.env.TURNSTILE_SECRET_KEY
+  const secret = 'secret' in options ? options.secret : getTurnstileSecret()
   if (!secret) return 'skipped'
 
   if (typeof token !== 'string' || token.length === 0 || token.length > MAX_TOKEN_LENGTH) {

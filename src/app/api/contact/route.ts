@@ -9,7 +9,7 @@ import { getAttachmentRuntime } from '@/contact/attachments/runtime'
 import { verifyAttachmentTokens } from '@/contact/attachments/service'
 import { recipientFor } from '@/lib/contact-routing'
 import { isAllowedContactOrigin } from '@/security/contact-origin'
-import { verifyTurnstile } from '@/security/turnstile'
+import { getTurnstileSecret, verifyTurnstile } from '@/security/turnstile'
 
 export const runtime = 'nodejs'
 
@@ -151,6 +151,7 @@ export async function POST(request: Request) {
   const captcha = await verifyTurnstile(
     isRecord(input) ? input.turnstileToken : undefined,
     request.headers.get('x-nf-client-connection-ip'),
+    { secret: getTurnstileSecret() },
   )
   if (captcha === 'failed') {
     return json({ code: 'captcha_failed', ok: false }, 403)

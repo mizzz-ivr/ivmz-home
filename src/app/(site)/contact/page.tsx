@@ -1,6 +1,7 @@
 import { ContactForm } from '@/components/site/ContactForm'
 import { PageHero, PageSection } from '@/components/site/PageFoundation'
 import { createPageMetadata } from '@/lib/metadata'
+import { getTurnstileSecret } from '@/security/turnstile'
 import { site } from '@/lib/site'
 
 // Decide at request time whether the bot check is on, so the widget and the API (which reads the
@@ -38,9 +39,7 @@ export default function ContactPage() {
           // The widget is only shown when the server can also verify it (secret present); otherwise the
           // form would look protected while the API accepts anything.
           turnstileSiteKey={
-            process.env.TURNSTILE_SECRET_KEY
-              ? process.env.TURNSTILE_SITE_KEY || undefined
-              : undefined
+            getTurnstileSecret() ? process.env.TURNSTILE_SITE_KEY || undefined : undefined
           }
         />
       </PageSection>

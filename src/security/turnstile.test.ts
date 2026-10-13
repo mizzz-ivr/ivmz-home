@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { verifyTurnstile } from './turnstile'
+import { getTurnstileSecret, verifyTurnstile } from './turnstile'
 
 const ok = () => new Response(JSON.stringify({ success: true }), { status: 200 })
 
@@ -53,5 +53,32 @@ describe('verifyTurnstile', () => {
         fetcher: vi.fn().mockRejectedValue(new Error('down')),
       }),
     ).toBe('failed')
+  })
+})
+
+describe('getTurnstileSecret', () => {
+  it('is on for production and local runs when a secret exists', () => {
+    expect(getTurnstileSecret({ CONTEXT: 'production', TURNSTILE_SECRET_KEY: 's' })).toBe('s')
+    expect(getTurnstileSecret({ TURNSTILE_SECRET_KEY: 's' })).toBe('s')
+  })
+
+  it('is off for deploy previews and branch deploys', () => {
+    expect(
+      getTurnstileSecret({ CONTEXT: 'deploy-preview', TURNSTILE_SECRET_KEY: 's' }),
+    ).toBeUndefined()
+    expect(
+      getTurnstileSecret({ CONTEXT: 'branch-deploy', TURNSTILE_SECRET_KEY: 's' }),
+    ).toBeUndefined()
+    expect(
+      getTurnstileSecret({
+        CONTEXT: 'production',
+        PAYLOAD_BUILD_CONTEXT: 'deploy-preview',
+        TURNSTILE_SECRET_KEY: 's',
+      }),
+    ).toBeUndefined()
+  })
+
+  it('is off without a secret', () => {
+    expect(getTurnstileSecret({ CONTEXT: 'production' })).toBeUndefined()
   })
 })
