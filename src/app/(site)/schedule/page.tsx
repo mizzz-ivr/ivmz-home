@@ -1,4 +1,5 @@
 import { EmptyState, PageCTA, PageHero, PageSection } from '@/components/site/PageFoundation'
+import { getIntegrationSettings } from '@/lib/integration-settings'
 import { createPageMetadata } from '@/lib/metadata'
 import { getScheduleListContent } from '@/lib/public-list-content'
 import { formatPublicDateTime } from '@/lib/public-content-safety'
@@ -28,9 +29,10 @@ function formatCalendarWhen(event: CalendarEvent) {
 }
 
 export default async function SchedulePage() {
+  const settings = await getIntegrationSettings()
   const [content, calendarEvents] = await Promise.all([
     getScheduleListContent(),
-    getUpcomingGoogleCalendarEvents(),
+    getUpcomingGoogleCalendarEvents(settings.calendarId),
   ])
 
   return (

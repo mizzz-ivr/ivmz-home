@@ -1,6 +1,12 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { getLatestYouTubeVideos, isYouTubeChannelId, parseYouTubeFeed } from './youtube-feed'
+import {
+  getLatestYouTubeVideos,
+  isYouTubeChannelId,
+  parseYouTubeChannelRef,
+  parseYouTubeFeed,
+  resolveYouTubeChannelId,
+} from './youtube-feed'
 
 const feed = `<?xml version="1.0"?><feed>
 <entry><yt:videoId>abcdefghijk</yt:videoId><title>Hello &amp; &lt;world&gt;</title><published>2026-10-01T00:00:00+00:00</published></entry>
@@ -61,5 +67,71 @@ describe('youtube feed', () => {
     expect(fetcher.mock.calls[0][0]).toBe(
       `https://www.youtube.com/feeds/videos.xml?channel_id=${id}`,
     )
+  })
+})
+
+describe('youtube channel refs', () => {
+  const id = 'UC' + 'a'.repeat(22)
+
+  it('parses ids, channel urls, handle urls and bare handles', () => {
+    expect(parseYouTubeChannelRef(id)).toEqual({ channelId: id })
+    expect(parseYouTubeChannelRef(`https://www.youtube.com/channel/${id}`)).toEqual({
+      channelId: id,
+    })
+    expect(parseYouTubeChannelRef('https://www.youtube.com/@ivuru-mz')).toEqual({
+      handle: 'ivuru-mz',
+    })
+    expect(parseYouTubeChannelRef('@ivuru-mz')).toEqual({ handle: 'ivuru-mz' })
+  })
+
+  it('accepts international handles, plain and percent-encoded', () => {
+    expect(parseYouTubeChannelRef('@イブル')).toEqual({ handle: 'イブル' })
+    expect(parseYouTubeChannelRef('@あ')).toEqual({ handle: 'あ' })
+    expect(parseYouTubeChannelRef('@foo·bar')).toEqual({ handle: 'foo·bar' })
+    expect(
+      parseYouTubeChannelRef(`https://www.youtube.com/@${encodeURIComponent('foo·bar')}`),
+    ).toEqual({
+      handle: 'foo·bar',
+    })
+    expect(
+      parseYouTubeChannelRef(`https://www.youtube.com/@${encodeURIComponent('イブル')}`),
+    ).toEqual({
+      handle: 'イブル',
+    })
+    expect(parseYouTubeChannelRef('https://www.youtube.com/@bad%ZZ')).toBeNull()
+    expect(parseYouTubeChannelRef('@a/b')).toBeNull()
+  })
+
+  it('rejects other hosts, schemes and paths', () => {
+    expect(parseYouTubeChannelRef('https://evil.example/@ivuru-mz')).toBeNull()
+    expect(parseYouTubeChannelRef('http://www.youtube.com/@ivuru-mz')).toBeNull()
+    expect(parseYouTubeChannelRef('https://www.youtube.com/watch?v=abcdefghijk')).toBeNull()
+    expect(parseYouTubeChannelRef('')).toBeNull()
+  })
+
+  it('resolves a handle through the channel page', async () => {
+    const fetcher = vi.fn(
+      async () =>
+        new Response(
+          `<html><link rel="canonical" href="https://www.youtube.com/channel/${id}"></html>`,
+        ),
+    ) as unknown as typeof fetch
+    await expect(resolveYouTubeChannelId({ handle: 'ivuru-mz' }, fetcher)).resolves.toBe(id)
+  })
+
+  it('returns nothing when the handle page has no id', async () => {
+    const fetcher = vi.fn(async () => new Response('<html></html>')) as unknown as typeof fetch
+    await expect(resolveYouTubeChannelId({ handle: 'nobody' }, fetcher)).resolves.toBeNull()
+  })
+
+  it('loads videos for a handle', async () => {
+    const calls: string[] = []
+    const fetcher = vi.fn(async (url: string) => {
+      calls.push(url)
+      return new Response(url.includes('/feeds/') ? feed : `<html>"externalId":"${id}"</html>`)
+    }) as unknown as typeof fetch
+    const videos = await getLatestYouTubeVideos('https://www.youtube.com/@ivuru-mz', fetcher)
+    expect(videos.length).toBeGreaterThan(0)
+    expect(calls[1]).toContain(`channel_id=${id}`)
   })
 })

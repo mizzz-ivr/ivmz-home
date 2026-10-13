@@ -2,6 +2,14 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { POST } from './route'
 
+// These tests run as a Deploy Preview, where the bot check is normally off. Here the secret from
+// the environment is used directly so the route's Turnstile handling can still be exercised; the
+// preview/production switch itself is covered in src/security/turnstile.test.ts.
+vi.mock('@/security/turnstile', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/security/turnstile')>()),
+  getTurnstileSecret: () => process.env.TURNSTILE_SECRET_KEY || undefined,
+}))
+
 const previewOrigin = 'https://deploy-preview-46--ivmz-home.netlify.app'
 
 function validBody(overrides: Record<string, unknown> = {}) {

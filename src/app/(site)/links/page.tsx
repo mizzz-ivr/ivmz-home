@@ -4,6 +4,7 @@ import { getSocialLinksListContent } from '@/lib/public-list-content'
 import { site } from '@/lib/site'
 import { SocialEmbedCard } from '@/components/site/SocialEmbedCard'
 import { getLatestYouTubeVideos } from '@/lib/youtube-feed'
+import { getIntegrationSettings } from '@/lib/integration-settings'
 import { parseSocialEmbeds } from '@/lib/social-embed'
 
 export const revalidate = 300
@@ -20,11 +21,12 @@ const stableFallback = [
 ]
 
 export default async function LinksPage() {
+  const settings = await getIntegrationSettings()
   const [content, videos] = await Promise.all([
     getSocialLinksListContent(),
-    getLatestYouTubeVideos(),
+    getLatestYouTubeVideos(settings.youtubeChannel),
   ])
-  const embeds = parseSocialEmbeds(process.env.SOCIAL_EMBED_URLS)
+  const embeds = parseSocialEmbeds(settings.embedUrls)
   const links = content.state === 'error' ? stableFallback : content.items
 
   return (

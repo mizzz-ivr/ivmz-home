@@ -101,9 +101,11 @@ export interface Config {
   fallbackLocale: null;
   globals: {
     'contact-settings': ContactSetting;
+    'integration-settings': IntegrationSetting;
   };
   globalsSelect: {
     'contact-settings': ContactSettingsSelect<false> | ContactSettingsSelect<true>;
+    'integration-settings': IntegrationSettingsSelect<false> | IntegrationSettingsSelect<true>;
   };
   locale: null;
   widgets: {
@@ -653,6 +655,27 @@ export interface ContactSetting {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "integration-settings".
+ */
+export interface IntegrationSetting {
+  id: number;
+  /**
+   * Channel URL (https://www.youtube.com/@name), a channel ID (UC…) or @name. Shows the latest videos on /links. Empty = use the YOUTUBE_CHANNEL_ID environment variable if one is set, otherwise the section is hidden.
+   */
+  youtubeChannel?: string | null;
+  /**
+   * The calendar must be shared publicly. Example: xxxx@group.calendar.google.com. Shows upcoming events on /schedule. Empty = use the GOOGLE_CALENDAR_ID environment variable if one is set, otherwise the section is hidden.
+   */
+  googleCalendarId?: string | null;
+  /**
+   * Individual posts only: x.com/<user>/status/<id>, instagram.com/p/<code>, instagram.com/reel/<code>, tiktok.com/@<user>/video/<id>, youtube.com/watch?v=<id>. Nothing loads from these services until a visitor clicks.
+   */
+  socialEmbedUrls?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "contact-settings_select".
  */
 export interface ContactSettingsSelect<T extends boolean = true> {
@@ -661,6 +684,18 @@ export interface ContactSettingsSelect<T extends boolean = true> {
   maxFiles?: T;
   maxTotalSizeMB?: T;
   allowedTypes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "integration-settings_select".
+ */
+export interface IntegrationSettingsSelect<T extends boolean = true> {
+  youtubeChannel?: T;
+  googleCalendarId?: T;
+  socialEmbedUrls?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

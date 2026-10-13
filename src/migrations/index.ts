@@ -3,6 +3,7 @@ import * as migration_20260826_100916_payload_content_model_foundation from './2
 import * as migration_20261009_021711_contact_submissions from './20261009_021711_contact_submissions';
 import * as migration_20261009_042936_contact_attachments from './20261009_042936_contact_attachments';
 import * as migration_20261009_070000_enable_row_level_security from './20261009_070000_enable_row_level_security';
+import * as migration_20261013_004103_integration_settings from './20261013_004103_integration_settings';
 
 export const migrations = [
   {
@@ -29,5 +30,10 @@ export const migrations = [
     up: migration_20261009_070000_enable_row_level_security.up,
     down: migration_20261009_070000_enable_row_level_security.down,
     name: '20261009_070000_enable_row_level_security',
+  },
+  {
+    up: migration_20261013_004103_integration_settings.up,
+    down: migration_20261013_004103_integration_settings.down,
+    name: '20261013_004103_integration_settings'
   },
 ];

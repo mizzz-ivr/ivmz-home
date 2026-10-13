@@ -1,7 +1,11 @@
 # SNS・カレンダー連携
 
 どれも **公開情報だけ** をサーバー側で取得し、未設定または失敗した場合は何も表示しません（ページは壊れません）。
-Netlify の環境変数（Production）で有効にします。設定後は再デプロイが必要です。
+設定は **CMS の Content → Integrations** で編集できます（保存すると最大 5〜30 分以内に反映）。
+CMS の欄が空のときだけ、下表の環境変数にフォールバックします。
+
+初回デプロイ時に、YouTube チャンネルと公開カレンダーの ID が初期値として登録され、
+GitHub / X / Instagram / YouTube のプロフィールリンクが Social Links に追加されます（同じ URL が既にあれば追加しません）。
 
 | 機能 | 表示場所 | 環境変数 | 費用 |
 | --- | --- | --- | --- |
@@ -11,7 +15,7 @@ Netlify の環境変数（Production）で有効にします。設定後は再�
 
 ## YouTube 最新動画
 
-- `YOUTUBE_CHANNEL_ID` に `UC` で始まる24文字のチャンネル ID を入れます（YouTube Studio → 設定 → チャンネル → 詳細設定）。
+- 「YouTube channel」にチャンネル URL（`https://www.youtube.com/@name`）、`@name`、または `UC` で始まる24文字の ID のどれかを入れます。`@name` はサーバー側でチャンネル ID に解決し、1日キャッシュします。
 - 公開 Atom フィード（`https://www.youtube.com/feeds/videos.xml?channel_id=...`）から最新6件を取得します。30分キャッシュ。
 
 ## Google カレンダー
@@ -34,4 +38,4 @@ Netlify の環境変数（Production）で有効にします。設定後は再�
 ## 将来の拡張（未実装）
 
 - プロフィールの自動取得（X API は有料、Instagram / TikTok は審査が必要）は、必要になった時点で個別に検討します。
-- 設定を CMS（Payload）から編集できるようにするには、スキーマ追加とマイグレーションが必要です。
+- API トークン（`GITHUB_API_TOKEN` など）は秘密情報なので CMS には置かず、環境変数のままにします。
