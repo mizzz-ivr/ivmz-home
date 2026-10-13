@@ -11,6 +11,8 @@ export type YouTubeVideo = {
   url: string
 }
 
+// Handles may use letters/digits from any script (1-30 chars); the host and path stay strictly validated.
+const HANDLE = /^[\p{L}\p{N}._-]{1,30}$/u
 const CHANNEL_ID = /^UC[A-Za-z0-9_-]{22}$/
 const VIDEO_ID = /^[A-Za-z0-9_-]{11}$/
 const TIMEOUT_MS = 2_500
@@ -25,8 +27,7 @@ export function parseYouTubeChannelRef(input: string | undefined | null): YouTub
   if (!value) return null
   if (CHANNEL_ID.test(value)) return { channelId: value }
 
-  const handleOnly = value.match(/^@([A-Za-z0-9._-]{3,30})$/)
-  if (handleOnly) return { handle: handleOnly[1] }
+  if (value.startsWith('@') && HANDLE.test(value.slice(1))) return { handle: value.slice(1) }
 
   let url: URL
   try {
@@ -39,8 +40,14 @@ export function parseYouTubeChannelRef(input: string | undefined | null): YouTub
 
   const channel = url.pathname.match(/^\/channel\/(UC[A-Za-z0-9_-]{22})\/?$/)?.[1]
   if (channel) return { channelId: channel }
-  const handle = url.pathname.match(/^\/@([A-Za-z0-9._-]{3,30})\/?$/)?.[1]
-  return handle ? { handle } : null
+  let path: string
+  try {
+    path = decodeURIComponent(url.pathname)
+  } catch {
+    return null
+  }
+  const handle = path.match(/^\/@([^/]+)\/?$/)?.[1]
+  return handle && HANDLE.test(handle) ? { handle } : null
 }
 
 /** Reads the channel ID from the public channel page of a handle (cached for a day). */

@@ -25,7 +25,7 @@ export const IntegrationSettings: GlobalConfig = {
       maxLength: 200,
       admin: {
         description:
-          'Channel URL (https://www.youtube.com/@name), a channel ID (UC…) or @name. Shows the latest videos on /links. Leave empty to hide.',
+          'Channel URL (https://www.youtube.com/@name), a channel ID (UC…) or @name. Shows the latest videos on /links. Empty = use the YOUTUBE_CHANNEL_ID environment variable if one is set, otherwise the section is hidden.',
       },
     },
     {
@@ -35,7 +35,7 @@ export const IntegrationSettings: GlobalConfig = {
       maxLength: 200,
       admin: {
         description:
-          'The calendar must be shared publicly. Example: xxxx@group.calendar.google.com. Shows upcoming events on /schedule. Leave empty to hide.',
+          'The calendar must be shared publicly. Example: xxxx@group.calendar.google.com. Shows upcoming events on /schedule. Empty = use the GOOGLE_CALENDAR_ID environment variable if one is set, otherwise the section is hidden.',
       },
     },
     {

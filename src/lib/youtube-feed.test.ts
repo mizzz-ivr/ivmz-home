@@ -84,6 +84,18 @@ describe('youtube channel refs', () => {
     expect(parseYouTubeChannelRef('@ivuru-mz')).toEqual({ handle: 'ivuru-mz' })
   })
 
+  it('accepts international handles, plain and percent-encoded', () => {
+    expect(parseYouTubeChannelRef('@イブル')).toEqual({ handle: 'イブル' })
+    expect(parseYouTubeChannelRef('@あ')).toEqual({ handle: 'あ' })
+    expect(
+      parseYouTubeChannelRef(`https://www.youtube.com/@${encodeURIComponent('イブル')}`),
+    ).toEqual({
+      handle: 'イブル',
+    })
+    expect(parseYouTubeChannelRef('https://www.youtube.com/@bad%ZZ')).toBeNull()
+    expect(parseYouTubeChannelRef('@a/b')).toBeNull()
+  })
+
   it('rejects other hosts, schemes and paths', () => {
     expect(parseYouTubeChannelRef('https://evil.example/@ivuru-mz')).toBeNull()
     expect(parseYouTubeChannelRef('http://www.youtube.com/@ivuru-mz')).toBeNull()
