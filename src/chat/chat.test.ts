@@ -1,0 +1,100 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
+import {
+  allowChatRequest,
+  CHAT_DAILY_LIMIT,
+  CHAT_IP_LIMIT,
+  resetChatLimitsForTests,
+} from './limits'
+import { askLlm, buildSystemPrompt, cleanReply, parseChatTurns, readLlmConfig } from './llm'
+
+const config = { accountId: 'a'.repeat(32), apiToken: 'sekret-9f3', model: '@cf/test/model' }
+
+const req = (ip: string) =>
+  new Request('https://x.test', { headers: { 'x-nf-client-connection-ip': ip } })
+
+describe('readLlmConfig', () => {
+  it('is off unless both values are set and CHAT_LLM is not off', () => {
+    expect(readLlmConfig({} as NodeJS.ProcessEnv)).toBeNull()
+    expect(
+      readLlmConfig({ CHAT_LLM_ACCOUNT_ID: 'a'.repeat(32) } as unknown as NodeJS.ProcessEnv),
+    ).toBeNull()
+    const env = { CHAT_LLM_ACCOUNT_ID: 'a'.repeat(32), CHAT_LLM_API_TOKEN: 't' }
+    expect(readLlmConfig(env as unknown as NodeJS.ProcessEnv)?.model).toContain('gemma')
+    expect(readLlmConfig({ ...env, CHAT_LLM: 'off' } as unknown as NodeJS.ProcessEnv)).toBeNull()
+    expect(
+      readLlmConfig({ ...env, CHAT_LLM_ACCOUNT_ID: '../x' } as unknown as NodeJS.ProcessEnv),
+    ).toBeNull()
+  })
+})
+
+describe('parseChatTurns', () => {
+  it('accepts bounded user/assistant text ending with a user turn', () => {
+    const turns = parseChatTurns([
+      { content: 'こんにちは', role: 'assistant' },
+      { content: 'あ'.repeat(500), role: 'user' },
+    ])
+    expect(turns?.[1].content).toHaveLength(300)
+  })
+  it('keeps only the latest turns', () => {
+    const many = Array.from({ length: 20 }, (_, i) => ({ content: `q${i}`, role: 'user' }))
+    expect(parseChatTurns(many)).toHaveLength(6)
+  })
+  it.each([
+    [null],
+    [[]],
+    [[{ content: 'x', role: 'system' }]],
+    [[{ content: 1, role: 'user' }]],
+    [[{ content: 'x', role: 'assistant' }]],
+    [['x']],
+  ])('rejects %j', (input) => {
+    expect(parseChatTurns(input)).toBeNull()
+  })
+})
+
+describe('prompt and reply', () => {
+  it('grounds the prompt in the FAQ and forbids guessing', () => {
+    const prompt = buildSystemPrompt()
+    expect(prompt).toContain('お問い合わせフォーム')
+    expect(prompt).toContain('推測せず')
+  })
+  it('strips markup and bounds the reply', () => {
+    expect(cleanReply('**太字** <script>alert(1)</script> `code`')).toBe('太字 alert(1) code')
+    expect(cleanReply('a'.repeat(2000))).toHaveLength(700)
+  })
+})
+
+describe('askLlm', () => {
+  it('returns the cleaned reply and sends no secrets in the body', async () => {
+    const fetcher = vi.fn(async (_url: unknown, init?: RequestInit) => {
+      expect(String(init?.body)).not.toContain('sekret-9f3')
+      expect((init?.headers as Record<string, string>).Authorization).toBe('Bearer sekret-9f3')
+      return Response.json({ result: { response: 'ご相談は **フォーム** から。' } })
+    }) as unknown as typeof fetch
+    expect(await askLlm([{ content: '相談したい', role: 'user' }], config, fetcher)).toBe(
+      'ご相談は フォーム から。',
+    )
+  })
+  it.each([
+    ['non-2xx', async () => new Response('x', { status: 429 })],
+    ['network error', async () => Promise.reject(new Error('down'))],
+    ['bad shape', async () => Response.json({ result: {} })],
+    ['empty', async () => Response.json({ result: { response: '  ' } })],
+  ])('returns null on %s', async (_name, impl) => {
+    expect(
+      await askLlm([{ content: 'x', role: 'user' }], config, impl as unknown as typeof fetch),
+    ).toBeNull()
+  })
+})
+
+describe('allowChatRequest', () => {
+  beforeEach(resetChatLimitsForTests)
+  afterEach(resetChatLimitsForTests)
+  it('limits one visitor, then everyone for the day', () => {
+    for (let i = 0; i < CHAT_IP_LIMIT; i += 1) expect(allowChatRequest(req('1.1.1.1'))).toBe('ok')
+    expect(allowChatRequest(req('1.1.1.1'))).toBe('visitor')
+    resetChatLimitsForTests()
+    for (let i = 0; i < CHAT_DAILY_LIMIT; i += 1) allowChatRequest(req(`9.9.${i}.1`))
+    expect(allowChatRequest(req('2.2.2.2'))).toBe('daily')
+  })
+})
