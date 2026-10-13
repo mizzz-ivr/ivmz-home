@@ -121,7 +121,9 @@ test('answers FAQ questions in the home chat and falls back to the contact form'
   await gotoExpected(page, '/')
 
   const launcher = page.getByRole('button', { name: '質問する' })
-  await launcher.click()
+  // Deploy previews overlay a Netlify toolbar iframe in the corner, which can sit on top of the
+  // launcher for real pointer clicks; dispatch the click so the test checks the chat, not the toolbar.
+  await launcher.dispatchEvent('click')
   const chat = page.getByRole('dialog', { name: 'FAQ Assistant' })
   await expect(chat).toBeVisible()
   await expect(chat.getByText('FAQアシスタントです')).toBeVisible()

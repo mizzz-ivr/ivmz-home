@@ -35,8 +35,9 @@ function hit(key: string, limit: number, windowMs: number, now: number): boolean
  * and every failure falls back to the built-in FAQ answers.
  */
 export function allowChatRequest(request: Request, now = Date.now()): 'ok' | 'visitor' | 'daily' {
-  if (!hit('daily', CHAT_DAILY_LIMIT, DAY_MS, now)) return 'daily'
+  // Visitor first: requests rejected here must not spend the shared daily allowance.
   if (!hit(`ip:${clientKey(request)}`, CHAT_IP_LIMIT, CHAT_IP_WINDOW_MS, now)) return 'visitor'
+  if (!hit('daily', CHAT_DAILY_LIMIT, DAY_MS, now)) return 'daily'
   return 'ok'
 }
 

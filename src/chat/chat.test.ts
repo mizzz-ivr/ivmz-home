@@ -93,6 +93,10 @@ describe('allowChatRequest', () => {
   it('limits one visitor, then everyone for the day', () => {
     for (let i = 0; i < CHAT_IP_LIMIT; i += 1) expect(allowChatRequest(req('1.1.1.1'))).toBe('ok')
     expect(allowChatRequest(req('1.1.1.1'))).toBe('visitor')
+    // Over-limit requests from one visitor do not use up the shared daily allowance.
+    for (let i = 0; i < 500; i += 1) allowChatRequest(req('1.1.1.1'))
+    expect(allowChatRequest(req('4.4.4.4'))).toBe('ok')
+
     resetChatLimitsForTests()
     for (let i = 0; i < CHAT_DAILY_LIMIT; i += 1) allowChatRequest(req(`9.9.${i}.1`))
     expect(allowChatRequest(req('2.2.2.2'))).toBe('daily')
