@@ -45,7 +45,9 @@ test('Schedule page respects public visibility and renders timezone plus optiona
   const item = items[0]
 
   if (!item) {
-    await expect(page.getByText('現在、公開している予定はありません', { exact: true })).toBeVisible()
+    await expect(
+      page.getByText('現在、公開している予定はありません', { exact: true }),
+    ).toBeVisible()
     return
   }
 
