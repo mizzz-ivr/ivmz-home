@@ -12,7 +12,7 @@ export type YouTubeVideo = {
 }
 
 // Handles may use letters/digits from any script (1-30 chars); the host and path stay strictly validated.
-const HANDLE = /^[\p{L}\p{N}._-]{1,30}$/u
+const HANDLE = /^[\p{L}\p{N}._\-\u00B7]{1,30}$/u
 const CHANNEL_ID = /^UC[A-Za-z0-9_-]{22}$/
 const VIDEO_ID = /^[A-Za-z0-9_-]{11}$/
 const TIMEOUT_MS = 2_500

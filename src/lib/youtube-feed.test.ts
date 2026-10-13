@@ -87,6 +87,12 @@ describe('youtube channel refs', () => {
   it('accepts international handles, plain and percent-encoded', () => {
     expect(parseYouTubeChannelRef('@イブル')).toEqual({ handle: 'イブル' })
     expect(parseYouTubeChannelRef('@あ')).toEqual({ handle: 'あ' })
+    expect(parseYouTubeChannelRef('@foo·bar')).toEqual({ handle: 'foo·bar' })
+    expect(
+      parseYouTubeChannelRef(`https://www.youtube.com/@${encodeURIComponent('foo·bar')}`),
+    ).toEqual({
+      handle: 'foo·bar',
+    })
     expect(
       parseYouTubeChannelRef(`https://www.youtube.com/@${encodeURIComponent('イブル')}`),
     ).toEqual({
