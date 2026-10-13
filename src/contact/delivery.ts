@@ -84,6 +84,12 @@ export class PersistingContactDelivery implements ContactDelivery {
     const notifyBudget = Math.min(NOTIFY_TIMEOUT_MS, remaining() - STATUS_WRITE_RESERVE_MS)
     if (notifyBudget <= 0) {
       await this.mark(id, remaining(), 'failed', 'NotificationDeadlineExceeded')
+      scheduleOpsAlert({
+        detail: '原因: NotificationDeadlineExceeded。問い合わせは管理画面に保存されています。',
+        key: 'contact-notify-failed',
+        severity: 'warning',
+        title: 'メール通知に失敗しました(処理時間の上限)',
+      })
       return result
     }
 

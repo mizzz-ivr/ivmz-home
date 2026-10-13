@@ -65,16 +65,25 @@ export async function POST(request: Request) {
 
   let deleted = 0
   let failed = 0
+  let skipped = 0
   for (const doc of batch.docs) {
     try {
-      await payload.delete({ collection: 'contact-submissions', id: doc.id, overrideAccess: true })
-      deleted += 1
+      // The eligibility predicate is part of the delete itself, so a record that an admin touched
+      // (or set back to "New") after the batch was selected no longer matches and is left alone.
+      const result = await payload.delete({
+        collection: 'contact-submissions',
+        overrideAccess: true,
+        where: { and: [{ id: { equals: doc.id } }, where] },
+      })
+      if (result.errors.length > 0) failed += 1
+      else if (result.docs.length > 0) deleted += 1
+      else skipped += 1
     } catch {
       failed += 1
     }
   }
 
-  console.info('CONTACT_RETENTION_PURGE', JSON.stringify({ days, deleted, failed }))
+  console.info('CONTACT_RETENTION_PURGE', JSON.stringify({ days, deleted, failed, skipped }))
   if (deleted > 0 || failed > 0) {
     await sendOpsAlert({
       detail: `保存期間(${days}日)を過ぎた問い合わせを ${deleted} 件削除しました${failed ? `(失敗 ${failed} 件)` : ''}。`,
@@ -84,5 +93,12 @@ export async function POST(request: Request) {
     })
   }
 
-  return json({ days, deleted, dryRun: false, failed, remaining: Math.max(0, eligible - deleted) })
+  return json({
+    days,
+    deleted,
+    dryRun: false,
+    failed,
+    remaining: Math.max(0, eligible - deleted),
+    skipped,
+  })
 }

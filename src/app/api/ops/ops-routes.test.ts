@@ -27,7 +27,7 @@ const post = (body: unknown, headers: Record<string, string> = auth) =>
 beforeEach(() => {
   count.mockReset().mockResolvedValue({ totalDocs: 0 })
   find.mockReset().mockResolvedValue({ docs: [] })
-  del.mockReset().mockResolvedValue({})
+  del.mockReset().mockImplementation(async () => ({ docs: [{ id: 1 }], errors: [] }))
   findGlobal.mockReset().mockResolvedValue({ attachmentsEnabled: false })
   vi.stubEnv('OPS_HEALTH_TOKEN', token)
 })
@@ -99,5 +99,36 @@ describe('POST /api/ops/retention', () => {
     const query = JSON.stringify(find.mock.calls[0][0].where)
     expect(query).toContain('"not_equals":"new"')
     expect(query).toContain('updatedAt')
+  })
+
+  it('re-checks eligibility inside every delete and skips records that changed meanwhile', async () => {
+    vi.stubEnv('RETENTION_PURGE_ENABLED', 'true')
+    count.mockResolvedValue({ totalDocs: 2 })
+    find.mockResolvedValue({ docs: [{ id: 1 }, { id: 2 }] })
+    // The second record was set back to "New" after the batch was selected: nothing matches.
+    del
+      .mockResolvedValueOnce({ docs: [{ id: 1 }], errors: [] })
+      .mockResolvedValueOnce({ docs: [], errors: [] })
+
+    const body = await (await retention(post({ apply: true }))).json()
+    expect(body).toMatchObject({ deleted: 1, failed: 0, skipped: 1 })
+
+    for (const [args] of del.mock.calls) {
+      expect(args.id).toBeUndefined()
+      const where = JSON.stringify(args.where)
+      expect(where).toContain('"not_equals":"new"')
+      expect(where).toContain('updatedAt')
+      expect(where).toContain('"id"')
+    }
+  })
+
+  it('counts delete errors as failures', async () => {
+    vi.stubEnv('RETENTION_PURGE_ENABLED', 'true')
+    count.mockResolvedValue({ totalDocs: 1 })
+    find.mockResolvedValue({ docs: [{ id: 1 }] })
+    del.mockResolvedValueOnce({ docs: [], errors: [{ id: 1, message: 'x' }] })
+
+    const body = await (await retention(post({ apply: true }))).json()
+    expect(body).toMatchObject({ deleted: 0, failed: 1 })
   })
 })
