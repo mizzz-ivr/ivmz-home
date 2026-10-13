@@ -91,56 +91,23 @@ const staticHomeViewModel: HomeViewModel = {
     },
     {
       title: 'Backend & Data',
-      description: 'API、PostgreSQL、権限、migrationをフロントと分断せずに設計・実装。',
+      description: 'API、PostgreSQL、権限、データ移行をフロントと分断せずに設計・実装。',
       tools: 'PostgreSQL / Payload / Flask / Go',
     },
     {
       title: 'Ship & Operate',
-      description: 'CI、Docker、Preview、監視まで含めて「変更し続けられる状態」をつくる。',
+      description: 'CI、Docker、プレビュー、監視まで含めて「変更し続けられる状態」をつくる。',
       tools: 'Docker / GitHub Actions / Netlify / Cloud',
     },
   ],
-  writing: [
-    {
-      label: 'TECHNICAL',
-      title: 'Engineering notes that can be reproduced.',
-      meta: '実装で得た知見を、あとから使える粒度で残す。',
-      href: 'https://qiita.com/mizzz-ivr',
-    },
-    {
-      label: 'CASE STUDY',
-      title: 'Decisions, constraints, and trade-offs.',
-      meta: '成果物だけでなく、なぜその形にしたかを記録する。',
-    },
-    {
-      label: 'BUILD LOG',
-      title: 'Small releases, continuous polish.',
-      meta: '公開・改善・運用の流れそのものを発信する。',
-    },
-  ],
-  activity: [
-    {
-      label: 'NOW',
-      title: 'Personal Web Platform / Portfolio Platform 2026',
-      meta: 'Visual foundation → content model → publishing experience',
-    },
-    {
-      label: 'OSS',
-      title: 'Shipping public repositories with reviewable decisions.',
-      meta: 'GitHubを実装のSource of Truthとして継続更新。',
-      href: 'https://github.com/mizzz-ivr',
-    },
-  ],
-  schedule: [
-    { label: 'EVENT', title: 'Public events / meetups', meta: '公開可能な予定だけを掲載' },
-    { label: 'RELEASE', title: 'Product / OSS releases', meta: '公開・Preview・Release予定' },
-    { label: 'PUBLICATION', title: 'Articles / announcements', meta: 'Qiita / Blog / News' },
-  ],
+  writing: [],
+  activity: [],
+  schedule: [],
   socials: [
     { label: 'GitHub', handle: 'mizzz-ivr', href: 'https://github.com/mizzz-ivr' },
-    { label: 'Qiita', handle: 'mizzz-ivr', href: 'https://qiita.com/mizzz-ivr' },
-    { label: 'X', handle: 'ivurugg', href: 'https://x.com/ivurugg' },
-    { label: 'ivRooom', handle: 'ivrm.jp', href: 'https://ivrm.jp' },
+    { label: 'X', handle: '@ivuruGG', href: 'https://x.com/ivuruGG' },
+    { label: 'Instagram', handle: '@ivurugg', href: 'https://www.instagram.com/ivurugg/' },
+    { label: 'YouTube', handle: '@ivuru-mz', href: 'https://www.youtube.com/@ivuru-mz' },
   ],
 }
 
@@ -204,14 +171,18 @@ export async function getHomeViewModel(): Promise<HomeViewModel> {
 
     return {
       capabilities: staticHomeViewModel.capabilities,
-      works: worksResult.docs.map((work) => ({
-        title: work.title,
-        summary: work.summary,
-        role: work.role,
-        stack: work.stack.join(' · '),
-        href: work.githubUrl ?? work.liveUrl ?? '#works',
-        signal: uppercaseLabel(work.projectStatus),
-      })),
+      // Until Works are published in the CMS, show the curated projects instead of an empty rail.
+      works:
+        worksResult.docs.length > 0
+          ? worksResult.docs.map((work) => ({
+              title: work.title,
+              summary: work.summary,
+              role: work.role,
+              stack: work.stack.join(' · '),
+              href: work.githubUrl ?? work.liveUrl ?? '#works',
+              signal: uppercaseLabel(work.projectStatus),
+            }))
+          : staticHomeViewModel.works,
       writing: postsResult.docs.map((post) => ({
         label: uppercaseLabel(post.category),
         title: post.title,

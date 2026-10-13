@@ -1,24 +1,12 @@
 import Image from 'next/image'
 import { SectionIndex, ToolboxMarquee } from '@/components/site/SiteEnhancements'
 import { HeroPointerSignal } from '@/components/site/SiteExperience'
+import { buildSteps } from '@/lib/about-content'
 import { getHomeViewModel } from '@/lib/home-content'
 import { site } from '@/lib/site'
 import { workAreas } from '@/lib/work-areas'
 
 export const revalidate = 300
-
-const sectionIndex = [
-  { id: 'top', label: 'TOP' },
-  { id: 'works', label: 'WORKS' },
-  { id: 'what-i-do', label: 'WHAT I DO' },
-  { id: 'process', label: 'PROCESS' },
-  { id: 'about', label: 'ABOUT' },
-  { id: 'writing', label: 'WRITING' },
-  { id: 'activity', label: 'NEWS' },
-  { id: 'schedule', label: 'SCHEDULE' },
-  { id: 'social', label: 'SOCIAL' },
-  { id: 'contact', label: 'CONTACT' },
-] as const
 
 const toolbox = [
   'TypeScript',
@@ -36,38 +24,27 @@ const toolbox = [
   'Realtime AI',
 ] as const
 
-const buildSteps = [
-  {
-    step: 'UNDERSTAND',
-    title: '課題と制約を読む',
-    description: '誰が・何のために・どこまで使うのか。作る前に前提と境界を言葉にします。',
-  },
-  {
-    step: 'IMPLEMENT',
-    title: '設計を理解して手を動かす',
-    description: 'UI・API・データを分断せず、一本の体験として実装します。',
-  },
-  {
-    step: 'SHIP SMALL',
-    title: '小さく公開する',
-    description: 'Previewとリリースを早く回し、実際に触れる状態で判断できるようにします。',
-  },
-  {
-    step: 'OBSERVE',
-    title: '反応と運用を見る',
-    description: 'ログ・監視・フィードバックから、直すべき場所を事実で見つけます。',
-  },
-  {
-    step: 'POLISH',
-    title: '磨き続ける',
-    description: '変更し続けられる状態を保ったまま、体験と品質を少しずつ上げていきます。',
-  },
-] as const
-
 const contactTopics = ['開発相談', 'お仕事', 'コラボ', '取材・登壇'] as const
 
 export default async function HomePage() {
   const home = await getHomeViewModel()
+
+  // Sections without real content are not shown at all (no empty headings on a fresh site).
+  const latestColumns = [
+    { key: 'writing', label: 'WRITING', href: '/blog', items: home.writing.slice(0, 3) },
+    { key: 'news', label: 'NEWS', href: '/news', items: home.activity.slice(0, 3) },
+    { key: 'schedule', label: 'SCHEDULE', href: '/schedule', items: home.schedule.slice(0, 3) },
+  ].filter((column) => column.items.length > 0)
+
+  const sectionIndex = [
+    { id: 'top', label: 'TOP' },
+    { id: 'works', label: 'WORKS' },
+    { id: 'what-i-do', label: 'WHAT I DO' },
+    { id: 'process', label: 'PROCESS' },
+    { id: 'about', label: 'ABOUT' },
+    ...(latestColumns.length > 0 ? [{ id: 'latest', label: 'LATEST' }] : []),
+    { id: 'contact', label: 'CONTACT' },
+  ]
 
   return (
     <main id="main-content">
@@ -148,23 +125,21 @@ export default async function HomePage() {
           </svg>
         </div>
         <a className="scroll-signal" href="#works">
-          SCROLL TO SIGNAL <span aria-hidden="true">↓</span>
+          SCROLL <span aria-hidden="true">↓</span>
         </a>
       </section>
 
       <ToolboxMarquee tools={toolbox} />
 
       <section className="section-shell works-section" id="works" aria-labelledby="works-title">
-        <div className="section-intro" data-reveal>
-          <p className="signal-label">01 / SELECTED WORKS</p>
+        <div className="section-intro intro-ja" data-reveal>
+          <p className="signal-label">01 / WORKS</p>
           <h2 id="works-title">
-            Built in <mark className="marker">public.</mark>
-            <br />
-            Decisions included.
+            公開しながら、<mark className="marker">つくる。</mark>
           </h2>
-          <p>完成画面だけではなく、役割・制約・技術・運用までCase Studyとして見せる。</p>
+          <p>役割・制約・技術・運用まで含めて、つくったものを紹介します。</p>
           <a className="snapshot-destination" href="/works">
-            View all Works →
+            Works をすべて見る →
           </a>
         </div>
         <ul className="area-chips" aria-label="Work areas">
@@ -202,7 +177,7 @@ export default async function HomePage() {
                   ))}
                 </ul>
                 <a className="stretched-link" href={work.href}>
-                  View repository <span aria-hidden="true">↗</span>
+                  詳しく見る <span aria-hidden="true">↗</span>
                 </a>
               </div>
             </article>
@@ -215,12 +190,10 @@ export default async function HomePage() {
         id="what-i-do"
         aria-labelledby="capability-title"
       >
-        <div className="section-intro compact-intro" data-reveal>
+        <div className="section-intro compact-intro intro-ja" data-reveal>
           <p className="signal-label">02 / WHAT I DO</p>
           <h2 id="capability-title">
-            From interface
-            <br />
-            to <mark className="marker">operation.</mark>
+            画面から、<mark className="marker">運用まで。</mark>
           </h2>
         </div>
         <div className="capability-lines">
@@ -245,14 +218,12 @@ export default async function HomePage() {
         id="process"
         aria-labelledby="process-title"
       >
-        <div className="section-intro compact-intro" data-reveal>
+        <div className="section-intro compact-intro intro-ja" data-reveal>
           <p className="signal-label">03 / HOW I BUILD</p>
           <h2 id="process-title">
-            Understand,
-            <br />
-            ship, <mark className="marker">refine.</mark>
+            作って終わりに<mark className="marker">しない。</mark>
           </h2>
-          <p>作って終わりにしない。公開してから磨く、一周ぶんの開発の流れです。</p>
+          <p>公開してから磨く、一周ぶんの開発の流れです。</p>
         </div>
         <ol className="process-steps">
           {buildSteps.map((item, index) => (
@@ -275,16 +246,16 @@ export default async function HomePage() {
 
       <section className="section-shell about-section" id="about" aria-labelledby="about-title">
         <div className="about-copy" data-reveal>
-          <p className="signal-label">04 / ABOUT SNAPSHOT</p>
+          <p className="signal-label">04 / ABOUT</p>
           <h2 id="about-title">画面の向こう側まで、つくる。</h2>
           <p className="about-lead">
             実装することが好きです。設計を理解したうえで手を動かし、小さく公開して、反応と運用から磨き続けます。
           </p>
           <p>
-            コード・UI・インフラを別々の成果物として扱わず、「人が使い続けられるか」を境界に考えるのが自分の開発スタイルです。
+            コード・UI・インフラを別々の成果物として扱わず、「人が使い続けられるか」を境界に考えるのが、自分の開発スタイルです。
           </p>
           <a className="snapshot-destination" href="/about">
-            More about me →
+            プロフィールを見る →
           </a>
         </div>
         <div className="about-workbench" data-reveal aria-label="Development workbench fragments">
@@ -315,125 +286,50 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section
-        className="section-shell writing-section"
-        id="writing"
-        aria-labelledby="writing-title"
-      >
-        <div className="section-intro" data-reveal>
-          <p className="signal-label">05 / LATEST WRITING</p>
-          <h2 id="writing-title">
-            Notes become
-            <br />
-            reusable knowledge.
-          </h2>
-          <a className="snapshot-destination" href="/blog">
-            View all Writing →
-          </a>
-        </div>
-        <div className="editorial-stack" data-reveal>
-          {home.writing.map((item, index) => (
-            <article key={item.title}>
-              <div>
-                <span>{item.label}</span>
-                <small>0{index + 1}</small>
+      {latestColumns.length > 0 ? (
+        <section
+          className="section-shell latest-section"
+          id="latest"
+          aria-labelledby="latest-title"
+        >
+          <div className="section-intro compact-intro intro-ja" data-reveal>
+            <p className="signal-label">05 / LATEST</p>
+            <h2 id="latest-title">
+              <mark className="marker">最新</mark>の動き
+            </h2>
+          </div>
+          <div className="latest-grid" data-count={latestColumns.length}>
+            {latestColumns.map((column, columnIndex) => (
+              <div
+                className="latest-column"
+                key={column.key}
+                data-reveal
+                style={{ '--reveal-delay': `${columnIndex * 90}ms` } as React.CSSProperties}
+              >
+                <header>
+                  <span>{column.label}</span>
+                  <a href={column.href}>すべて見る →</a>
+                </header>
+                <ul>
+                  {column.items.map((item) => (
+                    <li key={`${item.label}-${item.title}`}>
+                      <small>{item.label}</small>
+                      {item.href ? (
+                        <a href={item.href}>
+                          <strong>{item.title}</strong>
+                        </a>
+                      ) : (
+                        <strong>{item.title}</strong>
+                      )}
+                      <p>{item.meta}</p>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <h3>{item.title}</h3>
-              <p>{item.meta}</p>
-              {item.href && (
-                <a href={item.href}>
-                  Read on Qiita <span aria-hidden="true">↗</span>
-                </a>
-              )}
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section
-        className="section-shell activity-section"
-        id="activity"
-        aria-labelledby="activity-title"
-      >
-        <div className="section-intro compact-intro" data-reveal>
-          <p className="signal-label">06 / NEWS &amp; ACTIVITY</p>
-          <h2 id="activity-title">What is moving now.</h2>
-          <a className="snapshot-destination" href="/news">
-            View all News →
-          </a>
-        </div>
-        <div className="activity-stream" data-reveal>
-          {home.activity.map((item) => (
-            <article key={item.title}>
-              <span>{item.label}</span>
-              <div>
-                <h3>{item.title}</h3>
-                <p>{item.meta}</p>
-              </div>
-              {item.href ? (
-                <a href={item.href} aria-label={`${item.title}を開く`}>
-                  ↗
-                </a>
-              ) : (
-                <b aria-hidden="true">•</b>
-              )}
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section
-        className="section-shell schedule-section"
-        id="schedule"
-        aria-labelledby="schedule-title"
-      >
-        <div className="section-intro compact-intro" data-reveal>
-          <p className="signal-label">07 / SCHEDULE</p>
-          <h2 id="schedule-title">
-            Public plans,
-            <br />
-            not a private calendar.
-          </h2>
-          <p>イベント・公開・リリースなど、外部へ見せてよい予定だけを扱います。</p>
-          <a className="snapshot-destination" href="/schedule">
-            Open full Schedule →
-          </a>
-        </div>
-        <div className="timeline-rail" role="list" data-reveal>
-          {home.schedule.map((item, index) => (
-            <div role="listitem" key={item.label}>
-              <i aria-hidden="true" />
-              <span>0{index + 1}</span>
-              <strong>{item.label}</strong>
-              <div>
-                <b>{item.title}</b>
-                <small>{item.meta}</small>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="section-shell social-section" id="social" aria-labelledby="social-title">
-        <div className="section-intro compact-intro" data-reveal>
-          <p className="signal-label">08 / SOCIAL SIGNAL</p>
-          <h2 id="social-title">Find the live edges.</h2>
-          <p>外部サービスが落ちてもこのサイトは残る。最新活動はリンクを常時fallbackとして持つ。</p>
-          <a className="snapshot-destination" href="/links">
-            Open Links →
-          </a>
-        </div>
-        <div className="social-links" data-reveal>
-          {home.socials.map((social, index) => (
-            <a href={social.href} key={social.label}>
-              <span>0{index + 1}</span>
-              <strong>{social.label}</strong>
-              <small>{social.handle}</small>
-              <b aria-hidden="true">↗</b>
-            </a>
-          ))}
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <section
         className="section-shell contact-section"
@@ -444,14 +340,12 @@ export default async function HomePage() {
           IVMZ / SIGNAL / CONTACT
         </div>
         <div className="contact-copy" data-reveal>
-          <p className="signal-label">09 / CONTACT</p>
+          <p className="signal-label">{latestColumns.length > 0 ? '06' : '05'} / CONTACT</p>
           <h2 id="contact-title">
-            Let’s make something
-            <br />
-            people <mark className="marker">can use.</mark>
+            ご相談は、<mark className="marker">気軽に。</mark>
           </h2>
           <p>
-            開発相談、仕事、コラボ、取材など。配送先を選ばせず、Contactを一つの正式destinationへ整理します。
+            開発のご相談、お仕事、コラボレーション、取材・登壇など。内容が固まっていなくても大丈夫です。
           </p>
           <ul className="topic-chips" aria-label="ご相談の例">
             {contactTopics.map((topic) => (
@@ -461,10 +355,22 @@ export default async function HomePage() {
         </div>
         <div className="contact-routes" data-reveal>
           <a href="/contact">
-            <span>CONTACT / ROUTING</span>
-            <strong>Open contact destination</strong>
+            <span>CONTACT</span>
+            <strong>お問い合わせフォームへ</strong>
             <b aria-hidden="true">→</b>
           </a>
+          {home.socials.length > 0 ? (
+            <ul className="social-row" aria-label="SNS・外部リンク">
+              {home.socials.map((social) => (
+                <li key={social.href}>
+                  <a href={social.href}>
+                    {social.label}
+                    <small>{social.handle}</small>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          ) : null}
         </div>
       </section>
     </main>

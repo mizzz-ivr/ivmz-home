@@ -11,15 +11,14 @@ test('renders the complete home experience without animation gates', async ({ pa
     page.getByAltText('mizzzのGitHubアイコンに使用しているオリジナルキャラクター'),
   ).toBeVisible()
 
+  // Writing / News / Schedule appear under "Latest" only when the CMS has content, so they are
+  // not asserted here.
   for (const heading of [
-    'Built in public.',
-    'From interface',
+    '公開しながら、つくる。',
+    '画面から、運用まで。',
+    '作って終わりにしない。',
     '画面の向こう側まで、つくる。',
-    'Notes become',
-    'What is moving now.',
-    'Public plans,',
-    'Find the live edges.',
-    'Let’s make something',
+    'ご相談は、気軽に。',
   ]) {
     await expect(page.getByRole('heading', { name: new RegExp(heading) })).toBeAttached()
   }
