@@ -1,3 +1,4 @@
+import { scheduleOpsAlert } from '@/ops/schedule-alert'
 import { json, readGuardedJson } from '@/contact/attachments/http'
 import { getAttachmentRuntime } from '@/contact/attachments/runtime'
 import { initUpload } from '@/contact/attachments/service'
@@ -42,6 +43,12 @@ export async function POST(request: Request) {
       'CONTACT_ATTACHMENT_INIT_FAILED',
       JSON.stringify({ error: error instanceof Error ? error.name : 'UnknownError' }),
     )
+    scheduleOpsAlert({
+      detail: '添付ファイルのアップロード準備に失敗しました(AWSの設定や権限を確認してください)。',
+      key: 'attachment-upload-unavailable',
+      severity: 'warning',
+      title: '添付ファイルのアップロードが利用できません',
+    })
     return json({ code: 'upload_unavailable', ok: false }, 502)
   }
 }

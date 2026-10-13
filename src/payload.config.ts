@@ -30,6 +30,10 @@ const databasePool = getDatabasePoolConfig(process.env.DATABASE_URL ?? '', datab
 
 export default buildConfig({
   admin: {
+    components: {
+      // Operations overview (inbox volume, notification health, setup checklist, retention).
+      beforeDashboard: ['/components/admin/OpsDashboard#OpsDashboard'],
+    },
     user: Users.slug,
     importMap: {
       baseDir: path.resolve(dirname),

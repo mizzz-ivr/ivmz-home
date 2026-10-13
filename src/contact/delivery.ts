@@ -1,3 +1,4 @@
+import { scheduleOpsAlert } from '@/ops/schedule-alert'
 import { createContactNotifier, type ContactNotifier } from './notify'
 import type { ContactSubmission } from './schema'
 import { PayloadContactStore, type ContactNotificationState, type ContactStore } from './store'
@@ -104,6 +105,14 @@ export class PersistingContactDelivery implements ContactDelivery {
         }),
       )
       await this.mark(id, remaining(), timedOut ? 'unknown' : 'failed', errorName)
+      scheduleOpsAlert({
+        detail: `原因: ${errorName}。問い合わせは管理画面に保存されています。`,
+        key: 'contact-notify-failed',
+        severity: 'warning',
+        title: timedOut
+          ? 'メール通知がタイムアウトしました(送信されたか不明)'
+          : 'メール通知に失敗しました',
+      })
     }
 
     return result
