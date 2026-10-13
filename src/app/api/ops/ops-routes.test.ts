@@ -38,6 +38,9 @@ describe('GET /api/ops/health', () => {
     vi.stubEnv('OPS_HEALTH_TOKEN', '')
     expect((await health(get(auth))).status).toBe(404)
 
+    vi.stubEnv('OPS_HEALTH_TOKEN', 'too-short')
+    expect((await health(get({ authorization: 'Bearer too-short' }))).status).toBe(404)
+
     vi.stubEnv('OPS_HEALTH_TOKEN', token)
     expect((await health(get())).status).toBe(401)
     expect((await health(get({ authorization: 'Bearer nope' }))).status).toBe(401)

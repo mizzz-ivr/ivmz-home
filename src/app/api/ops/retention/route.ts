@@ -1,7 +1,7 @@
 import type { Where } from 'payload'
 
 import { sendOpsAlert } from '@/ops/alert'
-import { hasValidOpsToken } from '@/ops/auth'
+import { hasValidOpsToken, isOpsEndpointEnabled } from '@/ops/auth'
 import {
   PURGE_BATCH_LIMIT,
   isPurgeEnabled,
@@ -21,7 +21,7 @@ const json = (body: unknown, status = 200) => Response.json(body, { headers, sta
  * the environment. Submissions still marked "New" are never deleted: nobody has read them yet.
  */
 export async function POST(request: Request) {
-  if (!process.env.OPS_HEALTH_TOKEN) return new Response(null, { headers, status: 404 })
+  if (!isOpsEndpointEnabled()) return new Response(null, { headers, status: 404 })
   if (!hasValidOpsToken(request)) return new Response(null, { headers, status: 401 })
 
   const body = (await request.json().catch(() => ({}))) as { apply?: unknown }

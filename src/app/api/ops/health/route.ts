@@ -1,4 +1,4 @@
-import { hasValidOpsToken } from '@/ops/auth'
+import { hasValidOpsToken, isOpsEndpointEnabled } from '@/ops/auth'
 import { sendOpsAlert } from '@/ops/alert'
 import { readOpsConfig } from '@/ops/config'
 import { resolveRetentionDays } from '@/ops/retention'
@@ -14,7 +14,7 @@ const headers = { 'Cache-Control': 'no-store' }
  * disabled entirely until OPS_HEALTH_TOKEN is set. The body has numbers only, no personal data.
  */
 export async function GET(request: Request) {
-  if (!process.env.OPS_HEALTH_TOKEN) return new Response(null, { headers, status: 404 })
+  if (!isOpsEndpointEnabled()) return new Response(null, { headers, status: 404 })
   if (!hasValidOpsToken(request)) return new Response(null, { headers, status: 401 })
 
   let stats: OpsStats | null = null
