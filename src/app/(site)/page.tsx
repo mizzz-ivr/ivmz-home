@@ -24,6 +24,67 @@ const toolbox = [
   'Realtime AI',
 ] as const
 
+const heroNameChars = Array.from('いゔる。')
+
+const codeLines = [
+  'const build = async () => {',
+  '  understand();',
+  '  implement();',
+  '  shipSmall();',
+  '  observe();',
+  '  polish();',
+  '}',
+] as const
+
+const bandWords = ['WEB', 'REALTIME AI', 'DISCORD', 'API', 'DATA', 'OPS', 'OSS'] as const
+
+function CapabilityIcon({ index }: { index: number }) {
+  const common = {
+    'aria-hidden': true,
+    className: 'capability-icon',
+    fill: 'none',
+    stroke: 'currentColor',
+    strokeLinecap: 'round' as const,
+    strokeLinejoin: 'round' as const,
+    strokeWidth: 1.6,
+    viewBox: '0 0 32 32',
+  }
+  if (index === 0) {
+    return (
+      <svg {...common}>
+        <rect x="4" y="6" width="24" height="20" rx="3" />
+        <path d="M4 12h24" />
+        <circle cx="8.5" cy="9" r="0.6" />
+        <circle cx="11.5" cy="9" r="0.6" />
+        <path d="M11 20l-3-3 3-3M21 14l3 3-3 3M17 22l-2-10" />
+      </svg>
+    )
+  }
+  if (index === 1) {
+    return (
+      <svg {...common}>
+        <path className="wave-a" d="M4 16h3M25 16h3" />
+        <path className="wave-b" d="M9 11v10M13 7v18M17 12v8M21 9v14" />
+      </svg>
+    )
+  }
+  if (index === 2) {
+    return (
+      <svg {...common}>
+        <ellipse cx="16" cy="8" rx="10" ry="4" />
+        <path d="M6 8v8c0 2.2 4.5 4 10 4s10-1.8 10-4V8" />
+        <path d="M6 16v8c0 2.2 4.5 4 10 4s10-1.8 10-4v-8" />
+      </svg>
+    )
+  }
+  return (
+    <svg {...common}>
+      <path d="M26 12a10 10 0 0 0-18-3M6 20a10 10 0 0 0 18 3" />
+      <path d="M8 4v5h5M24 28v-5h-5" />
+    </svg>
+  )
+}
+
 const contactTopics = ['開発相談', 'お仕事', 'コラボ', '取材・登壇'] as const
 
 export default async function HomePage() {
@@ -55,7 +116,16 @@ export default async function HomePage() {
         <div className="hero-copy">
           <p className="signal-label">PERSONAL WEB / PORTFOLIO PLATFORM</p>
           <h1 id="hero-title">
-            <span className="hero-name">いゔる。</span>
+            <span className="hero-name">
+              <span className="sr-only">いゔる。</span>
+              <span className="hero-name-chars" aria-hidden="true">
+                {heroNameChars.map((char, index) => (
+                  <span key={index} style={{ '--i': index } as React.CSSProperties}>
+                    {char}
+                  </span>
+                ))}
+              </span>
+            </span>
             <span className="hero-alias">
               a.k.a. mizzz（ずーみー）
               <svg className="hero-underline" viewBox="0 0 320 16" aria-hidden="true">
@@ -89,7 +159,14 @@ export default async function HomePage() {
           <div className="depth-plane depth-plane-back" aria-hidden="true">
             WEB / AI / OSS
           </div>
-          <div className="avatar-frame">
+          <div className="avatar-halo" aria-hidden="true" />
+          <div className="orbit" aria-hidden="true">
+            <span className="orbit-ring" />
+            <span className="orbit-sat sat-a">{'</>'}</span>
+            <span className="orbit-sat sat-b">✦</span>
+            <span className="orbit-sat sat-c">●</span>
+          </div>
+          <div className="avatar-frame avatar-orb">
             <Image
               src={site.githubAvatarUrl}
               alt="mizzzのGitHubアイコンに使用しているオリジナルキャラクター"
@@ -99,12 +176,15 @@ export default async function HomePage() {
               sizes="(max-width: 760px) 70vw, 42vw"
             />
           </div>
-          <div className="selection-mark" aria-hidden="true">
-            <span />
-            <span />
-            <span />
-            <span />
-          </div>
+          <span className="sparkle spark-a" aria-hidden="true">
+            ✦
+          </span>
+          <span className="sparkle spark-b" aria-hidden="true">
+            ✧
+          </span>
+          <span className="sparkle spark-c" aria-hidden="true">
+            ✦
+          </span>
           <span className="pop-sticker sticker-a" aria-hidden="true">
             ✦ BUILD · SHIP · POLISH
           </span>
@@ -185,6 +265,21 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <div className="kinetic-band" aria-hidden="true">
+        <div className="kinetic-track">
+          {[0, 1].map((group) => (
+            <span key={group}>
+              {bandWords.map((word) => (
+                <b key={`${group}-${word}`}>
+                  {word}
+                  <i>✦</i>
+                </b>
+              ))}
+            </span>
+          ))}
+        </div>
+      </div>
+
       <section
         className="section-shell capability-section"
         id="what-i-do"
@@ -204,6 +299,7 @@ export default async function HomePage() {
               data-spotlight
               style={{ '--reveal-delay': `${index * 80}ms` } as React.CSSProperties}
             >
+              <CapabilityIcon index={index} />
               <span className="capability-index">0{index + 1}</span>
               <h3>{item.title}</h3>
               <p>{item.description}</p>
@@ -267,13 +363,17 @@ export default async function HomePage() {
               <b>workbench.ts</b>
             </div>
             <pre aria-label="Development philosophy code fragment">
-              <code>{`const build = async () => {
-  understand();
-  implement();
-  shipSmall();
-  observe();
-  polish();
-}`}</code>
+              <code>
+                {codeLines.map((line, index) => (
+                  <span
+                    className="code-line"
+                    key={line}
+                    style={{ '--i': index } as React.CSSProperties}
+                  >
+                    {line}
+                  </span>
+                ))}
+              </code>
             </pre>
           </div>
           <div className="workbench-window window-note" aria-hidden="true">

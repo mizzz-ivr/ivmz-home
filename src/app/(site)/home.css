@@ -145,3 +145,363 @@
   line-height: 1.22;
   letter-spacing: -0.04em;
 }
+
+/* ---- Home motion & polish ---- */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Hero name: characters rise in one after another (after the signature intro on first visit) */
+.hero-name-chars {
+  display: inline-flex;
+}
+.hero-name-chars > span {
+  --hero-base: 1.35s;
+  display: inline-block;
+  transform-origin: 50% 100%;
+  animation: char-rise 950ms var(--ease-signal) both;
+  animation-delay: calc(var(--hero-base) + var(--i) * 95ms);
+}
+html.ivmz-signature-seen .hero-name-chars > span {
+  --hero-base: 0.2s;
+}
+@keyframes char-rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.32em) rotate(7deg) scale(0.94);
+    filter: blur(10px);
+  }
+}
+
+/* Hero avatar: round portrait with a glowing halo, an orbit with satellites and sparkles */
+.identity-stage .avatar-frame.avatar-orb {
+  z-index: 2;
+  inset: 50% auto auto 54%;
+  width: min(74%, 100% - 36px);
+  aspect-ratio: 1;
+  border: 0;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 10px color-mix(in srgb, var(--color-bg) 55%, transparent),
+    0 0 0 11px var(--color-line-strong),
+    0 34px 80px color-mix(in srgb, var(--color-primary) 38%, transparent);
+  transform: translate(
+    calc(-50% + var(--pointer-x, 0) * -14px),
+    calc(-50% + var(--pointer-y, 0) * -12px)
+  );
+  transition: transform 500ms var(--ease-signal);
+}
+.avatar-orb img {
+  transform: scale(1.13);
+}
+.identity-stage .depth-plane-back {
+  opacity: 0.45;
+}
+.avatar-orb::after {
+  border-radius: 50%;
+  border-width: 0;
+}
+.avatar-halo {
+  position: absolute;
+  z-index: 0;
+  left: 54%;
+  top: 50%;
+  width: 92%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    var(--color-primary),
+    var(--color-cyan),
+    var(--color-pink),
+    var(--color-pop, #ffd84a),
+    var(--color-primary)
+  );
+  filter: blur(38px);
+  opacity: 0.42;
+  translate: -50% -50%;
+  animation: halo-spin 16s linear infinite;
+}
+@keyframes halo-spin {
+  to {
+    rotate: 360deg;
+  }
+}
+.orbit {
+  position: absolute;
+  z-index: 3;
+  left: 54%;
+  top: 50%;
+  width: 100%;
+  aspect-ratio: 1;
+  pointer-events: none;
+  translate: calc(-50% + var(--pointer-x, 0) * 12px) calc(-50% + var(--pointer-y, 0) * 10px);
+  animation: orbit-spin 34s linear infinite;
+  transition: translate 600ms var(--ease-signal);
+}
+.orbit-ring {
+  position: absolute;
+  inset: 0;
+  border: 1px dashed var(--color-line-strong);
+  border-radius: 50%;
+}
+.orbit-sat {
+  position: absolute;
+  padding: 6px 10px;
+  border: 1px solid var(--color-line-strong);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-bg) 90%, transparent);
+  color: var(--color-primary-soft);
+  font: 800 0.66rem/1 var(--font-mono);
+  box-shadow: var(--shadow-soft);
+  translate: -50% -50%;
+  animation: orbit-counter 34s linear infinite;
+}
+.sat-a {
+  left: 50%;
+  top: 0;
+}
+.sat-b {
+  left: 100%;
+  top: 56%;
+  color: var(--color-pop, #ffd84a);
+}
+.sat-c {
+  left: 12%;
+  top: 84%;
+  color: var(--color-pink);
+}
+@keyframes orbit-spin {
+  to {
+    rotate: 360deg;
+  }
+}
+@keyframes orbit-counter {
+  to {
+    rotate: -360deg;
+  }
+}
+.sparkle {
+  position: absolute;
+  z-index: 6;
+  color: var(--color-pop, #ffd84a);
+  font-size: 1.5rem;
+  line-height: 1;
+  text-shadow: 0 0 14px color-mix(in srgb, var(--color-pop, #ffd84a) 70%, transparent);
+  animation: twinkle 3.4s ease-in-out infinite;
+  pointer-events: none;
+}
+.spark-a {
+  left: 8%;
+  top: 22%;
+}
+.spark-b {
+  right: 6%;
+  top: 8%;
+  font-size: 1.1rem;
+  animation-delay: -1.2s;
+}
+.spark-c {
+  right: 14%;
+  bottom: 10%;
+  font-size: 1.25rem;
+  animation-delay: -2.1s;
+}
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.7) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15) rotate(24deg);
+  }
+}
+/* Stickers and notes drift a little against the pointer */
+.identity-stage .sticker-a {
+  translate: calc(var(--pointer-x, 0) * 20px) calc(var(--pointer-y, 0) * 14px);
+}
+.identity-stage .sticker-b {
+  translate: calc(var(--pointer-x, 0) * -16px) calc(var(--pointer-y, 0) * -12px);
+}
+.identity-stage .note-a,
+.identity-stage .note-c {
+  transition: translate 500ms var(--ease-signal);
+}
+
+/* Kinetic text band between Works and What I do (moves with scroll progress) */
+.kinetic-band {
+  position: relative;
+  overflow: hidden;
+  padding-block: clamp(18px, 3vw, 34px);
+  border-block: 1px solid var(--color-line);
+  user-select: none;
+}
+.kinetic-track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  transform: translate3d(calc(var(--scroll-progress, 0) * -40%), 0, 0);
+}
+.kinetic-track > span {
+  display: flex;
+  flex: none;
+}
+.kinetic-track b {
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(18px, 3vw, 40px);
+  padding-right: clamp(18px, 3vw, 40px);
+  color: transparent;
+  font: 400 clamp(3.2rem, 9vw, 8rem) / 1.05 var(--font-editorial);
+  letter-spacing: -0.04em;
+  -webkit-text-stroke: 1.2px var(--color-line-strong);
+  white-space: nowrap;
+}
+.kinetic-track b:nth-child(3n) {
+  color: var(--color-selection);
+  -webkit-text-stroke: 0;
+}
+.kinetic-track i {
+  color: var(--color-pop, #ffd84a);
+  font-size: 0.34em;
+  font-style: normal;
+  -webkit-text-stroke: 0;
+}
+
+/* Works rows: accent bar and number colour on hover */
+.work-entry {
+  position: relative;
+}
+.work-entry::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 3px;
+  background: linear-gradient(var(--color-primary), var(--color-cyan));
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 520ms var(--ease-signal);
+}
+.work-entry:hover::after,
+.work-entry:has(.stretched-link:focus-visible)::after {
+  transform: scaleY(1);
+}
+.work-entry .work-number {
+  transition:
+    color 300ms ease,
+    transform 520ms var(--ease-signal);
+}
+.work-entry:hover .work-number {
+  color: var(--color-primary-soft);
+  transform: translateX(6px);
+}
+
+/* Capability icons */
+.capability-lines article {
+  position: relative;
+}
+.capability-icon {
+  position: absolute;
+  left: 0;
+  top: 64px;
+  width: 34px;
+  height: 34px;
+  color: var(--color-primary-soft);
+  opacity: 0.85;
+  transition:
+    transform 500ms var(--ease-signal),
+    color 300ms ease;
+}
+.capability-lines article:hover .capability-icon {
+  color: var(--color-text);
+  transform: translateY(-3px) rotate(-6deg) scale(1.08);
+}
+
+/* About snapshot: the code is "typed" line by line when it scrolls into view */
+.code-line {
+  display: block;
+  white-space: pre;
+}
+.reveal-ready .about-workbench:not(.is-revealed) .code-line {
+  clip-path: inset(0 100% 0 0);
+}
+.about-workbench.is-revealed .code-line {
+  animation: code-type 620ms steps(22, end) both;
+  animation-delay: calc(450ms + var(--i) * 300ms);
+}
+@keyframes code-type {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* Section headings wipe in from the left */
+.section-intro[data-reveal] h2 {
+  clip-path: inset(-0.1em -0.1em -0.25em -0.1em);
+  transition: clip-path 1000ms var(--ease-signal) 120ms;
+}
+.reveal-ready .section-intro[data-reveal]:not(.is-revealed) h2 {
+  clip-path: inset(-0.1em 100% -0.25em -0.1em);
+}
+
+/* Contact: a slow drifting colour mesh behind the section */
+.contact-section {
+  isolation: isolate;
+}
+.contact-section::after {
+  content: '';
+  position: absolute;
+  inset: 6% 4% 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      40% 50% at 28% 42%,
+      color-mix(in srgb, var(--color-primary) 22%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      36% 46% at 76% 58%,
+      color-mix(in srgb, var(--color-pink) 18%, transparent),
+      transparent 70%
+    );
+  filter: blur(46px);
+  animation: mesh-drift 18s ease-in-out infinite alternate;
+}
+@keyframes mesh-drift {
+  to {
+    transform: translate3d(3%, -4%, 0) scale(1.06);
+  }
+}
+
+@media (max-width: 640px) {
+  .identity-stage .avatar-frame.avatar-orb {
+    left: 52%;
+    width: min(76%, 100% - 28px);
+  }
+  .avatar-halo,
+  .orbit {
+    left: 52%;
+  }
+  .orbit {
+    width: 96%;
+  }
+  .capability-icon {
+    width: 28px;
+    height: 28px;
+  }
+}
