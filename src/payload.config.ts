@@ -13,6 +13,7 @@ import { SocialLinks } from './collections/SocialLinks'
 import { Users } from './collections/Users'
 import { Works } from './collections/Works'
 import { ContactSettings } from './globals/ContactSettings'
+import { IntegrationSettings } from './globals/IntegrationSettings'
 import { getDatabasePoolConfig, resolveDatabasePoolMode } from './lib/database-connection'
 import { resolvePayloadAllowedOrigins } from './security/payload-origins'
 
@@ -48,7 +49,7 @@ export default buildConfig({
   }),
   defaultDepth: 1,
   defaultMaxTextLength: 10_000,
-  globals: [ContactSettings],
+  globals: [ContactSettings, IntegrationSettings],
   graphQL: {
     disable: true,
   },

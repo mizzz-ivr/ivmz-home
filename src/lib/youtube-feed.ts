@@ -17,6 +17,59 @@ const TIMEOUT_MS = 2_500
 const REVALIDATE_SECONDS = 1_800
 const MAX_BYTES = 512 * 1024
 
+export type YouTubeChannelRef = { channelId: string } | { handle: string }
+
+/** Accepts a channel ID, a /channel/UC… URL, a /@handle URL or a bare @handle. */
+export function parseYouTubeChannelRef(input: string | undefined | null): YouTubeChannelRef | null {
+  const value = input?.trim()
+  if (!value) return null
+  if (CHANNEL_ID.test(value)) return { channelId: value }
+
+  const handleOnly = value.match(/^@([A-Za-z0-9._-]{3,30})$/)
+  if (handleOnly) return { handle: handleOnly[1] }
+
+  let url: URL
+  try {
+    url = new URL(value)
+  } catch {
+    return null
+  }
+  if (url.protocol !== 'https:' || url.username || url.password || url.port) return null
+  if (!['youtube.com', 'www.youtube.com', 'm.youtube.com'].includes(url.hostname)) return null
+
+  const channel = url.pathname.match(/^\/channel\/(UC[A-Za-z0-9_-]{22})\/?$/)?.[1]
+  if (channel) return { channelId: channel }
+  const handle = url.pathname.match(/^\/@([A-Za-z0-9._-]{3,30})\/?$/)?.[1]
+  return handle ? { handle } : null
+}
+
+/** Reads the channel ID from the public channel page of a handle (cached for a day). */
+export async function resolveYouTubeChannelId(
+  ref: YouTubeChannelRef,
+  fetcher: typeof fetch = fetch,
+): Promise<string | null> {
+  if ('channelId' in ref) return ref.channelId
+
+  try {
+    const response = await fetcher(`https://www.youtube.com/@${encodeURIComponent(ref.handle)}`, {
+      headers: { 'Accept-Language': 'en', 'User-Agent': 'Mozilla/5.0 (compatible; ivmz-home)' },
+      next: { revalidate: 86_400 },
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+    } as RequestInit)
+    if (!response.ok) return null
+    const html = (await response.text()).slice(0, 2 * MAX_BYTES)
+    const id =
+      html.match(
+        /<link rel="canonical" href="https:\/\/www\.youtube\.com\/channel\/(UC[A-Za-z0-9_-]{22})"/,
+      )?.[1] ??
+      html.match(/"externalId":"(UC[A-Za-z0-9_-]{22})"/)?.[1] ??
+      html.match(/"channelId":"(UC[A-Za-z0-9_-]{22})"/)?.[1]
+    return id ?? null
+  } catch {
+    return null
+  }
+}
+
 export function isYouTubeChannelId(value: string | undefined | null): value is string {
   return Boolean(value && CHANNEL_ID.test(value))
 }
@@ -59,13 +112,17 @@ export function parseYouTubeFeed(xml: string, limit = 6): YouTubeVideo[] {
 }
 
 export async function getLatestYouTubeVideos(
-  channelId: string | undefined = process.env.YOUTUBE_CHANNEL_ID,
+  channel: string | undefined = process.env.YOUTUBE_CHANNEL_ID,
   fetcher: typeof fetch = fetch,
   limit = 6,
 ): Promise<YouTubeVideo[]> {
-  if (!isYouTubeChannelId(channelId)) return []
+  const ref = parseYouTubeChannelRef(channel)
+  if (!ref) return []
 
   try {
+    const channelId = await resolveYouTubeChannelId(ref, fetcher)
+    if (!isYouTubeChannelId(channelId)) return []
+
     const response = await fetcher(
       `https://www.youtube.com/feeds/videos.xml?channel_id=${encodeURIComponent(channelId)}`,
       {
