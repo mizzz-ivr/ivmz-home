@@ -144,7 +144,7 @@ test('returns the same non-leaking 404 for unknown dynamic slugs', async ({ page
   for (const route of ['/works', '/blog', '/news']) {
     await gotoExpected(page, `${route}/__ivmz-definitely-not-published__`, 404)
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Page not found.')
-    await expect(page.getByText(/draftの存在有無も公開routeからは区別しません/)).toBeVisible()
+    await expect(page.getByText(/お探しのページは見つかりませんでした/)).toBeVisible()
   }
 })
 
