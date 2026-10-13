@@ -59,12 +59,10 @@ test('keeps layered content readable with reduced motion', async ({ page }) => {
 
   const workbench = page.locator('.about-workbench')
   const workbenchWindows = workbench.locator('.workbench-window')
-  const writingSection = page.locator('#writing')
-  const writingCards = page.locator('.editorial-stack article')
+  const latestCards = page.locator('.latest-column')
 
   await expect(workbench).toBeVisible()
   await expect(workbench.getByText('ship → learn → refine')).toBeVisible()
-  await expect(writingSection).toBeVisible()
 
   const workbenchCount = await workbenchWindows.count()
   expect(workbenchCount).toBeGreaterThan(0)
@@ -72,10 +70,10 @@ test('keeps layered content readable with reduced motion', async ({ page }) => {
     await expect(workbenchWindows.nth(index)).toHaveCSS('transform', 'none')
   }
 
-  // Published CMS content may legitimately be empty. When cards exist, reduced motion
-  // must still remove their transforms; an empty writing section is also a valid state.
-  const writingCount = await writingCards.count()
-  for (let index = 0; index < writingCount; index += 1) {
-    await expect(writingCards.nth(index)).toHaveCSS('transform', 'none')
+  // Published CMS content may legitimately be empty (the Latest section is then not rendered).
+  // When columns exist, reduced motion must still remove their transforms.
+  const latestCount = await latestCards.count()
+  for (let index = 0; index < latestCount; index += 1) {
+    await expect(latestCards.nth(index)).toHaveCSS('transform', 'none')
   }
 })
