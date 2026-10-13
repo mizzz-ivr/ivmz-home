@@ -54,6 +54,17 @@ function payloadFor(url: URL, text: string) {
   return { content: text, text }
 }
 
+/** The single definition of a usable webhook: https, no embedded credentials. */
+export function parseWebhookUrl(value: string | undefined): URL | null {
+  if (!value) return null
+  try {
+    const url = new URL(value)
+    return url.protocol === 'https:' && !url.username && !url.password ? url : null
+  } catch {
+    return null
+  }
+}
+
 export async function sendOpsAlert(
   alert: OpsAlert,
   dependencies: Dependencies = {},
@@ -63,13 +74,8 @@ export async function sendOpsAlert(
   const production = dependencies.production ?? isProductionRuntime()
   if (!webhookUrl || !production) return 'skipped'
 
-  let url: URL
-  try {
-    url = new URL(webhookUrl)
-  } catch {
-    return 'skipped'
-  }
-  if (url.protocol !== 'https:' || url.username || url.password) return 'skipped'
+  const url = parseWebhookUrl(webhookUrl)
+  if (!url) return 'skipped'
 
   const now = (dependencies.now ?? Date.now)()
   const previous = lastSent.get(alert.key)

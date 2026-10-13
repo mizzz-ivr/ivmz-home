@@ -65,7 +65,7 @@ const CHECKS: Array<{ hint: string; key: keyof OpsConfig; title: string }> = [
   {
     hint: '確認後に RETENTION_PURGE_ENABLED=true で有効化します(未設定=削除しません)。',
     key: 'purgeEnabled',
-    title: '保存期間を過ぎた問い合わせの自動削除',
+    title: '保存期間を過ぎた問い合わせの削除許可(サーバー側)',
   },
 ]
 
@@ -169,8 +169,10 @@ export async function OpsDashboard({ payload, user }: ServerProps) {
           </h3>
           <p style={{ margin: 0 }}>
             期間を過ぎた対応済みの問い合わせ: <strong>{stats.retention.eligible}</strong> 件
-            {config.purgeEnabled ? '(自動削除が有効)' : '(自動削除は無効。削除されません)'}／
-            期間を過ぎても未対応(New): <strong>{stats.retention.staleUnhandled}</strong> 件
+            {config.purgeEnabled
+              ? '(サーバー側の削除許可はオン。実際の削除は毎週の定期実行で RETENTION_APPLY=true のときだけ行われます)'
+              : '(削除は許可されていません。削除されません)'}
+            ／ 期間を過ぎても未対応(New): <strong>{stats.retention.staleUnhandled}</strong> 件
             (未対応は削除されません)
           </p>
         </>

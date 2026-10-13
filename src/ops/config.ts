@@ -1,3 +1,4 @@
+import { parseWebhookUrl } from '@/ops/alert'
 import type { Payload } from 'payload'
 
 import { createContactNotifier } from '@/contact/notify'
@@ -29,7 +30,7 @@ export async function readOpsConfig(payload: Payload): Promise<OpsConfig> {
   const mail = createContactNotifier().kind !== 'none'
 
   return {
-    alertWebhook: Boolean(process.env.OPS_ALERT_WEBHOOK_URL),
+    alertWebhook: parseWebhookUrl(process.env.OPS_ALERT_WEBHOOK_URL) !== null,
     attachmentsEnabled,
     attachmentsStorage: createAttachmentStorage() !== null,
     // A receipt can only be sent when mail itself is configured.
