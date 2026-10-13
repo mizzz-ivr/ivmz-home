@@ -62,8 +62,10 @@ jobs:
             exit 0
           fi
 
-          if [ -n "$OPS_ALERT_WEBHOOK_URL" ]; then
-            text="🔴 [ivmz] Ops health check: ${status} (HTTP ${code}) - see the GitHub Actions run."
+          # When the endpoint answered with its own status (degraded/down) it already alerted the
+          # webhook itself; only post here when the site could not be reached or rejected the call.
+          if [ "$status" = "unreachable" ] && [ -n "$OPS_ALERT_WEBHOOK_URL" ]; then
+            text="🔴 [ivmz] Ops health check could not reach the site (HTTP ${code}) - see the GitHub Actions run."
             curl -sS --max-time 10 -H 'Content-Type: application/json' \
               -d "$(jq -n --arg t "$text" '{content: $t, text: $t}')" "$OPS_ALERT_WEBHOOK_URL" || true
           fi
@@ -85,12 +87,18 @@ jobs:
             exit 0
           fi
 
+          # --fail-with-body: HTTP 4xx/5xx (expired token, purge disabled, server error) fail the step
+          # but keep the response body for the log.
           call() {
-            curl -sS --max-time 60 -X POST -H "Authorization: Bearer $OPS_HEALTH_TOKEN" \
+            curl -sS --fail-with-body --max-time 60 -X POST \
+              -H "Authorization: Bearer $OPS_HEALTH_TOKEN" \
               -H 'Content-Type: application/json' -d "$1" "$SITE_URL/api/ops/retention"
           }
 
-          report=$(call '{}')
+          if ! report=$(call '{}'); then
+            echo "::error::Retention report failed: $report"
+            exit 1
+          fi
           echo "dry run: $report"
           {
             echo "### Retention report"
@@ -100,7 +108,10 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
           if [ "$RETENTION_APPLY" = "true" ]; then
-            result=$(call '{"apply":true}')
+            if ! result=$(call '{"apply":true}'); then
+              echo "::error::Retention purge failed: $result"
+              exit 1
+            fi
             echo "apply: $result"
             {
               echo "### Retention purge"
@@ -108,4 +119,8 @@ jobs:
               echo "$result"
               echo '```'
             } >> "$GITHUB_STEP_SUMMARY"
+            if [ "$(echo "$result" | jq -r '.failed // 0')" != "0" ]; then
+              echo "::error::Some records could not be deleted: $result"
+              exit 1
+            fi
           fi

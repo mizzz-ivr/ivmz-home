@@ -29,6 +29,9 @@ const THROTTLE_MS = 10 * 60 * 1000
 const MAX_DETAIL = 400
 const EMAIL_LIKE = /[^\s@]+@[^\s@]+\.[^\s@]+/g
 
+// Best-effort throttle: the state lives in this serverless instance only, so a burst that fans out
+// over several instances can still produce a few duplicate messages. That is acceptable for the
+// traffic of this site; a shared store would need its own table for no real benefit.
 const lastSent = new Map<string, number>()
 
 const ICON: Record<OpsAlertSeverity, string> = {

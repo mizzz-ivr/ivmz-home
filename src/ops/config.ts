@@ -26,13 +26,16 @@ export async function readOpsConfig(payload: Payload): Promise<OpsConfig> {
     attachmentsEnabled = false
   }
 
+  const mail = createContactNotifier().kind !== 'none'
+
   return {
     alertWebhook: Boolean(process.env.OPS_ALERT_WEBHOOK_URL),
     attachmentsEnabled,
     attachmentsStorage: createAttachmentStorage() !== null,
-    autoreply: process.env.CONTACT_AUTOREPLY !== 'off',
+    // A receipt can only be sent when mail itself is configured.
+    autoreply: mail && process.env.CONTACT_AUTOREPLY !== 'off',
     healthToken: (process.env.OPS_HEALTH_TOKEN ?? '').length >= 24,
-    mail: createContactNotifier().kind !== 'none',
+    mail,
     purgeEnabled: isPurgeEnabled(),
     turnstile: Boolean(process.env.TURNSTILE_SECRET_KEY && process.env.TURNSTILE_SITE_KEY),
   }
