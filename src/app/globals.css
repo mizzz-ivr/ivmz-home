@@ -301,7 +301,8 @@ main { overflow: clip; }
 }
 .hero::before { display: none; }
 .hero-grid { display: none; }
-.hero-pointer-layer { position: absolute; inset: 0; pointer-events: none; z-index: 0; --pointer-x: 0; --pointer-y: 0; }
+.hero { --pointer-x: 0; --pointer-y: 0; }
+.hero-pointer-layer { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
 .hero-pointer-layer::before, .hero-pointer-layer::after { content: ''; position: absolute; border: 1px solid var(--color-line); transition: transform var(--duration-ui) var(--ease-signal); }
 .hero-pointer-layer::before { width: 36%; aspect-ratio: 1; right: 5%; top: 17%; transform: translate(calc(var(--pointer-x) * 16px), calc(var(--pointer-y) * 16px)) rotate(8deg); }
 .hero-pointer-layer::after { width: 28%; height: 34%; right: 18%; top: 30%; transform: translate(calc(var(--pointer-x) * -22px), calc(var(--pointer-y) * -22px)) rotate(-5deg); }

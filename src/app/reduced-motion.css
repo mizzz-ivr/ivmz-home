@@ -51,3 +51,26 @@
     margin: 0;
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .kinetic-track {
+    transform: none !important;
+  }
+  .orbit,
+  .avatar-halo {
+    animation: none !important;
+  }
+  .orbit-sat {
+    animation: none !important;
+  }
+  .sparkle {
+    opacity: 0.7;
+    animation: none !important;
+  }
+  .contact-section::after {
+    animation: none !important;
+  }
+  .section-intro[data-reveal] h2 {
+    transition: none !important;
+  }
+}

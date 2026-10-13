@@ -257,26 +257,38 @@ export function HeroPointerSignal() {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const element = ref.current
-    if (!element || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const layer = ref.current
+    // The layer itself ignores pointer events; the hero section is the surface that is tracked and
+    // the variables are set on it so every hero layer (rings, avatar, orbit) can use them.
+    const hero = layer?.parentElement
+    if (!hero || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
     if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return
 
+    let frame = 0
+    let nextX = 0
+    let nextY = 0
+    const apply = () => {
+      frame = 0
+      hero.style.setProperty('--pointer-x', nextX.toFixed(3))
+      hero.style.setProperty('--pointer-y', nextY.toFixed(3))
+    }
     const handlePointer = (event: PointerEvent) => {
-      const rect = element.getBoundingClientRect()
-      const x = (event.clientX - rect.left) / rect.width - 0.5
-      const y = (event.clientY - rect.top) / rect.height - 0.5
-      element.style.setProperty('--pointer-x', x.toFixed(3))
-      element.style.setProperty('--pointer-y', y.toFixed(3))
+      const rect = hero.getBoundingClientRect()
+      nextX = (event.clientX - rect.left) / rect.width - 0.5
+      nextY = (event.clientY - rect.top) / rect.height - 0.5
+      if (!frame) frame = window.requestAnimationFrame(apply)
     }
     const reset = () => {
-      element.style.setProperty('--pointer-x', '0')
-      element.style.setProperty('--pointer-y', '0')
+      nextX = 0
+      nextY = 0
+      if (!frame) frame = window.requestAnimationFrame(apply)
     }
-    element.addEventListener('pointermove', handlePointer)
-    element.addEventListener('pointerleave', reset)
+    hero.addEventListener('pointermove', handlePointer, { passive: true })
+    hero.addEventListener('pointerleave', reset)
     return () => {
-      element.removeEventListener('pointermove', handlePointer)
-      element.removeEventListener('pointerleave', reset)
+      hero.removeEventListener('pointermove', handlePointer)
+      hero.removeEventListener('pointerleave', reset)
+      if (frame) window.cancelAnimationFrame(frame)
     }
   }, [])
 
