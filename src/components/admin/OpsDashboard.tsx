@@ -58,9 +58,9 @@ const CHECKS: Array<{ hint: string; key: keyof OpsConfig; title: string }> = [
     title: '失敗時のアラート通知',
   },
   {
-    hint: 'OPS_HEALTH_TOKEN(24文字以上)を設定すると、定期ヘルスチェックが動きます。',
+    hint: 'OPS_HEALTH_TOKEN(24文字以上)を設定すると、ヘルスチェックの窓口が有効になります。定期チェックには GitHub の Secrets にも同じ値が必要です。',
     key: 'healthToken',
-    title: '定期ヘルスチェック',
+    title: 'ヘルスチェックの窓口(サーバー側)',
   },
   {
     hint: '確認後に RETENTION_PURGE_ENABLED=true で有効化します(未設定=削除しません)。',
