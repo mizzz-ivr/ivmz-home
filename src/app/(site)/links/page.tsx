@@ -11,7 +11,7 @@ export const revalidate = 300
 
 export const metadata = createPageMetadata({
   title: 'Links',
-  description: 'GitHubなどの外部プロフィールをまとめるSocial Links destination。',
+  description: 'GitHub、X、Instagram、YouTubeなど、各サービスのプロフィールへのリンク集。',
   path: '/links',
 })
 
@@ -34,24 +34,17 @@ export default async function LinksPage() {
       <PageHero
         index="LINKS / 07"
         title="Find the live edges."
-        description={
-          <p>Social Links Collectionを正本とし、CMS障害時だけstable fallbackへ縮退します。</p>
-        }
+        description={<p>GitHub、SNS、YouTubeなど、活動の場へのリンクをまとめています。</p>}
         signal="SOCIAL / EXTERNAL"
       />
-      <PageSection
-        title="Directory"
-        description={<p>CMSでは `enabled = true` のlinkだけがanonymous read対象です。</p>}
-      >
+      <PageSection title="Directory" description={<p>各サービスのプロフィールはこちらから。</p>}>
         {content.state === 'error' && (
-          <EmptyState title="CMS links could not be loaded.">
-            ページ全体は壊さず、Repositoryで確定しているstable fallbackだけを表示します。
+          <EmptyState title="リンクを読み込めませんでした">
+            代わりに、主要なリンクだけを表示しています。
           </EmptyState>
         )}
         {content.state === 'ready' && content.items.length === 0 && (
-          <EmptyState title="No CMS links are published yet.">
-            CMSは正常です。enabledなSocial Linkがない状態をそのまま公開します。
-          </EmptyState>
+          <EmptyState title="リンクを準備中です">公開され次第、こちらに掲載します。</EmptyState>
         )}
         {links.length > 0 && (
           <div className="link-directory">
@@ -67,10 +60,7 @@ export default async function LinksPage() {
         )}
       </PageSection>
       {videos.length > 0 && (
-        <PageSection
-          title="Latest videos"
-          description={<p>YouTubeチャンネルの最新動画を自動で表示します。</p>}
-        >
+        <PageSection title="Latest videos" description={<p>YouTubeチャンネルの最新動画です。</p>}>
           <ul className="video-grid">
             {videos.map((video) => (
               <li key={video.id}>

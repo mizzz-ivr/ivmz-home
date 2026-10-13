@@ -188,7 +188,7 @@ export function ContactForm({ generalEmail, securityEmail, turnstileSiteKey }: C
     state === 'success'
       ? '送信しました。返信が必要な場合は入力されたメールアドレスへ連絡します。'
       : state === 'preview'
-        ? '送信内容を検証しました。Deploy Previewでは実メールは送信されません。'
+        ? '送信内容を確認しました。（テスト環境のため、実際のメールは送信されません）'
         : state === 'error' && errorCode === 'captcha_failed'
           ? 'ボット対策の確認に失敗しました。もう一度「内容を確認する」からお試しください。'
           : state === 'error'
@@ -323,9 +323,9 @@ export function ContactForm({ generalEmail, securityEmail, turnstileSiteKey }: C
 
         <div className="contact-submit-row">
           <button className="contact-submit" disabled={attachmentState.busy} type="submit">
-            {attachmentState.busy ? 'Scanning files…' : '内容を確認する ↗'}
+            {attachmentState.busy ? 'ファイルを確認中…' : '内容を確認する ↗'}
           </button>
-          <p>配送先はカテゴリからserver-sideで決定され、入力内容から変更できません。</p>
+          <p>ご用件のカテゴリに応じて、適切な窓口へお届けします。</p>
         </div>
       </form>
 
@@ -405,20 +405,22 @@ export function ContactForm({ generalEmail, securityEmail, turnstileSiteKey }: C
         </div>
       ) : null}
 
-      <div className="contact-form-fallback">
-        <p>フォームを利用できない場合はメールでも受け付けています。</p>
-        <p>
-          General:{' '}
-          <a className="inline-link" href={`mailto:${generalEmail}`}>
-            {generalEmail}
-          </a>
-          <br />
-          Security:{' '}
-          <a className="inline-link" href={`mailto:${securityEmail}`}>
-            {securityEmail}
-          </a>
-        </p>
-      </div>
+      {state === 'error' ? (
+        <div className="contact-form-fallback">
+          <p>お手数ですが、メールでもご連絡いただけます。</p>
+          <p>
+            General:{' '}
+            <a className="inline-link" href={`mailto:${generalEmail}`}>
+              {generalEmail}
+            </a>
+            <br />
+            Security:{' '}
+            <a className="inline-link" href={`mailto:${securityEmail}`}>
+              {securityEmail}
+            </a>
+          </p>
+        </div>
+      ) : null}
     </div>
   )
 }

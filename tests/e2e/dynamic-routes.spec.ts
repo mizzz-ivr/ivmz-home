@@ -19,7 +19,7 @@ const detailRoutes = [
     listPath: '/works',
     path: (slug: string) => `/works/${encodeURIComponent(slug)}`,
     primaryLabel: 'View case study',
-    emptyHeading: 'No published works yet.',
+    emptyHeading: '準備中です',
     schemaType: 'CreativeWork',
   },
   {
@@ -27,7 +27,7 @@ const detailRoutes = [
     listPath: '/blog',
     path: (slug: string) => `/blog/${encodeURIComponent(slug)}`,
     primaryLabel: 'Read details',
-    emptyHeading: 'No published posts yet.',
+    emptyHeading: '記事を準備中です',
     schemaType: 'BlogPosting',
   },
   {
@@ -35,7 +35,7 @@ const detailRoutes = [
     listPath: '/news',
     path: (slug: string) => `/news/${encodeURIComponent(slug)}`,
     primaryLabel: 'Read update',
-    emptyHeading: 'No published news yet.',
+    emptyHeading: 'お知らせはまだありません',
     schemaType: 'Article',
   },
 ] as const
@@ -143,8 +143,8 @@ test('connects published list items to detail routes with h1, reload, metadata a
 test('returns the same non-leaking 404 for unknown dynamic slugs', async ({ page }) => {
   for (const route of ['/works', '/blog', '/news']) {
     await gotoExpected(page, `${route}/__ivmz-definitely-not-published__`, 404)
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Signal not found.')
-    await expect(page.getByText(/draftの存在有無も公開routeからは区別しません/)).toBeVisible()
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Page not found.')
+    await expect(page.getByText(/お探しのページは見つかりませんでした/)).toBeVisible()
   }
 })
 

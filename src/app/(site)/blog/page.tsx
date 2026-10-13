@@ -6,7 +6,7 @@ export const revalidate = 300
 
 export const metadata = createPageMetadata({
   title: 'Blog',
-  description: '技術記事、Case Study、Build Logを公開するWriting一覧。',
+  description: '技術記事、制作の振り返り、開発ログを公開しています。',
   path: '/blog',
 })
 
@@ -18,23 +18,16 @@ export default async function BlogPage() {
       <PageHero
         index="BLOG / 03"
         title={<>Notes that remain useful.</>}
-        description={
-          <p>実装で得た知見、判断、制約を再利用できる形で残すためのWriting destinationです。</p>
-        }
+        description={<p>実装で得た知見や判断の理由を、あとから使える形で書き残しています。</p>}
         signal="WRITING / KNOWLEDGE"
       />
-      <PageSection
-        title="Latest writing"
-        description={<p>PayloadでpublishされたPostsを新しい順に表示します。</p>}
-      >
+      <PageSection title="Latest writing" description={<p>新しい記事から順に表示しています。</p>}>
         {content.state === 'error' ? (
-          <EmptyState title="Writing is temporarily unavailable.">
-            CMS queryに失敗しました。外部サービスやHomeを巻き込まず、この一覧だけ縮退します。
+          <EmptyState title="記事を読み込めませんでした">
+            時間をおいて、もう一度お試しください。
           </EmptyState>
         ) : content.items.length === 0 ? (
-          <EmptyState title="No published posts yet.">
-            CMSは正常です。記事の公開後、この一覧へ自動的に反映されます。
-          </EmptyState>
+          <EmptyState title="記事を準備中です">公開され次第、こちらに掲載します。</EmptyState>
         ) : (
           <div className="content-list">
             {content.items.map((post) => (
@@ -64,8 +57,8 @@ export default async function BlogPage() {
         )}
       </PageSection>
       <PageCTA
-        title="Follow the moving parts."
-        body="リリースや活動の短い更新はNewsへ分離しています。"
+        title="最新の動きを知りたい方へ"
+        body="リリースや活動の短いお知らせはNewsにまとめています。"
         href="/news"
         label="Open News"
       />

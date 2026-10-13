@@ -54,10 +54,7 @@ export default async function BlogDetailPage({ params }: DetailPageProps) {
         description={<p>{post.excerpt}</p>}
         signal="WRITING / KNOWLEDGE"
       />
-      <PageSection
-        title="Article profile"
-        description={<p>公開日時・category・tagsをまとめます。</p>}
-      >
+      <PageSection title="Article profile" description={<p>公開日やカテゴリ、タグです。</p>}>
         <dl className="detail-facts">
           <div>
             <dt>Category</dt>
@@ -87,21 +84,16 @@ export default async function BlogDetailPage({ params }: DetailPageProps) {
       <PageSection
         title={externalCanonical ? 'Original publication' : 'Article'}
         description={
-          <p>
-            {externalCanonical
-              ? '外部canonicalを正本として扱い、このrouteでは本文を重複掲載しません。'
-              : 'CMSのMarkdown/plain-text baselineをHTMLとして解釈せず、安全なテキストで表示します。'}
-          </p>
+          <p>{externalCanonical ? 'この記事は外部サイトで公開しています。' : '記事の本文です。'}</p>
         }
       >
         {externalCanonical && post.canonicalUrl ? (
           <div className="external-publication">
             <p>
-              このページはサイト内の安定した導線とtaxonomyを保持するsummary
-              pageです。本文の正本は外部公開先にあります。
+              この記事の本文は、外部サイトで公開しています。以下のリンクからお読みいただけます。
             </p>
             <a href={post.canonicalUrl} target="_blank" rel="noreferrer">
-              Read canonical article <span aria-hidden="true">↗</span>
+              Read the article <span aria-hidden="true">↗</span>
             </a>
           </div>
         ) : (
@@ -111,8 +103,8 @@ export default async function BlogDetailPage({ params }: DetailPageProps) {
         )}
       </PageSection>
       <PageCTA
-        title="Follow the latest activity."
-        body="短いリリース・告知・活動記録はNewsへ分離しています。"
+        title="最新の活動も見る"
+        body="短いお知らせや活動の記録はNewsにまとめています。"
         href="/news"
         label="Open News"
       />

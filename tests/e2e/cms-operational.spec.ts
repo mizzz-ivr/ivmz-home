@@ -45,7 +45,9 @@ test('Schedule page respects public visibility and renders timezone plus optiona
   const item = items[0]
 
   if (!item) {
-    await expect(page.getByText('Nothing public is scheduled.', { exact: true })).toBeVisible()
+    await expect(
+      page.getByText('現在、公開している予定はありません', { exact: true }),
+    ).toBeVisible()
     return
   }
 
@@ -71,7 +73,7 @@ test('Social Links page treats a successful zero-result query as an intentional 
   await gotoExpected(page, '/links')
 
   if (links.length === 0) {
-    await expect(page.getByText('No CMS links are published yet.', { exact: true })).toBeVisible()
+    await expect(page.getByText('リンクを準備中です', { exact: true })).toBeVisible()
     await expect(page.locator('.link-directory')).toHaveCount(0)
     return
   }

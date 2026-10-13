@@ -9,15 +9,14 @@ export const revalidate = 300
 
 export const metadata = createPageMetadata({
   title: 'Works',
-  description: '公開中の制作物を、役割・技術・状態とともに一覧するWorksページ。',
+  description: 'これまでに公開した制作物を、役割・技術・現在の状態とともに紹介します。',
   path: '/works',
 })
 
 const copy = {
-  hero: '公開済みの制作物をPayload CMSから取得し、各Case Study detailへ接続します。',
-  queryError:
-    'CMS queryに失敗しました。Homeの既存fallbackは維持され、この一覧だけ安全に縮退しています。',
-  empty: 'CMSは正常です。公開済みWorksが登録されるまで、このempty stateを表示します。',
+  hero: 'これまでに手がけた制作物を、役割・使った技術・現在の状態とあわせて紹介します。',
+  queryError: '制作物の一覧を読み込めませんでした。時間をおいて、もう一度お試しください。',
+  empty: '公開できる制作物を準備中です。しばらくお待ちください。',
 } as const
 
 export default async function WorksPage() {
@@ -28,7 +27,7 @@ export default async function WorksPage() {
     <main id="main-content" className="route-page">
       <PageHero
         index="WORKS / 02"
-        title="Work, with the decisions attached."
+        title="Work, with the story."
         description={<p>{copy.hero}</p>}
         signal="BUILD / CASE STUDY"
       />
@@ -60,14 +59,11 @@ export default async function WorksPage() {
           ))}
         </div>
       </PageSection>
-      <PageSection
-        title="Published works"
-        description={<p>公開状態 `_status = published` のコンテンツだけを表示します。</p>}
-      >
+      <PageSection title="Published works" description={<p>公開中のプロジェクトです。</p>}>
         {content.state === 'error' ? (
-          <EmptyState title="Works are temporarily unavailable.">{copy.queryError}</EmptyState>
+          <EmptyState title="一覧を読み込めませんでした">{copy.queryError}</EmptyState>
         ) : content.items.length === 0 ? (
-          <EmptyState title="No published works yet.">{copy.empty}</EmptyState>
+          <EmptyState title="準備中です">{copy.empty}</EmptyState>
         ) : (
           <div className="content-list">
             {content.items.map((work) => (
@@ -99,8 +95,8 @@ export default async function WorksPage() {
         )}
       </PageSection>
       <PageCTA
-        title="Want the build log too?"
-        body="技術記事・制作記録はBlogへ集約していきます。"
+        title="制作の過程も読みたい方へ"
+        body="技術記事や制作の記録はBlogにまとめています。"
         href="/blog"
         label="Open Blog"
       />

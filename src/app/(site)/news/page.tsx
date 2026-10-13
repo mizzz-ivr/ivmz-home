@@ -6,7 +6,7 @@ export const revalidate = 300
 
 export const metadata = createPageMetadata({
   title: 'News',
-  description: 'リリース、告知、イベント、公開活動をまとめるNews一覧。',
+  description: 'リリース、告知、イベントなど、最近の活動のお知らせ。',
   path: '/news',
 })
 
@@ -24,23 +24,21 @@ export default async function NewsPage() {
         index="NEWS / 04"
         title={<>What is moving now.</>}
         description={
-          <p>
-            リリース・告知・イベント・publication・activityを、長文記事とは分けて追えるようにします。
-          </p>
+          <p>リリースや告知、イベントなど、最近の活動を短いお知らせとしてまとめています。</p>
         }
         signal="ACTIVITY / RELEASE"
       />
       <PageSection
-        title="Activity stream"
-        description={<p>公開済みNewsだけを新しい順に表示します。</p>}
+        title="Latest updates"
+        description={<p>新しいお知らせから順に表示しています。</p>}
       >
         {content.state === 'error' ? (
-          <EmptyState title="News is temporarily unavailable.">
-            CMS queryに失敗しました。このrouteだけ安全に縮退しています。
+          <EmptyState title="お知らせを読み込めませんでした">
+            時間をおいて、もう一度お試しください。
           </EmptyState>
         ) : content.items.length === 0 ? (
-          <EmptyState title="No published news yet.">
-            CMSは正常です。公開されたNewsがここに並びます。
+          <EmptyState title="お知らせはまだありません">
+            新しい情報があれば、こちらに掲載します。
           </EmptyState>
         ) : (
           <div className="content-list">
@@ -70,8 +68,8 @@ export default async function NewsPage() {
         )}
       </PageSection>
       <PageCTA
-        title="See what comes next."
-        body="外部へ見せてよいイベント・公開・リリース予定はScheduleへ分離しています。"
+        title="これからの予定"
+        body="公開できるイベントやリリースの予定はScheduleにまとめています。"
         href="/schedule"
         label="Open Schedule"
       />
