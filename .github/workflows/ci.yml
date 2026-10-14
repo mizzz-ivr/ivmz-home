@@ -87,7 +87,7 @@ jobs:
       # Behave like a Netlify Deploy Preview: no real mail is sent and the bot check is off, which
       # is what the contact form tests expect.
       CONTEXT: deploy-preview
-      PAYLOAD_BUILD_ORIGIN: http://127.0.0.1:3000
+      DEPLOY_PRIME_URL: http://127.0.0.1:3000
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
