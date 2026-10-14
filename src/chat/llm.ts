@@ -10,7 +10,7 @@ const LLM_TIMEOUT_MS = 8_000
 export const DEFAULT_MODELS = [
   '@cf/zai-org/glm-4.7-flash',
   '@cf/google/gemma-4-26b-a4b-it',
-  '@cf/meta/llama-3.1-8b-instruct',
+  '@cf/moonshotai/kimi-k2.6',
 ] as const
 
 export type ChatTurn = { role: 'user' | 'assistant'; content: string }

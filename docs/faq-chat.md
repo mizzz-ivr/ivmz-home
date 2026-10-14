@@ -31,5 +31,5 @@ AI は **Cloudflare Workers AI の無料枠**（1日 10,000 ニューロン）�
 トークンは秘密情報です。チャットや Git には貼らないでください。
 
 - 止めたいとき: `CHAT_LLM=off` を入れて再デプロイ（または 2 つの変数を消す）。
-- モデル: 既定は、使えるものを順に試します（`@cf/zai-org/glm-4.7-flash` → `@cf/google/gemma-4-26b-a4b-it` → `@cf/meta/llama-3.1-8b-instruct`）。Cloudflare は古いモデルを定期的に終了するため、1つ目が使えなくなっても次に切り替わります。固定したいときは `CHAT_LLM_MODEL` にモデル ID を入れます。エラーはステータスだけが Netlify の関数ログ（`CHAT_LLM_FAILED`）に出ます（質問の内容は出ません）。
+- モデル: 既定は、使えるものを順に試します（`@cf/zai-org/glm-4.7-flash` → `@cf/google/gemma-4-26b-a4b-it` → `@cf/moonshotai/kimi-k2.6`）。Cloudflare は古いモデルを定期的に終了するため、1つ目が使えなくなっても次に切り替わります。固定したいときは `CHAT_LLM_MODEL` にモデル ID を入れます。エラーはステータスだけが Netlify の関数ログ（`CHAT_LLM_FAILED`）に出ます（質問の内容は出ません）。
 - 有料プランの Workers を契約していると、無料枠を超えた分は課金されます。無料プランのままなら、上限に達するとエラーになるだけで、課金はされません。
