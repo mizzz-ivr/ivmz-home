@@ -74,3 +74,22 @@ test('sitemap contains the multi-page route foundation', async ({ request }) => 
     expect(xml).toContain(`<loc>https://ivmz.ivrm.jp${route}</loc>`)
   }
 })
+
+test('serves the styled 404 for URLs that match no route', async ({ page }) => {
+  await gotoExpected(page, '/__ivmz-no-such-page__', 404)
+
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Page not found.')
+  await expect(page.getByText(/お探しのページは見つかりませんでした/)).toBeVisible()
+  await expect(page.getByRole('link', { name: /トップページへ戻る/ })).toHaveAttribute('href', '/')
+  await expect(page.getByRole('navigation', { name: 'ほかのページ' })).toBeVisible()
+})
+
+test('shows the personal profile on About', async ({ page }) => {
+  await gotoExpected(page, '/about')
+
+  const stats = page.getByRole('list').filter({ hasText: 'ENFJ' })
+  await expect(stats).toContainText('4 / 2')
+  await expect(stats).toContainText('愛媛')
+  await expect(stats).toContainText('東京')
+  await expect(page.getByRole('heading', { name: 'Public builds' })).toBeVisible()
+})

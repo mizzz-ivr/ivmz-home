@@ -51,6 +51,9 @@ const securityHeaders = [
 ]
 
 const nextConfig: NextConfig = {
+  // Lets src/app/global-not-found.tsx style 404s for URLs that match no route (the app has two
+  // root layouts, the site and the Payload admin, so there is no single layout to compose from).
+  experimental: { globalNotFound: true },
   env: {
     // Netlify exposes CONTEXT / DEPLOY_PRIME_URL while building but not to the
     // Next serverless function runtime. These values are public deployment metadata,

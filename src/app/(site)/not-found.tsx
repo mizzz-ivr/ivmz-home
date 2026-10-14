@@ -1,24 +1,27 @@
-import { PageCTA, PageHero } from '@/components/site/PageFoundation'
+import { ErrorScreen } from '@/components/site/ErrorScreen'
 
 export default function NotFound() {
   return (
-    <main id="main-content" className="route-page detail-page">
-      <PageHero
-        index="404 / NOT FOUND"
-        title="Page not found."
-        description={
-          <p>
-            お探しのページは見つかりませんでした。URLが変更されたか、公開を終了した可能性があります。
-          </p>
-        }
-        signal="404 / NOT FOUND"
-      />
-      <PageCTA
-        title="トップページへ戻る"
-        body="公開中のWorks・Blog・Newsは、トップページや各一覧からご覧いただけます。"
-        href="/"
-        label="Back home"
-      />
-    </main>
+    <ErrorScreen
+      code="404"
+      label="NOT FOUND"
+      title="Page not found."
+      bubble="道に迷っちゃった…"
+      message={
+        <p>
+          お探しのページは見つかりませんでした。URLが変更されたか、公開を終了した可能性があります。
+        </p>
+      }
+      actions={
+        <>
+          <a className="action-link action-primary" href="/">
+            トップページへ戻る <span aria-hidden="true">→</span>
+          </a>
+          <a className="action-link" href="/contact">
+            見つからないときは連絡する
+          </a>
+        </>
+      }
+    />
   )
 }

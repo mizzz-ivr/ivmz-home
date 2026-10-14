@@ -1,0 +1,184 @@
+/* ---- HTTP error screens (404 / 500) ---- */
+.error-screen {
+  padding-top: clamp(112px, 15vw, 168px);
+}
+.error-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(240px, 0.8fr);
+  gap: clamp(32px, 6vw, 84px);
+  align-items: center;
+}
+.error-code {
+  display: flex;
+  gap: clamp(2px, 1vw, 12px);
+  margin: 10px 0 6px;
+  font: 900 clamp(5rem, 18vw, 12rem) / 0.95 var(--font-ui);
+  letter-spacing: -0.06em;
+  color: var(--color-text);
+}
+.error-code span {
+  display: inline-block;
+  animation: error-float 3.6s ease-in-out infinite;
+  animation-delay: calc(var(--i, 0) * 0.25s);
+  text-shadow: 6px 6px 0 color-mix(in srgb, var(--color-primary) 55%, transparent);
+}
+.error-code span:nth-child(2) {
+  color: var(--color-pop, #ffd84a);
+  -webkit-text-stroke: 3px var(--color-pop-ink, #1a1230);
+  paint-order: stroke fill;
+}
+@keyframes error-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-1.5deg);
+  }
+  50% {
+    transform: translateY(-12px) rotate(1.5deg);
+  }
+}
+.error-copy h1 {
+  margin: 0;
+  font-family: var(--font-editorial);
+  font-size: clamp(1.7rem, 4vw, 2.8rem);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+}
+.error-message {
+  max-width: 34em;
+  margin-top: 16px;
+  color: var(--color-text-soft);
+  line-height: 2;
+}
+.error-message p {
+  margin: 0;
+}
+.error-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}
+.error-character {
+  position: relative;
+  margin: 0;
+  justify-self: center;
+  width: min(100%, 340px);
+}
+.error-avatar {
+  aspect-ratio: 1;
+  overflow: hidden;
+  border: 3px solid var(--color-pop-ink, var(--color-line-strong));
+  border-radius: 50%;
+  background: #ece8f6;
+  box-shadow:
+    0 0 0 10px color-mix(in srgb, var(--color-pop, #ffd84a) 85%, transparent),
+    0 0 0 22px color-mix(in srgb, var(--color-primary) 45%, transparent),
+    var(--shadow-depth);
+  animation: error-sway 5s ease-in-out infinite;
+}
+.error-avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+@keyframes error-sway {
+  0%,
+  100% {
+    transform: rotate(-3deg) translateY(0);
+  }
+  50% {
+    transform: rotate(3deg) translateY(-8px);
+  }
+}
+.error-bubble {
+  position: absolute;
+  z-index: 2;
+  top: -18px;
+  left: -8px;
+  max-width: 78%;
+  padding: 10px 16px;
+  border: 2px solid var(--color-pop-ink, var(--color-line-strong));
+  border-radius: 18px 18px 18px 4px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.5;
+  box-shadow: 4px 4px 0 var(--color-pop-ink, rgba(0, 0, 0, 0.2));
+  animation: error-pop 600ms var(--ease-signal) 400ms both;
+}
+@keyframes error-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6) translateY(10px);
+  }
+}
+.error-sticker {
+  right: -10px;
+  bottom: 8px;
+  transform: rotate(5deg);
+}
+.error-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+  margin-top: clamp(48px, 7vw, 88px);
+  padding-bottom: clamp(48px, 7vw, 88px);
+}
+.error-links a {
+  position: relative;
+  display: grid;
+  gap: 4px;
+  padding: 18px 40px 18px 18px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  color: inherit;
+  text-decoration: none;
+  transition:
+    border-color var(--duration-ui) ease,
+    background var(--duration-ui) ease,
+    transform var(--duration-ui) var(--ease-signal);
+}
+.error-links a:hover {
+  border-color: var(--color-primary);
+  background: var(--color-selection);
+  transform: translateY(-3px) rotate(-0.6deg);
+}
+.error-links b {
+  font: 800 0.8rem/1 var(--font-mono);
+  letter-spacing: 0.12em;
+}
+.error-links span {
+  color: var(--color-muted);
+  font-size: 0.82rem;
+}
+.error-links i {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  font-style: normal;
+  transition: transform var(--duration-ui) var(--ease-signal);
+}
+.error-links a:hover i {
+  transform: translateX(4px);
+}
+@media (max-width: 860px) {
+  .error-stage {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .error-character {
+    order: -1;
+    width: min(70%, 260px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .error-code span,
+  .error-avatar,
+  .error-bubble {
+    animation: none;
+  }
+  .error-links a:hover {
+    transform: none;
+  }
+}
