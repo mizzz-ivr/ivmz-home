@@ -73,9 +73,39 @@ export function createSiteStructuredData(): StructuredDataValue {
         name: site.name,
         alternateName: site.shortName,
         url: site.url,
-        sameAs: [site.githubUrl],
+        jobTitle: 'Full Stack Developer',
+        description: site.description,
+        image: site.githubAvatarUrl,
+        homeLocation: { '@type': 'Place', name: '東京' },
+        knowsAbout: [
+          'Web development',
+          'TypeScript',
+          'React',
+          'Next.js',
+          'Realtime AI',
+          'Discord bots',
+          'PostgreSQL',
+          'DevOps',
+        ],
+        sameAs: [site.githubUrl, site.xUrl, site.instagramUrl, site.youtubeUrl],
       },
     ],
+  }
+}
+
+export function createFaqStructuredData(
+  entries: ReadonlyArray<{ question: string; answer: readonly string[] }>,
+): StructuredDataValue {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    '@id': `${site.url}/#faq`,
+    inLanguage: 'ja',
+    mainEntity: entries.map((entry) => ({
+      '@type': 'Question',
+      name: entry.question,
+      acceptedAnswer: { '@type': 'Answer', text: entry.answer.join('\n') },
+    })),
   }
 }
 

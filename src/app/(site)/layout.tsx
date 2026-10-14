@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import '../globals.css'
 import '../responsive-foundation.css'
 import '../reduced-motion.css'
@@ -31,7 +31,33 @@ export const metadata: Metadata = {
     title: site.name,
     description: site.description,
     siteName: site.shortName,
+    locale: 'ja_JP',
+    images: [site.ogImage],
   },
+  twitter: {
+    card: 'summary_large_image',
+    title: site.name,
+    description: site.description,
+    images: [site.ogImage.url],
+  },
+  authors: [{ name: site.name, url: site.url }],
+  keywords: [
+    'いゔる。',
+    'mizzz',
+    'ずーみー',
+    'Full Stack',
+    'Web開発',
+    'Realtime AI',
+    'Discord',
+    'ポートフォリオ',
+  ],
+}
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: dark)', color: '#080811' },
+    { media: '(prefers-color-scheme: light)', color: '#f2eff8' },
+  ],
 }
 
 const themeBootScript = `(() => {

@@ -43,6 +43,14 @@ export function createPageMetadata({
       title: `${title} | ${site.shortName}`,
       description,
       siteName: site.shortName,
+      locale: 'ja_JP',
+      images: [site.ogImage],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${title} | ${site.shortName}`,
+      description,
+      images: [site.ogImage.url],
     },
   }
 }

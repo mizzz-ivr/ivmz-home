@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   createBlogStructuredData,
+  createFaqStructuredData,
   createNewsStructuredData,
   createSiteStructuredData,
   createWorkStructuredData,
@@ -10,6 +11,28 @@ import {
 } from './structured-data'
 
 describe('structured data', () => {
+  it('describes the person with public profile links only', () => {
+    const serialized = JSON.stringify(createSiteStructuredData())
+    expect(serialized).toContain('https://x.com/ivuruGG')
+    expect(serialized).toContain('https://www.instagram.com/ivurugg/')
+    expect(serialized).toContain('https://www.youtube.com/@ivuru-mz')
+    expect(serialized).not.toMatch(/birth|誕生|血液/i)
+  })
+
+  it('builds a FAQPage from the visible FAQ entries', () => {
+    const data = createFaqStructuredData([
+      { question: 'Q1', answer: ['A1a', 'A1b'] },
+      { question: 'Q2', answer: ['A2'] },
+    ])
+    expect(data).toMatchObject({
+      '@type': 'FAQPage',
+      mainEntity: [
+        { '@type': 'Question', name: 'Q1', acceptedAnswer: { text: 'A1a\nA1b' } },
+        { '@type': 'Question', name: 'Q2', acceptedAnswer: { text: 'A2' } },
+      ],
+    })
+  })
+
   it('escapes script-breaking CMS strings before rendering JSON-LD', () => {
     const serialized = serializeStructuredData({
       headline: '</script><script>alert("xss")</script>&\u2028next',

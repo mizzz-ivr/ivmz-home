@@ -29,7 +29,11 @@ test('serves primary content, metadata, structured data, robots and sitemap', as
       expect.objectContaining({
         '@type': 'Person',
         url: 'https://ivmz.ivrm.jp',
-        sameAs: ['https://github.com/mizzz-ivr'],
+        sameAs: expect.arrayContaining([
+          'https://github.com/mizzz-ivr',
+          'https://x.com/ivuruGG',
+          'https://www.youtube.com/@ivuru-mz',
+        ]),
       }),
     ]),
   )

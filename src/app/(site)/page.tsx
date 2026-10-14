@@ -1,8 +1,10 @@
 import Image from 'next/image'
 import { SectionIndex, ToolboxMarquee } from '@/components/site/SiteEnhancements'
+import { StructuredData } from '@/components/seo/StructuredData'
 import { ChatOpenButton, FaqChat } from '@/components/site/FaqChat'
 import { HeroPointerSignal } from '@/components/site/SiteExperience'
 import { faqEntries } from '@/lib/faq-content'
+import { createFaqStructuredData } from '@/lib/structured-data'
 import { buildSteps } from '@/lib/about-content'
 import { getHomeViewModel } from '@/lib/home-content'
 import { site } from '@/lib/site'
@@ -524,6 +526,7 @@ export default async function HomePage() {
           ) : null}
         </div>
       </section>
+      <StructuredData data={createFaqStructuredData(faqEntries)} />
       <FaqChat />
     </main>
   )
