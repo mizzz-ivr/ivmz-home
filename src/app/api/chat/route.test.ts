@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { resetChatLimitsForTests } from '@/chat/limits'
 
-import { POST } from './route'
+import { GET, POST } from './route'
 
 const send = (body: unknown, origin: string | null = 'http://localhost:3000') =>
   POST(
@@ -14,6 +14,18 @@ const send = (body: unknown, origin: string | null = 'http://localhost:3000') =>
   )
 
 const messages = [{ content: '相談したい', role: 'user' }]
+
+describe('GET /api/chat', () => {
+  afterEach(() => vi.unstubAllEnvs())
+  it('reports whether the AI answer is configured, without exposing values', async () => {
+    vi.stubEnv('CHAT_LLM_ACCOUNT_ID', '')
+    vi.stubEnv('CHAT_LLM_API_TOKEN', '')
+    expect(await GET().json()).toEqual({ enabled: false })
+    vi.stubEnv('CHAT_LLM_ACCOUNT_ID', 'a'.repeat(32))
+    vi.stubEnv('CHAT_LLM_API_TOKEN', 'secret-token')
+    expect(await GET().json()).toEqual({ enabled: true })
+  })
+})
 
 describe('POST /api/chat', () => {
   beforeEach(() => {

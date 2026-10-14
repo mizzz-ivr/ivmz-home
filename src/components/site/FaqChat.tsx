@@ -44,7 +44,9 @@ export function ChatOpenButton({ children }: { children: React.ReactNode }) {
   )
 }
 
-export function FaqChat({ aiEnabled }: { aiEnabled: boolean }) {
+export function FaqChat() {
+  // Learned at runtime: the home page is static, so build-time env would not reflect the setup.
+  const [aiEnabled, setAiEnabled] = useState(false)
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
   const [typing, setTyping] = useState(false)
@@ -62,6 +64,10 @@ export function FaqChat({ aiEnabled }: { aiEnabled: boolean }) {
 
   const openChat = useCallback(() => {
     setOpen(true)
+    fetch('/api/chat', { cache: 'no-store' })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data: { enabled?: unknown } | null) => setAiEnabled(data?.enabled === true))
+      .catch(() => setAiEnabled(false))
     setMessages((current) =>
       current.length > 0
         ? current

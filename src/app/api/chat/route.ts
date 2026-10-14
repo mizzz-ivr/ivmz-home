@@ -11,6 +11,11 @@ function json(body: unknown, status = 200) {
   return Response.json(body, { headers: { 'Cache-Control': 'no-store' }, status })
 }
 
+/** Lets the page learn at runtime whether the AI answer is configured (the home page is static). */
+export function GET() {
+  return json({ enabled: readLlmConfig() !== null })
+}
+
 /**
  * Optional AI answer for the home page chat. Always answers 200 with `{ reply }` or `{ reply:
  * null }`: the browser then falls back to the built-in FAQ answer, so this endpoint can fail,

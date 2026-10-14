@@ -26,10 +26,10 @@ AI は **Cloudflare Workers AI の無料枠**（1日 10,000 ニューロン）�
 3. Netlify の環境変数（**Production**）に、次の2つを入れます。スコープは **Functions と Runtime**、値は「秘密」にします。
    - `CHAT_LLM_ACCOUNT_ID` = Account ID
    - `CHAT_LLM_API_TOKEN` = 作ったトークン
-4. 再デプロイすると、チャットの注意書きが「FAQにない自由入力はAIに送ります」に変わり、AI 回答が有効になります。
+4. 再デプロイすると（ページの再生成を待たずに、チャットを開いたときに状態を確認します）、チャットの注意書きが「FAQにない自由入力はAIに送ります」に変わり、AI 回答が有効になります。
 
 トークンは秘密情報です。チャットや Git には貼らないでください。
 
 - 止めたいとき: `CHAT_LLM=off` を入れて再デプロイ（または 2 つの変数を消す）。
-- モデルを変えたいとき: `CHAT_LLM_MODEL`（既定は `@cf/google/gemma-3-12b-it`）。
+- モデル: 既定は、使えるものを順に試します（`@cf/zai-org/glm-4.7-flash` → `@cf/google/gemma-4-26b-a4b-it` → `@cf/meta/llama-3.1-8b-instruct`）。Cloudflare は古いモデルを定期的に終了するため、1つ目が使えなくなっても次に切り替わります。固定したいときは `CHAT_LLM_MODEL` にモデル ID を入れます。エラーはステータスだけが Netlify の関数ログ（`CHAT_LLM_FAILED`）に出ます（質問の内容は出ません）。
 - 有料プランの Workers を契約していると、無料枠を超えた分は課金されます。無料プランのままなら、上限に達するとエラーになるだけで、課金はされません。

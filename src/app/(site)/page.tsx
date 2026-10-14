@@ -2,7 +2,6 @@ import Image from 'next/image'
 import { SectionIndex, ToolboxMarquee } from '@/components/site/SiteEnhancements'
 import { ChatOpenButton, FaqChat } from '@/components/site/FaqChat'
 import { HeroPointerSignal } from '@/components/site/SiteExperience'
-import { readLlmConfig } from '@/chat/llm'
 import { faqEntries } from '@/lib/faq-content'
 import { buildSteps } from '@/lib/about-content'
 import { getHomeViewModel } from '@/lib/home-content'
@@ -525,7 +524,7 @@ export default async function HomePage() {
           ) : null}
         </div>
       </section>
-      <FaqChat aiEnabled={readLlmConfig() !== null} />
+      <FaqChat />
     </main>
   )
 }

@@ -8,7 +8,7 @@ import {
 } from './limits'
 import { askLlm, buildSystemPrompt, cleanReply, parseChatTurns, readLlmConfig } from './llm'
 
-const config = { accountId: 'a'.repeat(32), apiToken: 'sekret-9f3', model: '@cf/test/model' }
+const config = { accountId: 'a'.repeat(32), apiToken: 'sekret-9f3', models: ['@cf/test/model'] }
 
 const req = (ip: string) =>
   new Request('https://x.test', { headers: { 'x-nf-client-connection-ip': ip } })
@@ -20,8 +20,12 @@ describe('readLlmConfig', () => {
       readLlmConfig({ CHAT_LLM_ACCOUNT_ID: 'a'.repeat(32) } as unknown as NodeJS.ProcessEnv),
     ).toBeNull()
     const env = { CHAT_LLM_ACCOUNT_ID: 'a'.repeat(32), CHAT_LLM_API_TOKEN: 't' }
-    expect(readLlmConfig(env as unknown as NodeJS.ProcessEnv)?.model).toContain('gemma')
+    expect(readLlmConfig(env as unknown as NodeJS.ProcessEnv)?.models[0]).toContain('glm')
     expect(readLlmConfig({ ...env, CHAT_LLM: 'off' } as unknown as NodeJS.ProcessEnv)).toBeNull()
+    expect(
+      readLlmConfig({ ...env, CHAT_LLM_MODEL: '@cf/pinned/m' } as unknown as NodeJS.ProcessEnv)
+        ?.models,
+    ).toEqual(['@cf/pinned/m'])
     expect(
       readLlmConfig({ ...env, CHAT_LLM_ACCOUNT_ID: '../x' } as unknown as NodeJS.ProcessEnv),
     ).toBeNull()
@@ -74,6 +78,31 @@ describe('askLlm', () => {
     expect(await askLlm([{ content: '相談したい', role: 'user' }], config, fetcher)).toBe(
       'ご相談は フォーム から。',
     )
+  })
+  it('falls through retired models and reads the OpenAI-style answer', async () => {
+    const calls: string[] = []
+    const fetcher = vi.fn(async (url: unknown) => {
+      calls.push(String(url))
+      if (calls.length === 1) return new Response('gone', { status: 404 })
+      return Response.json({ result: { choices: [{ message: { content: 'こんにちは' } }] } })
+    }) as unknown as typeof fetch
+    const reply = await askLlm(
+      [{ content: 'x', role: 'user' }],
+      { ...config, models: ['@cf/old/model', '@cf/new/model'] },
+      fetcher,
+    )
+    expect(reply).toBe('こんにちは')
+    expect(calls[0]).toContain('@cf/old/model')
+    expect(calls[1]).toContain('@cf/new/model')
+  })
+  it('does not try other models on quota errors', async () => {
+    const fetcher = vi.fn(
+      async () => new Response('quota', { status: 429 }),
+    ) as unknown as typeof fetch
+    expect(
+      await askLlm([{ content: 'x', role: 'user' }], { ...config, models: ['a', 'b'] }, fetcher),
+    ).toBeNull()
+    expect(fetcher).toHaveBeenCalledTimes(1)
   })
   it.each([
     ['non-2xx', async () => new Response('x', { status: 429 })],

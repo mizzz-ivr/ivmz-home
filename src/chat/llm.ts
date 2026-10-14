@@ -5,11 +5,17 @@ export const CHAT_MAX_TURNS = 6
 export const CHAT_MAX_CONTENT = 300
 const MAX_REPLY_CHARS = 700
 const LLM_TIMEOUT_MS = 8_000
-const DEFAULT_MODEL = '@cf/google/gemma-3-12b-it'
+// Cloudflare retires models regularly (gemma-3-12b-it was retired in May 2026), so the default is
+// an ordered list: a model the provider no longer knows (400/404/410) falls through to the next.
+export const DEFAULT_MODELS = [
+  '@cf/zai-org/glm-4.7-flash',
+  '@cf/google/gemma-4-26b-a4b-it',
+  '@cf/meta/llama-3.1-8b-instruct',
+] as const
 
 export type ChatTurn = { role: 'user' | 'assistant'; content: string }
 
-export type LlmConfig = { accountId: string; apiToken: string; model: string }
+export type LlmConfig = { accountId: string; apiToken: string; models: readonly string[] }
 
 /** The AI answer is opt-in: it needs both Cloudflare values and is off with CHAT_LLM=off. */
 export function readLlmConfig(env: NodeJS.ProcessEnv = process.env): LlmConfig | null {
@@ -17,7 +23,8 @@ export function readLlmConfig(env: NodeJS.ProcessEnv = process.env): LlmConfig |
   const apiToken = env.CHAT_LLM_API_TOKEN?.trim()
   if (!accountId || !apiToken || env.CHAT_LLM === 'off') return null
   if (!/^[a-z0-9]{16,64}$/i.test(accountId)) return null
-  return { accountId, apiToken, model: env.CHAT_LLM_MODEL?.trim() || DEFAULT_MODEL }
+  const pinned = env.CHAT_LLM_MODEL?.trim()
+  return { accountId, apiToken, models: pinned ? [pinned] : DEFAULT_MODELS }
 }
 
 /** Validates the browser payload: alternating-agnostic, bounded, text only. */
@@ -60,35 +67,57 @@ export function cleanReply(value: string): string {
     .slice(0, MAX_REPLY_CHARS)
 }
 
+function extractReply(data: unknown): string | null {
+  const result = (data as { result?: Record<string, unknown> } | null)?.result
+  if (!result) return null
+  if (typeof result.response === 'string') return result.response
+  // Newer models answer in the OpenAI-compatible shape.
+  const choices = result.choices as Array<{ message?: { content?: unknown } }> | undefined
+  const content = choices?.[0]?.message?.content
+  return typeof content === 'string' ? content : null
+}
+
+/** Statuses that mean "this model id is not usable", as opposed to quota or outage. */
+const MODEL_UNAVAILABLE = new Set([400, 404, 410])
+
 export async function askLlm(
   turns: ChatTurn[],
   config: LlmConfig,
   fetcher: typeof fetch = fetch,
 ): Promise<string | null> {
-  try {
-    const response = await fetcher(
-      `https://api.cloudflare.com/client/v4/accounts/${config.accountId}/ai/run/${config.model}`,
-      {
-        body: JSON.stringify({
-          max_tokens: 320,
-          messages: [{ content: buildSystemPrompt(), role: 'system' }, ...turns],
-          temperature: 0.3,
-        }),
-        headers: {
-          Authorization: `Bearer ${config.apiToken}`,
-          'Content-Type': 'application/json',
+  const deadline = Date.now() + LLM_TIMEOUT_MS
+  for (const model of config.models) {
+    const remaining = deadline - Date.now()
+    if (remaining <= 500) return null
+    try {
+      const response = await fetcher(
+        `https://api.cloudflare.com/client/v4/accounts/${config.accountId}/ai/run/${model}`,
+        {
+          body: JSON.stringify({
+            max_tokens: 320,
+            messages: [{ content: buildSystemPrompt(), role: 'system' }, ...turns],
+            temperature: 0.3,
+          }),
+          headers: {
+            Authorization: `Bearer ${config.apiToken}`,
+            'Content-Type': 'application/json',
+          },
+          method: 'POST',
+          signal: AbortSignal.timeout(remaining),
         },
-        method: 'POST',
-        signal: AbortSignal.timeout(LLM_TIMEOUT_MS),
-      },
-    )
-    if (!response.ok) return null
-    const data = (await response.json()) as { result?: { response?: unknown } }
-    const text = data.result?.response
-    if (typeof text !== 'string') return null
-    const reply = cleanReply(text)
-    return reply.length > 0 ? reply : null
-  } catch {
-    return null
+      )
+      if (!response.ok) {
+        // Status only, never the question or the answer.
+        console.error('CHAT_LLM_FAILED', JSON.stringify({ model, status: response.status }))
+        if (MODEL_UNAVAILABLE.has(response.status)) continue
+        return null
+      }
+      const text = extractReply(await response.json())
+      const reply = text === null ? '' : cleanReply(text)
+      return reply.length > 0 ? reply : null
+    } catch {
+      return null
+    }
   }
+  return null
 }
