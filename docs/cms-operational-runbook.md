@@ -124,6 +124,7 @@ CMS queryが正常に0件を返した状態は運用上の有効な状態であ�
 ### Works
 
 - create / edit / draft / publish / unpublish
+- 「GitHub から選ぶ」で公開リポジトリを選ぶと、GitHub URL が入る（タイトル・概要・技術は、空のときだけ入る。`docs/works-github.md`）
 - `/works` / `/works/[slug]`
 - canonical / Open Graph / CreativeWork JSON-LD
 - sitemap inclusion
