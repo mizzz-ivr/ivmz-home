@@ -30,6 +30,17 @@ export const Works: CollectionConfig = {
   },
   fields: [
     {
+      // Not stored: a helper that fills the GitHub URL (and empty title / summary / stack) from the
+      // owner's public repositories. Rendered outside the groups so the custom Field is honoured.
+      name: 'githubRepoPicker',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: '/components/admin/GithubRepoPicker#GithubRepoPicker',
+        },
+      },
+    },
+    {
       type: 'group',
       label: 'Identity',
       fields: [
