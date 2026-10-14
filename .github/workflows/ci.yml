@@ -84,6 +84,10 @@ jobs:
       PAYLOAD_PUBLIC_SERVER_URL: http://127.0.0.1:3000
       PAYLOAD_SECRET: ci-only-secret-not-for-production-2026-ivmz-home
       E2E_BASE_URL: http://127.0.0.1:3000
+      # Behave like a Netlify Deploy Preview: no real mail is sent and the bot check is off, which
+      # is what the contact form tests expect.
+      CONTEXT: deploy-preview
+      PAYLOAD_BUILD_ORIGIN: http://127.0.0.1:3000
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
