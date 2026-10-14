@@ -1,6 +1,8 @@
 import Image from 'next/image'
 import { SectionIndex, ToolboxMarquee } from '@/components/site/SiteEnhancements'
+import { ChatOpenButton, FaqChat } from '@/components/site/FaqChat'
 import { HeroPointerSignal } from '@/components/site/SiteExperience'
+import { faqEntries } from '@/lib/faq-content'
 import { buildSteps } from '@/lib/about-content'
 import { getHomeViewModel } from '@/lib/home-content'
 import { site } from '@/lib/site'
@@ -104,6 +106,7 @@ export default async function HomePage() {
     { id: 'process', label: 'PROCESS' },
     { id: 'about', label: 'ABOUT' },
     ...(latestColumns.length > 0 ? [{ id: 'latest', label: 'LATEST' }] : []),
+    { id: 'faq', label: 'FAQ' },
     { id: 'contact', label: 'CONTACT' },
   ]
 
@@ -431,6 +434,54 @@ export default async function HomePage() {
         </section>
       ) : null}
 
+      <section className="section-shell faq-section" id="faq" aria-labelledby="faq-title">
+        <div className="section-intro compact-intro intro-ja" data-reveal>
+          <p className="signal-label">{latestColumns.length > 0 ? '06' : '05'} / FAQ</p>
+          <h2 id="faq-title">
+            よくある<mark className="marker">質問。</mark>
+          </h2>
+          <p>知りたいことは、ここか、チャットで。わからないときは、フォームからどうぞ。</p>
+        </div>
+        <div className="faq-layout">
+          <div className="faq-list" data-reveal>
+            {faqEntries.map((entry) => (
+              <details key={entry.id} className="faq-item">
+                <summary>
+                  <span>{entry.question}</span>
+                  <i aria-hidden="true" />
+                </summary>
+                <div className="faq-answer">
+                  {entry.answer.map((line) => (
+                    <p key={line}>{line}</p>
+                  ))}
+                  {entry.link ? (
+                    <a
+                      className="snapshot-destination"
+                      href={entry.link.href}
+                      {...(entry.link.href.startsWith('https://')
+                        ? { rel: 'noopener noreferrer', target: '_blank' }
+                        : {})}
+                    >
+                      {entry.link.label} →
+                    </a>
+                  ) : null}
+                </div>
+              </details>
+            ))}
+          </div>
+          <aside className="faq-chat-cta" data-reveal data-spotlight>
+            <span className="pop-sticker faq-sticker" aria-hidden="true">
+              ✦ ASK ME
+            </span>
+            <h3>チャットで聞いてみる</h3>
+            <p>質問を選ぶか、入力するだけ。FAQにあることなら、その場でお答えします。</p>
+            <ChatOpenButton>
+              チャットを開く <span aria-hidden="true">💬</span>
+            </ChatOpenButton>
+          </aside>
+        </div>
+      </section>
+
       <section
         className="section-shell contact-section"
         id="contact"
@@ -440,7 +491,7 @@ export default async function HomePage() {
           IVMZ / SIGNAL / CONTACT
         </div>
         <div className="contact-copy" data-reveal>
-          <p className="signal-label">{latestColumns.length > 0 ? '06' : '05'} / CONTACT</p>
+          <p className="signal-label">{latestColumns.length > 0 ? '07' : '06'} / CONTACT</p>
           <h2 id="contact-title">
             ご相談は、<mark className="marker">気軽に。</mark>
           </h2>
@@ -473,6 +524,7 @@ export default async function HomePage() {
           ) : null}
         </div>
       </section>
+      <FaqChat />
     </main>
   )
 }
