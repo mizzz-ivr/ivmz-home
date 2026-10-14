@@ -5,10 +5,14 @@ import {
   aboutAreas,
   buildSteps,
   consultTopics,
+  playerStats,
+  practices,
   principles,
   profileFacts,
+  publicBuilds,
   stackGroups,
   storyParagraphs,
+  tagline,
 } from '@/lib/about-content'
 import { createPageMetadata } from '@/lib/metadata'
 import { site } from '@/lib/site'
@@ -80,6 +84,44 @@ export default function AboutPage() {
         </dl>
       </section>
 
+      <section className="about-player" aria-labelledby="about-player-title">
+        <div className="about-player-head" data-reveal>
+          <p className="signal-label">PLAYER CARD</p>
+          <h2 id="about-player-title">
+            ざっくり、<mark className="marker">わたし。</mark>
+          </h2>
+        </div>
+        <ul className="player-stats">
+          {playerStats.map((stat, index) => (
+            <li
+              key={stat.label}
+              data-reveal="pop"
+              style={
+                {
+                  '--reveal-delay': `${index * 70}ms`,
+                  '--tilt': `${index % 2 ? 1.6 : -1.6}deg`,
+                } as React.CSSProperties
+              }
+            >
+              <span className="player-mark" aria-hidden="true">
+                {stat.mark}
+              </span>
+              <small>{stat.label}</small>
+              <strong>{stat.value}</strong>
+              <span>{stat.note}</span>
+            </li>
+          ))}
+        </ul>
+        <p className="about-tagline" aria-label={tagline.join('、')} data-reveal>
+          {tagline.map((word, index) => (
+            <span key={word}>
+              {word}
+              {index < tagline.length - 1 ? <i aria-hidden="true">✦</i> : null}
+            </span>
+          ))}
+        </p>
+      </section>
+
       <PageSection title="Story" description={<p>どんな考え方で、ものをつくっているか。</p>}>
         <div className="about-story">
           {storyParagraphs.map((paragraph, index) => (
@@ -139,6 +181,34 @@ export default function AboutPage() {
       </PageSection>
 
       <PageSection
+        title="Public builds"
+        description={<p>公開して育てているものです。GitHub のプロフィールにも載せています。</p>}
+      >
+        <ul className="about-builds">
+          {publicBuilds.map((build, index) => (
+            <li
+              key={build.name}
+              data-reveal="pop"
+              data-spotlight
+              style={{ '--reveal-delay': `${index * 70}ms` } as React.CSSProperties}
+            >
+              <span className="about-build-index" aria-hidden="true">
+                {String(index + 1).padStart(2, '0')}
+              </span>
+              <h3>{build.name}</h3>
+              <p>{build.description}</p>
+              <small>{build.stack}</small>
+              {build.href ? (
+                <a className="about-area-project" href={build.href}>
+                  GitHub で見る <span aria-hidden="true">↗</span>
+                </a>
+              ) : null}
+            </li>
+          ))}
+        </ul>
+      </PageSection>
+
+      <PageSection
         title="How I work"
         description={<p>作って終わりにせず、公開してから磨く。一周ぶんの進め方です。</p>}
       >
@@ -168,6 +238,34 @@ export default function AboutPage() {
             </article>
           ))}
         </div>
+      </PageSection>
+
+      <PageSection title="Practices" description={<p>いつも意識している、ものづくりの型です。</p>}>
+        <ul className="stack-chips about-practices" aria-label="意識していること">
+          {practices.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+      </PageSection>
+
+      <PageSection title="Elsewhere" description={<p>日々の更新は、ここでしています。</p>}>
+        <ul className="about-elsewhere">
+          {[
+            { label: 'GitHub', href: site.githubUrl, note: '開発の記録' },
+            { label: 'X', href: site.xUrl, note: '日々のこと' },
+            { label: 'Instagram', href: site.instagramUrl, note: '写真・日常' },
+            { label: 'YouTube', href: site.youtubeUrl, note: '動画' },
+            { label: 'ivRooom', href: site.communityUrl, note: 'コミュニティ・チーム' },
+          ].map((link) => (
+            <li key={link.label}>
+              <a href={link.href} rel="noopener noreferrer" target="_blank">
+                <b>{link.label}</b>
+                <span>{link.note}</span>
+                <i aria-hidden="true">↗</i>
+              </a>
+            </li>
+          ))}
+        </ul>
       </PageSection>
 
       <PageSection title="Work with me" description={<p>こんなご相談をお待ちしています。</p>}>

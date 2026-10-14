@@ -1,0 +1,77 @@
+/* ---- Playful touches (click sparkles, easter egg) ---- */
+.click-spark {
+  position: fixed;
+  z-index: 200;
+  pointer-events: none;
+  font-style: normal;
+  font-size: 14px;
+  line-height: 1;
+  transform: translate(-50%, -50%);
+  animation: click-spark 640ms cubic-bezier(0.2, 0.75, 0.2, 1) forwards;
+}
+@keyframes click-spark {
+  to {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.4) rotate(160deg);
+  }
+}
+.konami {
+  position: fixed;
+  z-index: 210;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.konami p {
+  position: absolute;
+  left: 50%;
+  top: 22%;
+  margin: 0;
+  padding: 14px 22px;
+  border: 3px solid var(--color-pop-ink, #1a1230);
+  border-radius: 999px;
+  background: var(--color-pop, #ffd84a);
+  color: var(--color-pop-ink, #1a1230);
+  font: 800 clamp(0.85rem, 2.4vw, 1.2rem) / 1.3 var(--font-mono);
+  letter-spacing: 0.06em;
+  text-align: center;
+  box-shadow: 6px 6px 0 var(--color-pop-ink, #1a1230);
+  transform: translateX(-50%) rotate(-2deg);
+  animation: konami-pop 4s var(--ease-signal) forwards;
+}
+@keyframes konami-pop {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) rotate(-2deg) scale(0.5);
+  }
+  10%,
+  80% {
+    opacity: 1;
+    transform: translateX(-50%) rotate(-2deg) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) rotate(-2deg) scale(0.9) translateY(-20px);
+  }
+}
+.konami-confetti i {
+  position: absolute;
+  top: -20px;
+  left: var(--x);
+  width: 10px;
+  height: 16px;
+  border-radius: 2px;
+  transform: rotate(var(--r));
+  animation: konami-fall 3.2s linear var(--d) forwards;
+}
+@keyframes konami-fall {
+  to {
+    transform: translateY(105vh) rotate(calc(var(--r) + 540deg));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .click-spark,
+  .konami {
+    display: none;
+  }
+}

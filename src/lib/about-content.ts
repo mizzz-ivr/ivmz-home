@@ -18,6 +18,59 @@ export const profileFacts = [
   { label: 'COMMUNITY', value: 'ivRooom', note: 'コミュニティ・チームの運営母体' },
 ] as const
 
+export const tagline = ['小さく作る', '速く磨く', '安全に運用する'] as const
+
+export type PlayerStat = { label: string; value: string; note: string; mark: string }
+
+/** Personal profile facts the owner chose to publish (no birth year). */
+export const playerStats: readonly PlayerStat[] = [
+  { label: 'BIRTHDAY', value: '4 / 2', note: 'おひつじ座', mark: '♈' },
+  { label: 'BLOOD', value: 'AB', note: 'AB型', mark: '🩸' },
+  { label: 'MBTI', value: 'ENFJ', note: '主人公タイプ', mark: '✦' },
+  { label: 'FROM', value: '愛媛', note: '出身', mark: '🍊' },
+  { label: 'BASE', value: '東京', note: 'いまの拠点', mark: '🗼' },
+] as const
+
+export type PublicBuild = { name: string; description: string; stack: string; href: string | null }
+
+/** Public projects named on the GitHub profile. Only repositories whose URL is known are linked. */
+export const publicBuilds: readonly PublicBuild[] = [
+  {
+    name: 'ivmz-home',
+    description: 'このサイト。個人サイトとポートフォリオのプラットフォーム。',
+    stack: 'Next.js · Payload · PostgreSQL · Playwright',
+    href: 'https://github.com/mizzz-ivr/ivmz-home',
+  },
+  {
+    name: 'RooMate Voice',
+    description: 'Discord と Realtime AI の音声ボット。Windows デスクトップアプリつき。',
+    stack: 'Electron · Discord · Realtime AI',
+    href: 'https://github.com/mizzz-ivr/roomate-voice',
+  },
+  {
+    name: 'Herta',
+    description: 'Discord コミュニティのためのプラットフォーム（モノレポ）。',
+    stack: 'NestJS · Next.js · BullMQ · PostgreSQL · Redis',
+    href: null,
+  },
+  {
+    name: 'IVRM Dashboard',
+    description: '運用と可観測性のためのコンソール。',
+    stack: 'Next.js · Supabase · Go',
+    href: null,
+  },
+] as const
+
+export const practices = [
+  'セキュリティ・バイ・デザイン',
+  '最小権限',
+  'フェイルクローズ',
+  '自動テスト',
+  'アクセシビリティ',
+  '可観測性',
+  'リリースの自動化',
+] as const
+
 export const storyParagraphs = [
   '実装することが好きです。画面だけ、APIだけと区切らず、触れる体験からデータ・運用までを一つのプロダクトとして考えます。',
   'コード、UI、インフラを別々の成果物として扱うのではなく、「人が使い続けられるか」を境界に設計するのが、自分の開発スタイルです。',
