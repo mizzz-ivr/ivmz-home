@@ -173,3 +173,30 @@ test('publishes share metadata and FAQ structured data', async ({ page }) => {
   const jsonLd = await page.locator('script[type="application/ld+json"]').allTextContents()
   expect(jsonLd.some((text) => text.includes('"FAQPage"'))).toBe(true)
 })
+
+test('plays the click sparkle and the Konami easter egg', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'chromium', 'Pointer effects are checked in Chromium')
+  await gotoExpected(page, '/')
+
+  // The effects attach after hydration, so retry until the first click draws sparkles.
+  await expect(async () => {
+    await page.mouse.click(300, 400)
+    await expect(page.locator('.click-spark').first()).toBeAttached({ timeout: 1_000 })
+  }).toPass()
+
+  for (const key of [
+    'ArrowUp',
+    'ArrowUp',
+    'ArrowDown',
+    'ArrowDown',
+    'ArrowLeft',
+    'ArrowRight',
+    'ArrowLeft',
+    'ArrowRight',
+    'b',
+    'a',
+  ]) {
+    await page.keyboard.press(key)
+  }
+  await expect(page.locator('[data-konami]')).toContainText('COMMAND ACCEPTED')
+})

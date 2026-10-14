@@ -6,7 +6,11 @@ export default defineConfig([
   ...nextVitals,
   ...nextTs,
   {
-    files: ['src/app/(site)/**/*.tsx', 'src/components/site/**/*.tsx'],
+    files: [
+      'src/app/(site)/**/*.tsx',
+      'src/app/global-not-found.tsx',
+      'src/components/site/**/*.tsx',
+    ],
     rules: {
       // Public site navigation intentionally performs full document requests to preserve MPA semantics.
       '@next/next/no-html-link-for-pages': 'off',
