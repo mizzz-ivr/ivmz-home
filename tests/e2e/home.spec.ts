@@ -158,3 +158,18 @@ test('opens the chat from the FAQ section', async ({ page }) => {
   await page.getByRole('button', { name: /チャットを開く/ }).click()
   await expect(page.getByRole('dialog', { name: 'FAQ Assistant' })).toBeVisible()
 })
+
+test('publishes share metadata and FAQ structured data', async ({ page }) => {
+  await gotoExpected(page, '/')
+
+  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
+    'content',
+    'https://ivmz.ivrm.jp/og.png',
+  )
+  await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute(
+    'content',
+    'summary_large_image',
+  )
+  const jsonLd = await page.locator('script[type="application/ld+json"]').allTextContents()
+  expect(jsonLd.some((text) => text.includes('"FAQPage"'))).toBe(true)
+})
