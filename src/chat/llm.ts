@@ -76,6 +76,15 @@ function extractReply(data: unknown): string | null {
   return typeof content === 'string' ? content : null
 }
 
+async function isModelCapacityError(response: Response): Promise<boolean> {
+  try {
+    const body = (await response.json()) as { errors?: Array<{ code?: unknown }> }
+    return body.errors?.some((error) => error.code === 3040) === true
+  } catch {
+    return false
+  }
+}
+
 /** Statuses that mean "this model id is not usable", as opposed to quota or outage. */
 const MODEL_UNAVAILABLE = new Set([400, 404, 410])
 
@@ -109,6 +118,9 @@ export async function askLlm(
         // Status only, never the question or the answer.
         console.error('CHAT_LLM_FAILED', JSON.stringify({ model, status: response.status }))
         if (MODEL_UNAVAILABLE.has(response.status)) continue
+        // 429 is both "account quota used up" (stop) and "this model is at capacity" (try the
+        // next one); Cloudflare tells them apart by the error code in the body (3040 = capacity).
+        if (response.status === 429 && (await isModelCapacityError(response))) continue
         return null
       }
       const text = extractReply(await response.json())

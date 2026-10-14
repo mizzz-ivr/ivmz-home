@@ -95,6 +95,26 @@ describe('askLlm', () => {
     expect(calls[0]).toContain('@cf/old/model')
     expect(calls[1]).toContain('@cf/new/model')
   })
+  it('falls through a model-capacity 429 but stops on account quota', async () => {
+    const capacity = vi
+      .fn()
+      .mockResolvedValueOnce(Response.json({ errors: [{ code: 3040 }] }, { status: 429 }))
+      .mockResolvedValueOnce(
+        Response.json({ result: { response: 'ok' } }),
+      ) as unknown as typeof fetch
+    expect(
+      await askLlm([{ content: 'x', role: 'user' }], { ...config, models: ['a', 'b'] }, capacity),
+    ).toBe('ok')
+    expect(capacity).toHaveBeenCalledTimes(2)
+
+    const quota = vi.fn(async () =>
+      Response.json({ errors: [{ code: 3036 }] }, { status: 429 }),
+    ) as unknown as typeof fetch
+    expect(
+      await askLlm([{ content: 'x', role: 'user' }], { ...config, models: ['a', 'b'] }, quota),
+    ).toBeNull()
+    expect(quota).toHaveBeenCalledTimes(1)
+  })
   it('does not try other models on quota errors', async () => {
     const fetcher = vi.fn(
       async () => new Response('quota', { status: 429 }),
