@@ -22,7 +22,20 @@ them next to the link on `/works` and `/works/<slug>`: stars, forks, language, l
 
 In `/admin` -> Works, put the repository URL in *GitHub URL*. Remove it to stop showing facts.
 
+## Picking a repository in the editor
+
+In `/admin` -> Works there is a **GitHub から選ぶ** box at the top. It lists the owner's public repositories
+(forks and archived ones are hidden unless you tick the box). Choosing one and pressing **この内容を入力する**
+fills the *GitHub URL*, and fills *Title*, *Summary* and *Stack* (language + topics) **only when they are still
+empty**, so an edited Work is never overwritten. Nothing is saved until you save the Work.
+
+- The list comes from `GET /api/admin/github-repos`, which needs an admin session and reads only public
+  data (`api.github.com/users/<owner>/repos`, 5 minute cache). The owner is the account in `site.githubUrl`,
+  never user input. `GITHUB_API_TOKEN` is used when set, to raise the rate limit.
+- If GitHub cannot be reached the box says so; the *GitHub URL* field still accepts a URL directly.
+- No repository is shown on the site until you create and publish a Work for it.
+
 ## Phase 2 (not built)
 
-Syncing README / releases / topics into Works, and creating Works from selected repositories, would need
+Syncing README / releases / topics into Works, and syncing a Work automatically from its repository, would need
 an explicit allowlist in the CMS and a token with read access; design it before adding fields.
