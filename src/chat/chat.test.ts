@@ -100,5 +100,9 @@ describe('allowChatRequest', () => {
     resetChatLimitsForTests()
     for (let i = 0; i < CHAT_DAILY_LIMIT; i += 1) allowChatRequest(req(`9.9.${i}.1`))
     expect(allowChatRequest(req('2.2.2.2'))).toBe('daily')
+    // Thousands of distinct visitors must not evict the shared counter and unlock more calls.
+    for (let i = 0; i < 2_500; i += 1)
+      allowChatRequest(req(`7.${i % 250}.${Math.floor(i / 250)}.1`))
+    expect(allowChatRequest(req('8.8.8.8'))).toBe('daily')
   })
 })

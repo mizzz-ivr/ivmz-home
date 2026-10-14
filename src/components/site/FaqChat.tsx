@@ -133,34 +133,23 @@ export function FaqChat({ aiEnabled }: { aiEnabled: boolean }) {
     [reply],
   )
 
-  const askAi = useCallback(
-    async (history: Message[], question: string): Promise<string | null> => {
-      try {
-        const turns = [
-          ...history
-            .filter((item) => item.text.length > 0)
-            .slice(-4)
-            .map((item) => ({
-              content: item.text.join(' '),
-              role: item.role === 'user' ? 'user' : 'assistant',
-            })),
-          { content: question, role: 'user' },
-        ]
-        const response = await fetch('/api/chat', {
-          body: JSON.stringify({ messages: turns }),
-          headers: { 'Content-Type': 'application/json' },
-          method: 'POST',
-          signal: AbortSignal.timeout(10_000),
-        })
-        if (!response.ok) return null
-        const data = (await response.json()) as { reply?: unknown }
-        return typeof data.reply === 'string' && data.reply.length > 0 ? data.reply : null
-      } catch {
-        return null
-      }
-    },
-    [],
-  )
+  // Only the current question is sent. Earlier turns stay in the browser: they may have been
+  // answered locally, which the notice and privacy policy describe as never leaving the device.
+  const askAi = useCallback(async (question: string): Promise<string | null> => {
+    try {
+      const response = await fetch('/api/chat', {
+        body: JSON.stringify({ messages: [{ content: question, role: 'user' }] }),
+        headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
+        signal: AbortSignal.timeout(10_000),
+      })
+      if (!response.ok) return null
+      const data = (await response.json()) as { reply?: unknown }
+      return typeof data.reply === 'string' && data.reply.length > 0 ? data.reply : null
+    } catch {
+      return null
+    }
+  }, [])
 
   const send = useCallback(
     async (label: string, entryId?: string) => {
@@ -168,7 +157,6 @@ export function FaqChat({ aiEnabled }: { aiEnabled: boolean }) {
       const text = label.trim().slice(0, MAX_CHAT_INPUT)
       if (!text) return
       busy.current = true
-      const history = messages
       push({ role: 'user', text: [text] })
       setDraft('')
 
@@ -188,7 +176,7 @@ export function FaqChat({ aiEnabled }: { aiEnabled: boolean }) {
         }
         if (aiEnabled) {
           setTyping(true)
-          const answer = await askAi(history, text)
+          const answer = await askAi(text)
           setTyping(false)
           if (answer) {
             push({
@@ -210,7 +198,7 @@ export function FaqChat({ aiEnabled }: { aiEnabled: boolean }) {
         busy.current = false
       }
     },
-    [aiEnabled, answerEntry, askAi, messages, push, reply],
+    [aiEnabled, answerEntry, askAi, push, reply],
   )
 
   const lastBotId = [...messages].reverse().find((item) => item.role === 'bot')?.id
