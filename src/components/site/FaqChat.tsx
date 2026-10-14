@@ -46,7 +46,7 @@ export function ChatOpenButton({ children }: { children: React.ReactNode }) {
 
 export function FaqChat() {
   // Learned at runtime: the home page is static, so build-time env would not reflect the setup.
-  const [aiEnabled, setAiEnabled] = useState(false)
+  const [aiEnabled, setAiEnabled] = useState<boolean | null>(null)
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
   const [typing, setTyping] = useState(false)
@@ -56,6 +56,8 @@ export function FaqChat() {
   const inputRef = useRef<HTMLInputElement>(null)
   const launcherRef = useRef<HTMLButtonElement>(null)
   const busy = useRef(false)
+  // Started when the chat first opens; a question typed before it settles waits for it.
+  const availability = useRef<Promise<boolean> | null>(null)
   const titleId = useId()
 
   const push = useCallback((message: Omit<Message, 'id'>) => {
@@ -64,10 +66,16 @@ export function FaqChat() {
 
   const openChat = useCallback(() => {
     setOpen(true)
-    fetch('/api/chat', { cache: 'no-store' })
-      .then((response) => (response.ok ? response.json() : null))
-      .then((data: { enabled?: unknown } | null) => setAiEnabled(data?.enabled === true))
-      .catch(() => setAiEnabled(false))
+    if (!availability.current) {
+      availability.current = fetch('/api/chat', { cache: 'no-store' })
+        .then((response) => (response.ok ? response.json() : null))
+        .then((data: { enabled?: unknown } | null) => data?.enabled === true)
+        .catch(() => false)
+        .then((enabled) => {
+          setAiEnabled(enabled)
+          return enabled
+        })
+    }
     setMessages((current) =>
       current.length > 0
         ? current
@@ -180,7 +188,7 @@ export function FaqChat() {
           await answerEntry(matched.id)
           return
         }
-        if (aiEnabled) {
+        if (await (availability.current ?? Promise.resolve(false))) {
           setTyping(true)
           const answer = await askAi(text)
           setTyping(false)
@@ -204,7 +212,7 @@ export function FaqChat() {
         busy.current = false
       }
     },
-    [aiEnabled, answerEntry, askAi, push, reply],
+    [answerEntry, askAi, push, reply],
   )
 
   const lastBotId = [...messages].reverse().find((item) => item.role === 'bot')?.id
@@ -243,7 +251,7 @@ export function FaqChat() {
             <h2 id={titleId}>FAQ Assistant</h2>
             <p>
               <i aria-hidden="true" />
-              {aiEnabled ? 'FAQ + AI で回答します' : 'よくある質問にお答えします'}
+              {aiEnabled === true ? 'FAQ + AI で回答します' : 'よくある質問にお答えします'}
             </p>
           </div>
           <button
@@ -333,9 +341,11 @@ export function FaqChat() {
           </button>
         </form>
         <p className="chat-note">
-          {aiEnabled
+          {aiEnabled === true
             ? 'ボタンの質問はこの端末の中だけで処理されます。自由入力でFAQにない内容は、AI（Cloudflare Workers AI）に送って回答を作ります。送信内容は当サイトでは保存しません。個人情報は入力しないでください。'
-            : '入力した内容はこの端末の中だけで処理され、送信も保存もされません。'}
+            : aiEnabled === false
+              ? '入力した内容はこの端末の中だけで処理され、送信も保存もされません。'
+              : 'ボタンの質問はこの端末の中だけで処理されます。自由入力でFAQにない内容は、AI回答が有効な場合に限り、AI（Cloudflare Workers AI）に送られます。個人情報は入力しないでください。'}
         </p>
       </section>
     </>
