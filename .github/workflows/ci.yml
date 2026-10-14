@@ -56,3 +56,59 @@ jobs:
         shell: bash
         run: git diff --exit-code -- src/payload-types.ts 'src/app/(payload)/admin/importMap.js'
       - run: pnpm build
+
+  # Browser tests against a local production build, so iteration on a pull request does not need a
+  # Netlify Deploy Preview (each preview build spends Netlify credits). The Deploy Preview smoke
+  # test still runs once on the final commit of a pull request and covers what only Netlify
+  # provides (headers, rate limits, the real deploy pipeline).
+  e2e-local:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: ivmz_home
+          POSTGRES_PASSWORD: payload
+          POSTGRES_USER: payload
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U payload -d ivmz_home"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://payload:payload@127.0.0.1:5432/ivmz_home
+      PAYLOAD_ALLOWED_ORIGINS: http://127.0.0.1:3000
+      PAYLOAD_PUBLIC_SERVER_URL: http://127.0.0.1:3000
+      PAYLOAD_SECRET: ci-only-secret-not-for-production-2026-ivmz-home
+      E2E_BASE_URL: http://127.0.0.1:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.0
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm db:migrate
+      - run: pnpm build
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Start the production server
+        run: |
+          nohup pnpm start > server.log 2>&1 &
+          for attempt in {1..30}; do
+            if curl --silent --fail --output /dev/null http://127.0.0.1:3000/; then exit 0; fi
+            sleep 2
+          done
+          cat server.log
+          exit 1
+      - name: Browser tests (Chromium)
+        run: pnpm exec playwright test --project=chromium
+      - name: Server log on failure
+        if: failure()
+        run: tail -n 100 server.log || true

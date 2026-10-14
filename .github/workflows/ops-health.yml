@@ -3,6 +3,7 @@ name: Ops Health
 # Scheduled production health check and weekly retention report for the contact inbox.
 # Needs the repository secret OPS_HEALTH_TOKEN (same value as the Netlify variable); without it the
 # jobs only print a notice and succeed. A failed run is e-mailed to you by GitHub automatically.
+# HTTP 404 from the site (token not set there, or the endpoint is not deployed yet) is a warning.
 # Optional: secret OPS_ALERT_WEBHOOK_URL (Discord/Slack), variables SITE_URL and RETENTION_APPLY.
 
 on:
@@ -59,6 +60,15 @@ jobs:
 
           if [ "$code" = "200" ] && [ "$status" = "ok" ]; then
             echo "healthy"
+            exit 0
+          fi
+
+          # 404 means the endpoint is not available yet: the token is not set on the site, or the
+          # release that adds the endpoint has not been deployed (for example a skipped production
+          # deploy). That is a setup state, not an outage, so it must not e-mail a failure every
+          # 30 minutes. Real problems (401, 5xx, degraded, down, unreachable) still fail the run.
+          if [ "$code" = "404" ]; then
+            echo "::warning::The health endpoint is not available yet (HTTP 404): OPS_HEALTH_TOKEN is not set on the site, or the release with the endpoint is not deployed."
             exit 0
           fi
 
