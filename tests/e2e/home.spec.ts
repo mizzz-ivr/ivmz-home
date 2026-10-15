@@ -170,8 +170,23 @@ test('publishes share metadata and FAQ structured data', async ({ page }) => {
     'content',
     'summary_large_image',
   )
-  const jsonLd = await page.locator('script[type="application/ld+json"]').allTextContents()
-  expect(jsonLd.some((text) => text.includes('"FAQPage"'))).toBe(true)
+  // Retry once through a fresh request so a transient edge-cache variant cannot hide the signal,
+  // and report what was actually served when the structured data is missing.
+  const readJsonLd = async () =>
+    (await page.locator('script[type="application/ld+json"]').allTextContents()).map(
+      (text) => text.match(/"@type"\s*:\s*"([A-Za-z]+)"/)?.[1] ?? 'unknown',
+    )
+  let types = await readJsonLd()
+  if (!types.includes('FAQPage')) {
+    const response = await page.reload()
+    const headers = response?.headers() ?? {}
+    types = await readJsonLd()
+    expect(
+      types,
+      `JSON-LD types after reload; cache-status=${headers['cache-status'] ?? 'n/a'} age=${headers.age ?? 'n/a'} request-id=${headers['x-nf-request-id'] ?? 'n/a'}`,
+    ).toContain('FAQPage')
+  }
+  expect(types).toContain('FAQPage')
 })
 
 test('plays the click sparkle and the Konami easter egg', async ({ page }, testInfo) => {
