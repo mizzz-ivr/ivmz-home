@@ -193,15 +193,25 @@ html.ivmz-signature-seen .signature-intro {
   box-shadow: 7px 7px 0 var(--color-pop, #ffd84a);
   transform: translateX(-50%);
 }
-.analytics-consent strong { font-size: 0.92rem; }
+.analytics-consent strong {
+  font-size: 0.92rem;
+}
 .analytics-consent p {
   margin: 5px 0 0;
   color: var(--color-text-soft);
   font-size: 0.78rem;
   line-height: 1.55;
 }
-.analytics-consent p a { margin-left: 8px; color: var(--color-primary-soft); }
-.analytics-consent-actions { display: flex; flex: none; flex-wrap: wrap; gap: 8px; }
+.analytics-consent p a {
+  margin-left: 8px;
+  color: var(--color-primary-soft);
+}
+.analytics-consent-actions {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  gap: 8px;
+}
 .analytics-consent-actions button {
   min-height: 42px;
   padding: 8px 13px;
@@ -236,5 +246,7 @@ html.ivmz-signature-seen .signature-intro {
     align-items: stretch;
     gap: 12px;
   }
-  .analytics-consent-actions { justify-content: flex-end; }
+  .analytics-consent-actions {
+    justify-content: flex-end;
+  }
 }
