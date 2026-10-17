@@ -12,7 +12,8 @@
 @keyframes click-spark {
   to {
     opacity: 0;
-    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.4) rotate(160deg);
+    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.4)
+      rotate(160deg);
   }
 }
 .konami {
