@@ -15,9 +15,13 @@ export async function AnalyticsOverview() {
     <section aria-label="サイト閲覧統計" style={{ marginTop: 28 }}>
       <h3 style={{ margin: '0 0 10px' }}>サイト閲覧統計（GA4）</h3>
       {summary.state === 'not-configured' ? (
-        <p>未設定です。GA4_PROPERTY_ID と GA4_SERVICE_ACCOUNT_JSON を設定すると集計が表示されます。</p>
+        <p>
+          未設定です。GA4_PROPERTY_ID と GA4_SERVICE_ACCOUNT_JSON を設定すると集計が表示されます。
+        </p>
       ) : summary.state === 'unavailable' ? (
-        <p role="status">Google Analyticsの集計を取得できませんでした。権限またはAPIの状態をご確認ください。</p>
+        <p role="status">
+          Google Analyticsの集計を取得できませんでした。権限またはAPIの状態をご確認ください。
+        </p>
       ) : (
         <>
           <div
