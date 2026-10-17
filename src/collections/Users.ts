@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { isAuthenticated } from '@/access/is-authenticated'
+import { isAdminCollectionUser, isAuthenticated } from '@/access/is-authenticated'
 import { isPayloadUnauthorizedError } from '@/security/payload-authorization'
 
 export const Users: CollectionConfig = {
@@ -9,7 +9,7 @@ export const Users: CollectionConfig = {
     useAsTitle: 'email',
   },
   access: {
-    admin: isAuthenticated,
+    admin: isAdminCollectionUser,
     unlock: isAuthenticated,
   },
   auth: {
