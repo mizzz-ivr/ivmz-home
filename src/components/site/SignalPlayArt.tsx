@@ -23,10 +23,7 @@ export function SignalPlayArt() {
         className="signal-play-ink"
         d="M66 244 C90 225 106 266 135 248 M370 288 C407 259 427 324 455 296"
       />
-      <path
-        className="signal-play-ink"
-        d="M73 340 L112 345 L102 384 M395 144 L439 137 L428 178"
-      />
+      <path className="signal-play-ink" d="M73 340 L112 345 L102 384 M395 144 L439 137 L428 178" />
       <g className="signal-play-tab" transform="translate(35 64) rotate(-8)">
         <rect width="110" height="34" rx="8" />
         <path d="M15 17 h9 m9 0 h9 m10 0 h9" />
