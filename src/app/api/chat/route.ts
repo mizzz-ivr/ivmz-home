@@ -1,6 +1,7 @@
 import { allowChatRequest } from '@/chat/limits'
 import { askLlm, parseChatTurns, readLlmConfig } from '@/chat/llm'
 import { isAllowedContactOrigin } from '@/security/contact-origin'
+import { readLimitedRequestText } from '@/security/read-limited-request'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -27,14 +28,13 @@ export async function POST(request: Request) {
   if (!config) return json({ reply: null })
   if (!isAllowedContactOrigin(request.headers.get('origin'))) return json({ error: 'origin' }, 403)
 
-  const length = Number(request.headers.get('content-length') ?? 0)
-  if (length > BODY_LIMIT_BYTES) return json({ error: 'too_large' }, 413)
+  const incoming = await readLimitedRequestText(request, BODY_LIMIT_BYTES)
+  if (incoming.kind === 'too_large') return json({ error: 'too_large' }, 413)
+  if (incoming.kind === 'invalid') return json({ error: 'invalid' }, 400)
 
   let body: unknown
   try {
-    const text = await request.text()
-    if (text.length > BODY_LIMIT_BYTES) return json({ error: 'too_large' }, 413)
-    body = JSON.parse(text)
+    body = JSON.parse(incoming.text)
   } catch {
     return json({ error: 'invalid' }, 400)
   }
