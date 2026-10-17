@@ -13,6 +13,7 @@ test('desktop pet follows the mouse without blocking clicks and can be disabled'
 
   await expect(pet).toBeAttached()
   await expect(pet).toHaveCSS('pointer-events', 'none')
+  await expect(pet).toHaveAttribute('data-ready', 'true')
   await page.mouse.move(450, 240)
   await expect(pet).toHaveClass(/is-active/)
 
