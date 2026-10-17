@@ -1,15 +1,15 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import chatRateLimit, { config } from '../../netlify/edge-functions/chat-rate-limit'
+import contactRateLimit, { config } from '../../netlify/edge-functions/contact-rate-limit'
 
-describe('chat edge rate limit', () => {
+describe('shared chat/contact edge rate limit', () => {
   it('protects only AI POST requests and uses a shared IP-based Netlify limit', () => {
     expect(config).toEqual({
-      path: '/api/chat',
+      path: ['/api/contact', '/api/chat'],
       method: 'POST',
       rateLimit: {
         action: 'rate_limit',
-        windowLimit: 12,
+        windowLimit: 5,
         windowSize: 60,
         aggregateBy: ['ip', 'domain'],
       },
@@ -21,7 +21,7 @@ describe('chat edge rate limit', () => {
     const next = vi.fn().mockResolvedValue(response)
 
     await expect(
-      chatRateLimit(new Request('https://ivmz.ivrm.jp/api/chat'), { next }),
+      contactRateLimit(new Request('https://ivmz.ivrm.jp/api/chat'), { next }),
     ).resolves.toBe(response)
     expect(next).toHaveBeenCalledOnce()
   })
