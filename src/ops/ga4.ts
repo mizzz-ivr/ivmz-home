@@ -1,6 +1,10 @@
 import { sign } from 'node:crypto'
 
 type Fetcher = typeof fetch
+type GA4Environment = {
+  GA4_PROPERTY_ID?: string
+  GA4_SERVICE_ACCOUNT_JSON?: string
+}
 type Credentials = { client_email: string; private_key: string }
 export type AnalyticsSummary =
   | { state: 'not-configured' }
@@ -19,7 +23,7 @@ const REQUEST_TIMEOUT_MS = 3_000
 const CACHE_MS = 5 * 60_000
 let cached: { key: string; result: AnalyticsSummary; expires: number } | null = null
 
-function parseConfig(env: NodeJS.ProcessEnv) {
+function parseConfig(env: GA4Environment) {
   const property = env.GA4_PROPERTY_ID?.trim()
   const raw = env.GA4_SERVICE_ACCOUNT_JSON
   if (!property || !/^\d{6,20}$/.test(property) || !raw) return null
@@ -126,7 +130,7 @@ function metricReport(days: number) {
  * returns neither credentials, request bodies nor visitor data.
  */
 export async function fetchGA4Summary(
-  env: NodeJS.ProcessEnv = process.env,
+  env: GA4Environment = process.env,
   fetcher: Fetcher = fetch,
 ): Promise<AnalyticsSummary> {
   const config = parseConfig(env)
