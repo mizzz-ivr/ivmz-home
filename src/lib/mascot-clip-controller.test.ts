@@ -90,6 +90,19 @@ describe('MascotClipController', () => {
     expect(idle.play).toHaveBeenCalledOnce()
   })
 
+  it('stops the outgoing clip too when the page becomes hidden during a crossfade', () => {
+    const { controller, idle, walk, run } = setup()
+    controller.transitionTo('idle')
+    controller.transitionTo('walk')
+    controller.transitionTo('run')
+    controller.stop()
+
+    expect(idle.stop).toHaveBeenCalledOnce()
+    expect(walk.stop).toHaveBeenCalledOnce()
+    expect(run.stop).toHaveBeenCalledOnce()
+    expect(controller.active).toBeNull()
+  })
+
   it('releases all clips when a model is replaced or unmounted', () => {
     const { controller, idle, walk, run } = setup()
     controller.transitionTo('walk')
