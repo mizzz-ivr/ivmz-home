@@ -67,16 +67,20 @@ export function parseWebhookUrl(value: string | undefined): URL | null {
       url.port ||
       url.search ||
       url.hash
-    ) return null
+    ) {
+      return null
+    }
     if (url.hostname === 'hooks.slack.com') {
-      return /^\/services\/[A-Za-z0-9_-]+\/[A-Za-z0-9_-]+\/[A-Za-z0-9_-]+$/.test(url.pathname)
-        ? url
-        : null
+      const isValidPath = /^\/services\/[A-Za-z0-9_-]+\/[A-Za-z0-9_-]+\/[A-Za-z0-9_-]+$/.test(
+        url.pathname,
+      )
+      return isValidPath ? url : null
     }
     if (url.hostname === 'discord.com' || url.hostname === 'discordapp.com') {
-      return /^\/api(?:\/v\d+)?\/webhooks\/\d+\/[A-Za-z0-9._-]+$/.test(url.pathname)
-        ? url
-        : null
+      const isValidPath = /^\/api(?:\/v\d+)?\/webhooks\/\d+\/[A-Za-z0-9._-]+$/.test(
+        url.pathname,
+      )
+      return isValidPath ? url : null
     }
     return null
   } catch {
