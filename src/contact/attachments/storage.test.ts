@@ -18,7 +18,10 @@ function setup(head: { ContentLength?: number; ETag?: string }, bytes: Uint8Arra
 
 describe('S3AttachmentStorage.readObject', () => {
   it('pins ETag and caps the S3 GET response', async () => {
-    const { send, storage } = setup({ ContentLength: 3, ETag: '"original-etag"' }, Buffer.from('abc'))
+    const { send, storage } = setup(
+      { ContentLength: 3, ETag: '"original-etag"' },
+      Buffer.from('abc'),
+    )
     const content = await storage.readObject('quarantine/test-id', 3)
     expect(content).toEqual(Buffer.from('abc'))
     const request = send.mock.calls[1][0]
