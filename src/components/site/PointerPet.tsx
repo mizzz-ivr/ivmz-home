@@ -77,6 +77,7 @@ export function PointerPet() {
     pointer.addEventListener('change', onPreferenceChange)
     motion.addEventListener('change', onPreferenceChange)
     window.addEventListener(PET_PREFERENCE_EVENT, onPreferenceChange)
+    node.dataset.ready = 'true'
 
     return () => {
       stop()
