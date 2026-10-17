@@ -53,6 +53,12 @@ test('a real original GLB asset is served by the site', async ({ request }) => {
 
 test('3D mascot renders and follows mouse', async ({ page, browserName }) => {
   test.skip(browserName !== 'chromium', 'Desktop WebGL2 playback is verified in Chromium')
+  const errors: string[] = []
+  page.on('console', (message) => {
+    if (message.type() === 'error' || message.type() === 'warning') errors.push(message.text())
+  })
+  page.on('pageerror', (error) => errors.push(error.message))
+  page.on('requestfailed', (request) => errors.push(`request failed: ${request.url()}`))
   await page.addInitScript(() => window.localStorage.setItem('ivmz-follow-pet', 'on'))
   await gotoExpected(page, '/')
 
@@ -64,8 +70,21 @@ test('3D mascot renders and follows mouse', async ({ page, browserName }) => {
   test.skip(!webgl2Available, 'The CI browser does not provide a WebGL2 renderer')
 
   const canvas = page.locator('canvas[data-testid="mascot-3d"]')
+  const preflight = await page.evaluate(() => ({
+    pointer: matchMedia('(hover: hover) and (pointer: fine)').matches,
+    reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches,
+    enabled: localStorage.getItem('ivmz-follow-pet'),
+    visibility: document.visibilityState,
+  }))
+  console.log('Mascot3D preflight:', JSON.stringify(preflight))
   await page.mouse.move(280, 220)
-  await expect(canvas).toHaveAttribute('data-active', 'true', { timeout: 30_000 })
+  try {
+    await expect(canvas).toHaveAttribute('data-active', 'true', { timeout: 15_000 })
+  } catch (error) {
+    console.log('Mascot3D browser errors:', JSON.stringify(errors.slice(-12)))
+    console.log('Mascot3D canvas:', await canvas.evaluate((node) => node.outerHTML))
+    throw error
+  }
   const before = await canvas.getAttribute('style')
 
   await page.mouse.move(650, 360)
