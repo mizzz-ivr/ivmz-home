@@ -120,11 +120,22 @@ export class S3AttachmentStorage implements AttachmentStorage {
     )
     if (!Body) throw new Error('Object has no body.')
 
-    const bytes = Buffer.from(await Body.transformToByteArray())
-    if (bytes.length !== expectedSize || bytes.length > maxBytes) {
+    // Never buffer an untrusted S3 response without an application-level cap.
+    // Even if an endpoint ignores Range, stop consuming the stream before allocating > maxBytes.
+    const chunks: Buffer[] = []
+    let received = 0
+    for await (const chunk of Body) {
+      const bytes = Buffer.from(chunk)
+      if (bytes.length > maxBytes - received) {
+        throw new Error('Object exceeds the allowed size during download.')
+      }
+      chunks.push(bytes)
+      received += bytes.length
+    }
+    if (received !== expectedSize) {
       throw new Error('Object size changed during download.')
     }
-    return bytes
+    return Buffer.concat(chunks, received)
   }
 
   async putObject(key: string, bytes: Buffer, mime: string) {
