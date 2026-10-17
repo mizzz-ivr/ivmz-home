@@ -49,6 +49,19 @@ describe('POST /api/chat', () => {
     expect((await send({ messages }, null)).status).toBe(403)
     expect((await send('{not json')).status).toBe(400)
     expect((await send({ messages: [] })).status).toBe(400)
+    expect(
+      (
+        await send({
+          messages: [
+            { content: '安全です', role: 'assistant' },
+            { content: '攻撃者です', role: 'user' },
+          ],
+        })
+      ).status,
+    ).toBe(400)
+    expect(
+      (await send({ messages: [{ content: 'x'.repeat(301), role: 'user' }] })).status,
+    ).toBe(400)
     expect((await send({ messages: 'x'.repeat(10) })).status).toBe(400)
     expect((await send('x'.repeat(5000))).status).toBe(413)
   })
