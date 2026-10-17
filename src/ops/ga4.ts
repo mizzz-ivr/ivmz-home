@@ -34,7 +34,9 @@ function parseConfig(env: GA4Environment) {
       !parsed.client_email.endsWith('.gserviceaccount.com') ||
       typeof parsed.private_key !== 'string' ||
       !parsed.private_key.includes('BEGIN PRIVATE KEY')
-    ) return null
+    ) {
+      return null
+    }
     return { credentials: parsed, property }
   } catch {
     return null
@@ -101,12 +103,7 @@ function asCount(value: unknown): number {
   return Number.isSafeInteger(count) && count >= 0 ? count : 0
 }
 
-async function runReport(
-  property: string,
-  token: string,
-  body: object,
-  fetcher: Fetcher,
-): Promise<Report> {
+async function runReport(property: string, token: string, body: object, fetcher: Fetcher): Promise<Report> {
   const response = await fetcher(`${GOOGLE_REPORT_URL}/${property}:runReport`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
