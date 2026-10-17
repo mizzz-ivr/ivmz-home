@@ -1,16 +1,19 @@
+import { isIP } from 'node:net'
+
 type Bucket = { count: number; resetAt: number }
 
 const WINDOW_MS = 60_000
 const MAX_TRACKED = 5_000
 const buckets = new Map<string, Bucket>()
 
-/** Netlify sets this header itself; fall back to the first forwarded hop for other hosts. */
+/**
+ * Trust only Netlify's connection-IP header, which must be overwritten by the edge proxy.
+ * Never use X-Forwarded-For: a client can forge its first hop to rotate rate-limit buckets.
+ * Requests without a validated connection IP share a conservative "unknown" bucket.
+ */
 export function clientKey(request: Request): string {
-  return (
-    request.headers.get('x-nf-client-connection-ip') ??
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-    'unknown'
-  )
+  const ip = request.headers.get('x-nf-client-connection-ip')?.trim() ?? ''
+  return isIP(ip) ? ip : 'unknown'
 }
 
 /**
