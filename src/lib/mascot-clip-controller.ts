@@ -29,6 +29,7 @@ function fadeDuration(seconds: number): number {
  */
 export class MascotClipController {
   private current: MascotClipName | null = null
+  private readonly played = new Set<MascotClipName>()
   private disposed = false
 
   constructor(private readonly actions: MascotClipActions) {}
@@ -46,6 +47,7 @@ export class MascotClipController {
       this.actions[this.current].fadeOut(duration)
     }
     this.actions[name].reset().fadeIn(duration).play()
+    this.played.add(name)
     this.current = name
     return true
   }
@@ -56,16 +58,16 @@ export class MascotClipController {
    */
   stop(): void {
     if (this.disposed) return
-    if (this.current) {
-      this.actions[this.current].stop()
-      this.current = null
-    }
+    for (const name of this.played) this.actions[name].stop()
+    this.played.clear()
+    this.current = null
   }
 
   /** Release all active and faded-out clips when the model is replaced. */
   dispose(): void {
     if (this.disposed) return
     for (const name of REQUIRED_CLIPS) this.actions[name].stop()
+    this.played.clear()
     this.current = null
     this.disposed = true
   }
