@@ -83,6 +83,7 @@ export function Mascot3D() {
     let requestToken = 0
     let loading = false
     let loaded = false
+    let loadFailed = false
     let frame = 0
     let lastFrameTime = 0
     let abort: AbortController | null = null
@@ -148,7 +149,7 @@ export function Mascot3D() {
     }
 
     const beginLoad = async () => {
-      if (!alive || loading || loaded || !supportsMotion()) return
+      if (!alive || loading || loaded || loadFailed || !supportsMotion()) return
       loading = true
       const currentToken = ++requestToken
       const signal = new AbortController()
@@ -225,9 +226,9 @@ export function Mascot3D() {
 
         clipController.transitionTo('idle')
         play()
-      } catch (error) {
-        // Keep this diagnostic until the real Canvas E2E passes in CI.
-        console.warn('Mascot3D init failed:', error)
+      } catch {
+        // Do not retry a failed GLB or WebGL initialization on every pointermove.
+        loadFailed = true
         canvas.dataset.active = 'false'
       } finally {
         if (currentToken === requestToken) loading = false
@@ -249,6 +250,7 @@ export function Mascot3D() {
     }
     const onPreference = () => {
       if (!supportsMotion()) unload()
+      else loadFailed = false
     }
     const onVisibility = () => {
       if (supportsMotion()) play()
@@ -257,6 +259,8 @@ export function Mascot3D() {
     const onContextLost = (event: Event) => {
       event.preventDefault()
       unload()
+      // Require an explicit preference change before retrying a lost WebGL context.
+      loadFailed = true
     }
 
     document.addEventListener('pointermove', onPointerMove, { passive: true })
