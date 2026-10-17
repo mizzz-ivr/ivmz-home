@@ -103,7 +103,12 @@ function asCount(value: unknown): number {
   return Number.isSafeInteger(count) && count >= 0 ? count : 0
 }
 
-async function runReport(property: string, token: string, body: object, fetcher: Fetcher): Promise<Report> {
+async function runReport(
+  property: string,
+  token: string,
+  body: object,
+  fetcher: Fetcher,
+): Promise<Report> {
   const response = await fetcher(`${GOOGLE_REPORT_URL}/${property}:runReport`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
