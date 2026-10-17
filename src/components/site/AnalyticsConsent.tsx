@@ -1,12 +1,13 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 
 import { ANALYTICS_CHOICE_KEY, isTrackablePath, parseMeasurementId } from '@/lib/analytics'
 
 const MEASUREMENT_ID = parseMeasurementId(process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID)
 const OPEN_SETTINGS_EVENT = 'ivmz:analytics-settings'
+const CHOICE_CHANGED_EVENT = 'ivmz:analytics-choice-changed'
 
 type Choice = 'accepted' | 'declined' | 'undecided'
 type AnalyticsWindow = Window & {
@@ -21,6 +22,23 @@ function readChoice(): Choice {
   } catch {
     return 'undecided'
   }
+}
+
+/**
+ * Read localStorage as an external store. The server snapshot is null so SSR and hydration
+ * render the same privacy-safe state before checking the browser's saved choice.
+ */
+function subscribeChoice(onChange: () => void) {
+  window.addEventListener('storage', onChange)
+  window.addEventListener(CHOICE_CHANGED_EVENT, onChange)
+  return () => {
+    window.removeEventListener('storage', onChange)
+    window.removeEventListener(CHOICE_CHANGED_EVENT, onChange)
+  }
+}
+
+function serverChoice(): Choice | null {
+  return null
 }
 
 /** Load the third-party tag only after explicit opt-in. No cookieless pings before consent. */
@@ -70,12 +88,11 @@ export function AnalyticsSettingsButton() {
 
 export function AnalyticsConsent() {
   const pathname = usePathname()
-  const [choice, setChoice] = useState<Choice | null>(null)
+  const storedChoice = useSyncExternalStore(subscribeChoice, readChoice, serverChoice)
+  // If storage is unavailable, a visitor's decision still applies during this page visit.
+  const [temporaryChoice, setTemporaryChoice] = useState<Choice | null>(null)
+  const choice = temporaryChoice ?? storedChoice
   const [settingsOpen, setSettingsOpen] = useState(false)
-
-  useEffect(() => {
-    if (MEASUREMENT_ID) setChoice(readChoice())
-  }, [])
 
   useEffect(() => {
     if (!MEASUREMENT_ID) return
@@ -105,10 +122,11 @@ export function AnalyticsConsent() {
     const previous = choice
     try {
       window.localStorage.setItem(ANALYTICS_CHOICE_KEY, next)
+      window.dispatchEvent(new Event(CHOICE_CHANGED_EVENT))
     } catch {
-      // A decision without local storage applies for this page only.
+      // No persistence: respect this visitor's decision for the current page only.
+      setTemporaryChoice(next)
     }
-    setChoice(next)
     setSettingsOpen(false)
 
     if (previous === 'accepted' && next === 'declined') {
