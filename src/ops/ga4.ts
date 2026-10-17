@@ -1,7 +1,5 @@
 import { sign } from 'node:crypto'
 
-import { isTrackablePath } from '@/lib/analytics'
-
 type Fetcher = typeof fetch
 type Credentials = { client_email: string; private_key: string }
 export type AnalyticsSummary =
@@ -85,6 +83,15 @@ type Report = {
   }>
 }
 
+function isPublicReportPath(path: string): boolean {
+  return (
+    path.startsWith('/') &&
+    !path.startsWith('//') &&
+    !path.includes('?') &&
+    !/^\/(admin|api|contact|message|legal)(\/|$)/.test(path)
+  )
+}
+
 function asCount(value: unknown): number {
   const count = Number(value)
   return Number.isSafeInteger(count) && count >= 0 ? count : 0
@@ -157,7 +164,7 @@ export async function fetchGA4Summary(
           path: row.dimensionValues?.[0]?.value ?? '',
           views: asCount(row.metricValues?.[0]?.value),
         }))
-        .filter((row) => isTrackablePath(row.path))
+        .filter((row) => isPublicReportPath(row.path))
         .slice(0, 5),
     }
   } catch {
