@@ -150,18 +150,16 @@ export function inspectMascotGlb(source: ArrayBuffer | Uint8Array): MascotGlbVal
   for (const clip of animations) {
     if (typeof clip.name !== 'string' || names.has(clip.name)) return invalid('invalid_clip_name')
     names.add(clip.name)
-    if (
-      !Array.isArray(clip.samplers) ||
-      !Array.isArray(clip.channels) ||
-      clip.channels.length < 1
-    ) {
+    const samplers = clip.samplers
+    const channels = clip.channels
+    if (!Array.isArray(samplers) || !Array.isArray(channels) || channels.length < 1) {
       return invalid('empty_animation')
     }
-    const hasJointMotion = clip.channels.some((channel: unknown) => {
+    const hasJointMotion = channels.some((channel: unknown) => {
       if (!record(channel) || !record(channel.target)) return false
       const target = channel.target
       return (
-        validIndex(channel.sampler, clip.samplers.length) &&
+        validIndex(channel.sampler, samplers.length) &&
         typeof target.node === 'number' &&
         joints.has(target.node) &&
         (target.path === 'translation' || target.path === 'rotation' || target.path === 'scale')
