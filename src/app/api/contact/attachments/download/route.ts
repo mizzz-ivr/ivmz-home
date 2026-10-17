@@ -24,6 +24,7 @@ export async function GET(request: Request) {
 
   const { user } = await payload.auth({ headers: request.headers })
   if (!user) return plain(401)
+  if (user.collection !== payload.config.admin.user) return plain(403)
 
   const found = await payload.find({
     collection: 'contact-submissions',
