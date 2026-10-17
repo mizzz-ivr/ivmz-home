@@ -225,8 +225,9 @@ export function Mascot3D() {
 
         clipController.transitionTo('idle')
         play()
-      } catch {
-        // The portfolio remains fully usable if WebGL, the model, or loading fails.
+      } catch (error) {
+        // Keep this diagnostic until the real Canvas E2E passes in CI.
+        console.warn('Mascot3D init failed:', error)
         canvas.dataset.active = 'false'
       } finally {
         if (currentToken === requestToken) loading = false
