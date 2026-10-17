@@ -173,3 +173,80 @@ html.ivmz-signature-seen .signature-intro {
     transition: none;
   }
 }
+
+/* GA4 is optional and remains completely unloaded until the visitor opts in. */
+.analytics-consent {
+  position: fixed;
+  z-index: 95;
+  left: 50%;
+  bottom: max(20px, env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+  width: min(680px, calc(100vw - 24px));
+  padding: 18px 20px;
+  border: 2px solid var(--color-primary-soft);
+  border-radius: 20px;
+  background: var(--color-bg-elevated);
+  color: var(--color-text);
+  box-shadow: 7px 7px 0 var(--color-pop, #ffd84a);
+  transform: translateX(-50%);
+}
+.analytics-consent strong {
+  font-size: 0.92rem;
+}
+.analytics-consent p {
+  margin: 5px 0 0;
+  color: var(--color-text-soft);
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+.analytics-consent p a {
+  margin-left: 8px;
+  color: var(--color-primary-soft);
+}
+.analytics-consent-actions {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.analytics-consent-actions button {
+  min-height: 42px;
+  padding: 8px 13px;
+  border: 1px solid var(--color-primary-soft);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  font-weight: 700;
+}
+.analytics-consent-actions .analytics-consent-accept {
+  background: var(--color-primary);
+  color: #fff;
+}
+.analytics-consent button:focus-visible,
+.analytics-preference:focus-visible {
+  outline: 2px solid var(--color-cyan);
+  outline-offset: 3px;
+}
+.analytics-preference {
+  padding: 6px 10px;
+  border: 1px solid var(--color-line-strong);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-text-soft);
+  font: inherit;
+  cursor: pointer;
+}
+@media (max-width: 640px) {
+  .analytics-consent {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .analytics-consent-actions {
+    justify-content: flex-end;
+  }
+}
