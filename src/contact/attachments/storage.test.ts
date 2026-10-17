@@ -1,4 +1,5 @@
 import { GetObjectCommand, HeadObjectCommand, type S3Client } from '@aws-sdk/client-s3'
+import { Readable } from 'node:stream'
 import { describe, expect, it, vi } from 'vitest'
 
 import { S3AttachmentStorage } from './storage'
@@ -7,7 +8,7 @@ function setup(head: { ContentLength?: number; ETag?: string }, bytes: Uint8Arra
   const send = vi.fn(async (command: unknown) => {
     if (command instanceof HeadObjectCommand) return head
     if (command instanceof GetObjectCommand) {
-      return { Body: { transformToByteArray: async () => bytes } }
+      return { Body: Readable.from([bytes]) }
     }
     throw new Error('Unexpected command.')
   })
@@ -57,12 +58,17 @@ describe('S3AttachmentStorage.readObject', () => {
     expect(send).not.toHaveBeenCalled()
   })
 
-  it('rejects data changed or truncated between HEAD and GET', async () => {
-    for (const bytes of [Buffer.from('abcd'), Buffer.from('ab')]) {
-      const { storage } = setup({ ContentLength: 3, ETag: '"etag"' }, bytes)
-      await expect(storage.readObject('quarantine/test', 3)).rejects.toThrow(
-        'Object size changed during download.',
-      )
-    }
+  it('rejects an oversized response without buffering it', async () => {
+    const { storage } = setup({ ContentLength: 3, ETag: '"etag"' }, Buffer.from('abcd'))
+    await expect(storage.readObject('quarantine/test', 3)).rejects.toThrow(
+      'Object exceeds the allowed size during download.',
+    )
+  })
+
+  it('rejects a response truncated between HEAD and GET', async () => {
+    const { storage } = setup({ ContentLength: 3, ETag: '"etag"' }, Buffer.from('ab'))
+    await expect(storage.readObject('quarantine/test', 3)).rejects.toThrow(
+      'Object size changed during download.',
+    )
   })
 })
