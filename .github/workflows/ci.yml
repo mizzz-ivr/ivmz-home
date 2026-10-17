@@ -45,6 +45,19 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Calculate Three.js dependency lockfile (temporary)
+        run: |
+          pnpm add three@0.180.0 --lockfile-only --ignore-scripts
+          pnpm add -D @types/three@0.180.0 --lockfile-only --ignore-scripts
+          echo 'MASCOT_PACKAGE_JSON_BEGIN'
+          base64 -w0 package.json
+          echo
+          echo 'MASCOT_PACKAGE_JSON_END'
+          echo 'MASCOT_PNPM_LOCK_BEGIN'
+          base64 -w0 pnpm-lock.yaml
+          echo
+          echo 'MASCOT_PNPM_LOCK_END'
+          git restore -- package.json pnpm-lock.yaml
       - run: pnpm format:check
       - run: pnpm lint
       - run: pnpm typecheck
