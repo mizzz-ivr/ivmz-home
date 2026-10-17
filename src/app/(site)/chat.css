@@ -257,6 +257,11 @@
     box-shadow: 0 0 0 7px rgba(125, 255, 176, 0);
   }
 }
+.chat-connection-unavailable i {
+  background: var(--color-pop);
+  box-shadow: none;
+  animation: none;
+}
 .chat-close {
   margin-left: auto;
   flex: none;
