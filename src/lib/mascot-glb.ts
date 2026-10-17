@@ -59,11 +59,7 @@ export function inspectMascotGlb(source: ArrayBuffer | Uint8Array): MascotGlbVal
     chunks.push({ type, start, length })
     offset = start + length
   }
-  if (
-    chunks.length !== 2 ||
-    chunks[0].type !== 0x4e4f534a ||
-    chunks[1].type !== 0x004e4942
-  ) {
+  if (chunks.length !== 2 || chunks[0].type !== 0x4e4f534a || chunks[1].type !== 0x004e4942) {
     return invalid('expected_json_and_binary_chunks')
   }
 
@@ -121,7 +117,9 @@ export function inspectMascotGlb(source: ArrayBuffer | Uint8Array): MascotGlbVal
         mesh.primitives.length > 0 &&
         mesh.primitives.every(
           (primitive: unknown) =>
-            record(primitive) && record(primitive.attributes) && primitive.attributes.POSITION !== undefined,
+            record(primitive) &&
+            record(primitive.attributes) &&
+            primitive.attributes.POSITION !== undefined,
         ),
     )
   ) {
@@ -152,7 +150,11 @@ export function inspectMascotGlb(source: ArrayBuffer | Uint8Array): MascotGlbVal
   for (const clip of animations) {
     if (typeof clip.name !== 'string' || names.has(clip.name)) return invalid('invalid_clip_name')
     names.add(clip.name)
-    if (!Array.isArray(clip.samplers) || !Array.isArray(clip.channels) || clip.channels.length < 1) {
+    if (
+      !Array.isArray(clip.samplers) ||
+      !Array.isArray(clip.channels) ||
+      clip.channels.length < 1
+    ) {
       return invalid('empty_animation')
     }
     const hasJointMotion = clip.channels.some((channel: unknown) => {
