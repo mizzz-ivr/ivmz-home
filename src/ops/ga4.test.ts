@@ -58,7 +58,9 @@ describe('GA4 server-only aggregate reader', () => {
   })
 
   it('degrades without exposing tokens on Google errors', async () => {
-    const fetcher = vi.fn(async () => new Response('down', { status: 503 })) as unknown as typeof fetch
+    const fetcher = vi.fn(
+      async () => new Response('down', { status: 503 }),
+    ) as unknown as typeof fetch
     expect(await fetchGA4Summary(env, fetcher)).toEqual({ state: 'unavailable' })
   })
 })
