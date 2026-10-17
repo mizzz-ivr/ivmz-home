@@ -136,7 +136,11 @@ export function AnalyticsConsent() {
         <button type="button" onClick={() => decide('declined')}>
           同意しない
         </button>
-        <button type="button" className="analytics-consent-accept" onClick={() => decide('accepted')}>
+        <button
+          type="button"
+          className="analytics-consent-accept"
+          onClick={() => decide('accepted')}
+        >
           同意する
         </button>
       </div>
