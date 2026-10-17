@@ -19,14 +19,14 @@ function accessArgs(collection?: string, adminCollection = 'users'): AccessArgs 
 
 describe('Payload admin collection access', () => {
   it('allows the configured CMS admin collection', async () => {
-    await expect(isAuthenticated(accessArgs('users'))).resolves.toBe(true)
-    await expect(isAuthenticated(accessArgs('site-admins', 'site-admins'))).resolves.toBe(true)
+    expect(await isAuthenticated(accessArgs('users'))).toBe(true)
+    expect(await isAuthenticated(accessArgs('site-admins', 'site-admins'))).toBe(true)
   })
 
   it('rejects anonymous and other authenticated collections', async () => {
-    await expect(isAuthenticated(accessArgs())).resolves.toBe(false)
-    await expect(isAuthenticated(accessArgs('customers'))).resolves.toBe(false)
-    await expect(isAuthenticated(accessArgs('users', 'site-admins'))).resolves.toBe(false)
+    expect(await isAuthenticated(accessArgs())).toBe(false)
+    expect(await isAuthenticated(accessArgs('customers'))).toBe(false)
+    expect(await isAuthenticated(accessArgs('users', 'site-admins'))).toBe(false)
   })
 
   it('applies the same guard to the contact inbox and admin panel', () => {
