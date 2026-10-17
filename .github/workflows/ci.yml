@@ -45,11 +45,6 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Check precise mascot Prettier diff (temporary)
-        run: |
-          pnpm exec prettier --write src/lib/mascot-follow.ts src/lib/mascot-follow.test.ts
-          git diff -- src/lib/mascot-follow.ts src/lib/mascot-follow.test.ts
-          git restore -- src/lib/mascot-follow.ts src/lib/mascot-follow.test.ts
       - run: pnpm format:check
       - run: pnpm lint
       - run: pnpm typecheck
