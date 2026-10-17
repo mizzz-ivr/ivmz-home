@@ -119,7 +119,9 @@ describe('askLlm', () => {
     const fetcher = vi
       .fn()
       .mockRejectedValueOnce(new Error('provider unreachable'))
-      .mockResolvedValueOnce(Response.json({ result: { response: 'FAQでご案内します' } })) as unknown as typeof fetch
+      .mockResolvedValueOnce(
+        Response.json({ result: { response: 'FAQでご案内します' } }),
+      ) as unknown as typeof fetch
 
     const reply = await askLlm(
       [{ content: '質問です', role: 'user' }],
