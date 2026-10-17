@@ -258,7 +258,7 @@ export function FaqChat() {
           </span>
           <div>
             <h2 id={titleId}>FAQ Assistant</h2>
-            <p>
+            <p className={aiUnavailable ? 'chat-connection-unavailable' : undefined}>
               <i aria-hidden="true" />
               {aiUnavailable
                 ? 'AI応答を取得できませんでした。FAQでご案内します'
@@ -358,9 +358,9 @@ export function FaqChat() {
             ? 'AI回答を取得できなかったため、FAQの案内に切り替えました。自由入力はAIへ送られる場合があります。個人情報は入力しないでください。'
             : aiEnabled === true
               ? 'ボタンの質問はこの端末の中だけで処理されます。自由入力でFAQにない内容は、AI（Cloudflare Workers AI）に送って回答を作ります。送信内容は当サイトでは保存しません。個人情報は入力しないでください。'
-            : aiEnabled === false
-              ? '入力した内容はこの端末の中だけで処理され、送信も保存もされません。'
-              : 'ボタンの質問はこの端末の中だけで処理されます。自由入力でFAQにない内容は、AI回答が有効な場合に限り、AI（Cloudflare Workers AI）に送られます。個人情報は入力しないでください。'}
+              : aiEnabled === false
+                ? '入力した内容はこの端末の中だけで処理され、送信も保存もされません。'
+                : 'ボタンの質問はこの端末の中だけで処理されます。自由入力でFAQにない内容は、AI回答が有効な場合に限り、AI（Cloudflare Workers AI）に送られます。個人情報は入力しないでください。'}
         </p>
       </section>
     </>
