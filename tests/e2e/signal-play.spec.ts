@@ -13,7 +13,7 @@ test('the decorative signal trace preserves Hero readability and pointer access'
   await expect(decoration).toHaveCSS('pointer-events', 'none')
   await expect(page.getByRole('heading', { level: 1 })).toContainText('いゔる。')
   await expect(page.getByRole('link', { name: 'Selected Works' })).toBeVisible()
-  await expect(page.getByRole('link', { name: /Contact/ }).first()).toBeVisible()
+  await expect(page.locator('.hero-actions a[href="/contact"]')).toBeVisible()
 })
 
 test('the signal trace remains static when the visitor prefers reduced motion', async ({
