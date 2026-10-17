@@ -27,7 +27,8 @@ function runAccess(access: Access | undefined, authenticated: boolean) {
 
   return access({
     req: {
-      user: authenticated ? { id: 1 } : null,
+      payload: { config: { admin: { user: 'users' } } },
+      user: authenticated ? { collection: 'users', id: 1 } : null,
     },
   } as unknown as Parameters<Access>[0])
 }
