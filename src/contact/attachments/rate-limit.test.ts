@@ -36,4 +36,26 @@ describe('attachment rate limit', () => {
     })
     expect(clientKey(forged)).toBe('1.1.1.1')
   })
+
+
+  it('never trusts spoofed X-Forwarded-For when the connection IP is missing', () => {
+    const fakeA = new Request('https://ivmz.ivrm.jp/x', {
+      headers: { 'x-forwarded-for': '203.0.113.10' },
+    })
+    const fakeB = new Request('https://ivmz.ivrm.jp/x', {
+      headers: { 'x-forwarded-for': '203.0.113.99' },
+    })
+    expect(clientKey(fakeA)).toBe('unknown')
+    expect(clientKey(fakeB)).toBe('unknown')
+    expect(isRateLimited('init', fakeA, 1, 1_000)).toBe(false)
+    expect(isRateLimited('init', fakeB, 1, 1_000)).toBe(true)
+  })
+
+  it('rejects malformed Netlify client IP values', () => {
+    const malformed = new Request('https://ivmz.ivrm.jp/x', {
+      headers: { 'x-nf-client-connection-ip': '1.2.3.4, 5.6.7.8' },
+    })
+    expect(clientKey(malformed)).toBe('unknown')
+    expect(clientKey(request('2001:db8::1'))).toBe('2001:db8::1')
+  })
 })
