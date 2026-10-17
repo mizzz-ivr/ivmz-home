@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import {
-  MASCOT_FOLLOW_SPEED,
-  stepMascotFollow,
-  type MascotFrame,
-} from './mascot-follow'
+import { MASCOT_FOLLOW_SPEED, stepMascotFollow, type MascotFrame } from './mascot-follow'
 
 const viewport = { width: 800, height: 600, padding: 16 } as const
 
