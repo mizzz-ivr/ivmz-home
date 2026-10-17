@@ -45,6 +45,18 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Capture exact formatted mascot generator (temporary)
+        run: |
+          pnpm exec prettier --write scripts/build-original-mascot.mjs src/lib/mascot-original-asset.test.ts
+          echo 'MASCOT_FORMATTED_SCRIPT_BEGIN'
+          base64 -w0 scripts/build-original-mascot.mjs
+          echo
+          echo 'MASCOT_FORMATTED_SCRIPT_END'
+          echo 'MASCOT_FORMATTED_TEST_BEGIN'
+          base64 -w0 src/lib/mascot-original-asset.test.ts
+          echo
+          echo 'MASCOT_FORMATTED_TEST_END'
+          git restore -- scripts/build-original-mascot.mjs src/lib/mascot-original-asset.test.ts
       - run: pnpm format:check
       - run: pnpm lint
       - run: pnpm typecheck
