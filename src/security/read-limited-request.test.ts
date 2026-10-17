@@ -29,9 +29,11 @@ describe('readLimitedRequestText', () => {
   })
 
   it('rejects an invalid content length or missing body', async () => {
-    await expect(readLimitedRequestText(request('ok', { 'content-length': '-1' }), 4)).resolves.toEqual({
-      kind: 'invalid',
-    })
+    const invalidHeader = await readLimitedRequestText(
+      request('ok', { 'content-length': '-1' }),
+      4,
+    )
+    expect(invalidHeader).toEqual({ kind: 'invalid' })
     await expect(readLimitedRequestText(new Request('https://example.test'), 4)).resolves.toEqual({
       kind: 'invalid',
     })
