@@ -48,7 +48,9 @@ describe('webhook URL validation', () => {
       'https://discord.com:8443/api/webhooks/123/token',
       'http://discord.com/api/webhooks/123/token',
       'https://metadata.google.internal/',
-    ]) expect(parseWebhookUrl(invalid)).toBeNull()
+    ]) {
+      expect(parseWebhookUrl(invalid)).toBeNull()
+    }
   })
 })
 
