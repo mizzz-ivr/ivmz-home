@@ -86,7 +86,9 @@
   pointer-events: none;
   user-select: none;
   will-change: transform;
-  transition: opacity 220ms ease, visibility 220ms ease;
+  transition:
+    opacity 220ms ease,
+    visibility 220ms ease;
 }
 .cursor-pet.is-active {
   opacity: 1;
