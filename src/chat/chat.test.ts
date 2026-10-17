@@ -115,6 +115,21 @@ describe('askLlm', () => {
     ).toBeNull()
     expect(quota).toHaveBeenCalledTimes(1)
   })
+  it('tries the next model after a provider timeout or network failure', async () => {
+    const fetcher = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('provider unreachable'))
+      .mockResolvedValueOnce(Response.json({ result: { response: 'FAQでご案内します' } })) as unknown as typeof fetch
+
+    const reply = await askLlm(
+      [{ content: '質問です', role: 'user' }],
+      { ...config, models: ['@cf/slow', '@cf/backup'] },
+      fetcher,
+    )
+    expect(reply).toBe('FAQでご案内します')
+    expect(fetcher).toHaveBeenCalledTimes(2)
+  })
+
   it('does not try other models on quota errors', async () => {
     const fetcher = vi.fn(
       async () => new Response('quota', { status: 429 }),
