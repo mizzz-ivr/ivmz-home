@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 
 import { site } from '@/lib/site'
 
@@ -16,6 +16,19 @@ function preferenceEnabled(): boolean {
   } catch {
     return true
   }
+}
+
+function subscribePreference(onChange: () => void) {
+  window.addEventListener('storage', onChange)
+  window.addEventListener(PET_PREFERENCE_EVENT, onChange)
+  return () => {
+    window.removeEventListener('storage', onChange)
+    window.removeEventListener(PET_PREFERENCE_EVENT, onChange)
+  }
+}
+
+function serverPreference() {
+  return false
 }
 
 function bounded(value: number, minimum: number, maximum: number) {
@@ -103,20 +116,22 @@ export function PointerPet() {
 
 /** User-controlled setting lives in the footer and only affects this decoration. */
 export function PointerPetPreference() {
-  const [enabled, setEnabled] = useState<boolean | null>(null)
-
-  useEffect(() => {
-    setEnabled(preferenceEnabled())
-  }, [])
+  const storedEnabled = useSyncExternalStore(
+    subscribePreference,
+    preferenceEnabled,
+    serverPreference,
+  )
+  const [temporaryEnabled, setTemporaryEnabled] = useState<boolean | null>(null)
+  const enabled = temporaryEnabled ?? storedEnabled
 
   const toggle = () => {
     const next = !enabled
     try {
       window.localStorage.setItem(PET_PREFERENCE_KEY, next ? 'on' : 'off')
     } catch {
-      // Continue with the in-page preference if local storage is unavailable.
+      // A visitor's choice still applies to the current page when storage is blocked.
+      setTemporaryEnabled(next)
     }
-    setEnabled(next)
     window.dispatchEvent(new Event(PET_PREFERENCE_EVENT))
   }
 
@@ -124,11 +139,10 @@ export function PointerPetPreference() {
     <button
       type="button"
       className="pet-preference"
-      disabled={enabled === null}
-      aria-pressed={enabled === true}
+      aria-pressed={enabled}
       onClick={toggle}
     >
-      {enabled === null ? 'PET …' : enabled ? 'PET ON ✦' : 'PET OFF'}
+      {enabled ? 'PET ON ✦' : 'PET OFF'}
       <span className="sr-only">（マウス追従キャラクターの表示切替）</span>
     </button>
   )
