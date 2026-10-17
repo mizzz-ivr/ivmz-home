@@ -77,9 +77,7 @@ export function stepMascotFollow(
   }
 
   const speed =
-    locomotion === 'run'
-      ? MASCOT_FOLLOW_SPEED.runPxPerSecond
-      : MASCOT_FOLLOW_SPEED.walkPxPerSecond
+    locomotion === 'run' ? MASCOT_FOLLOW_SPEED.runPxPerSecond : MASCOT_FOLLOW_SPEED.walkPxPerSecond
   const move = Math.min(speed * delta, Math.max(0, distance - MASCOT_FOLLOW_SPEED.followOffsetPx))
   const nextPosition = {
     x: start.x + (dx / distance) * move,
