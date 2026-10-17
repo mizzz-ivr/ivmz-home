@@ -20,7 +20,13 @@ export async function AnalyticsOverview() {
         <p role="status">Google Analyticsの集計を取得できませんでした。権限またはAPIの状態をご確認ください。</p>
       ) : (
         <>
-          <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))' }}>
+          <div
+            style={{
+              display: 'grid',
+              gap: 12,
+              gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+            }}
+          >
             {[
               ['直近7日・閲覧数', summary.last7d.views],
               ['直近7日・アクティブユーザー', summary.last7d.activeUsers],
@@ -29,7 +35,9 @@ export async function AnalyticsOverview() {
             ].map(([title, value]) => (
               <div style={card} key={title}>
                 <p style={{ fontSize: 12, margin: 0 }}>{title}</p>
-                <strong style={{ display: 'block', fontSize: 25, marginTop: 4 }}>{Number(value).toLocaleString('ja-JP')}</strong>
+                <strong style={{ display: 'block', fontSize: 25, marginTop: 4 }}>
+                  {Number(value).toLocaleString('ja-JP')}
+                </strong>
               </div>
             ))}
           </div>
@@ -51,7 +59,11 @@ export async function AnalyticsOverview() {
         </>
       )}
       <p style={{ marginTop: 10, fontSize: 12 }}>
-        <a href="https://analytics.google.com/analytics/web/" target="_blank" rel="noopener noreferrer">
+        <a
+          href="https://analytics.google.com/analytics/web/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           Google Analyticsで詳細を見る ↗
         </a>
       </p>
