@@ -88,7 +88,7 @@ export function AnalyticsSettingsButton() {
 
 export function AnalyticsConsent() {
   const pathname = usePathname()
-  const storedChoice = useSyncExternalStore(subscribeChoice, readChoice, serverChoice)
+  const storedChoice = useSyncExternalStore<Choice | null>(subscribeChoice, readChoice, serverChoice)
   // If storage is unavailable, a visitor's decision still applies during this page visit.
   const [temporaryChoice, setTemporaryChoice] = useState<Choice | null>(null)
   const choice = temporaryChoice ?? storedChoice
