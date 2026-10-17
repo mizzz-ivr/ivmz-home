@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { useEffect, useRef, useSyncExternalStore } from 'react'
 
 import { site } from '@/lib/site'
 
@@ -10,7 +10,10 @@ const PET_PREFERENCE_EVENT = 'ivmz:pet-preference'
 const PET_WIDTH = 88
 const PET_HEIGHT = 110
 
+let inPagePreference: boolean | null = null
+
 function preferenceEnabled(): boolean {
+  if (inPagePreference !== null) return inPagePreference
   try {
     return window.localStorage.getItem(PET_PREFERENCE_KEY) !== 'off'
   } catch {
@@ -116,21 +119,16 @@ export function PointerPet() {
 
 /** User-controlled setting lives in the footer and only affects this decoration. */
 export function PointerPetPreference() {
-  const storedEnabled = useSyncExternalStore(
-    subscribePreference,
-    preferenceEnabled,
-    serverPreference,
-  )
-  const [temporaryEnabled, setTemporaryEnabled] = useState<boolean | null>(null)
-  const enabled = temporaryEnabled ?? storedEnabled
+  const enabled = useSyncExternalStore(subscribePreference, preferenceEnabled, serverPreference)
 
   const toggle = () => {
     const next = !enabled
     try {
       window.localStorage.setItem(PET_PREFERENCE_KEY, next ? 'on' : 'off')
+      inPagePreference = null
     } catch {
-      // A visitor's choice still applies to the current page when storage is blocked.
-      setTemporaryEnabled(next)
+      // Keep pointer movement and the preference button consistent without browser storage.
+      inPagePreference = next
     }
     window.dispatchEvent(new Event(PET_PREFERENCE_EVENT))
   }
