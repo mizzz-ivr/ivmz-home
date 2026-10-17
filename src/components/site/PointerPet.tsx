@@ -136,12 +136,7 @@ export function PointerPetPreference() {
   }
 
   return (
-    <button
-      type="button"
-      className="pet-preference"
-      aria-pressed={enabled}
-      onClick={toggle}
-    >
+    <button type="button" className="pet-preference" aria-pressed={enabled} onClick={toggle}>
       {enabled ? 'PET ON ✦' : 'PET OFF'}
       <span className="sr-only">（マウス追従キャラクターの表示切替）</span>
     </button>
