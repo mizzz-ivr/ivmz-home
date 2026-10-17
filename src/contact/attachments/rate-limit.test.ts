@@ -37,7 +37,6 @@ describe('attachment rate limit', () => {
     expect(clientKey(forged)).toBe('1.1.1.1')
   })
 
-
   it('never trusts spoofed X-Forwarded-For when the connection IP is missing', () => {
     const fakeA = new Request('https://ivmz.ivrm.jp/x', {
       headers: { 'x-forwarded-for': '203.0.113.10' },
