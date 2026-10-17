@@ -51,10 +51,7 @@ test('a real original GLB asset is served by the site', async ({ request }) => {
   expect(body.subarray(0, 4).toString('ascii')).toBe('glTF')
 })
 
-test('an enabled desktop mascot loads its real GLB and follows the cursor when WebGL2 is available', async ({
-  page,
-  browserName,
-}) => {
+test('3D mascot renders and follows mouse', async ({ page, browserName }) => {
   test.skip(browserName !== 'chromium', 'Desktop WebGL2 playback is verified in Chromium')
   await page.addInitScript(() => window.localStorage.setItem('ivmz-follow-pet', 'on'))
   await gotoExpected(page, '/')
@@ -72,8 +69,6 @@ test('an enabled desktop mascot loads its real GLB and follows the cursor when W
   const before = await canvas.getAttribute('style')
 
   await page.mouse.move(650, 360)
-  await expect
-    .poll(() => canvas.getAttribute('style'), { timeout: 10_000 })
-    .not.toBe(before)
+  await expect.poll(() => canvas.getAttribute('style'), { timeout: 10_000 }).not.toBe(before)
   await expect(canvas).toHaveCSS('pointer-events', 'none')
 })
