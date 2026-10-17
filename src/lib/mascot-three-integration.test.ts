@@ -9,11 +9,11 @@ const MODEL_PATH = 'public/mascot/ivmz-mascot-v1.glb'
 describe('real original mascot GLB playback', () => {
   it('loads the committed GLB and animates skinned limbs with Three.js', async () => {
     const source = readFileSync(MODEL_PATH)
-    const bytes = source.buffer.slice(
-      source.byteOffset,
-      source.byteOffset + source.byteLength,
-    ) as ArrayBuffer
-    const gltf = await new GLTFLoader().parseAsync(bytes, '/mascot/')
+    // GLTFLoader checks instanceof ArrayBuffer. Copy Node Buffer bytes into
+    // this jsdom realm so the loader recognizes the binary GLB input.
+    const input = new Uint8Array(source.byteLength)
+    input.set(source)
+    const gltf = await new GLTFLoader().parseAsync(input.buffer, '/mascot/')
 
     expect(gltf.animations.map((clip) => clip.name)).toEqual(['idle', 'walk', 'run'])
     const meshes: SkinnedMesh[] = []
