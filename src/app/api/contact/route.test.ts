@@ -110,6 +110,16 @@ describe('POST /api/contact', () => {
     })
   })
 
+  it('counts multibyte characters in bytes before parsing the contact payload', async () => {
+    usePreviewEnvironment()
+    const response = await POST(request(validBody({ message: 'あ'.repeat(6_000) })))
+    expect(response.status).toBe(413)
+    expect(await response.json()).toMatchObject({
+      code: 'payload_too_large',
+      ok: false,
+    })
+  })
+
   it('requires a valid Turnstile token once a secret is configured', async () => {
     usePreviewEnvironment()
     vi.stubEnv('TURNSTILE_SECRET_KEY', 'secret')
