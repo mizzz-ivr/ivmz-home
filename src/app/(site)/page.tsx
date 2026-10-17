@@ -208,6 +208,22 @@ export default async function HomePage() {
           <svg className="rough-line" viewBox="0 0 180 70" aria-hidden="true">
             <path d="M4 54 C36 10 68 68 96 28 S144 50 176 8" />
           </svg>
+          <div className="hero-creative-ticket" aria-hidden="true">
+            <span className="hero-creative-ticket__index">i/ LAB · 001</span>
+            <svg className="hero-creative-ticket__wave" viewBox="0 0 100 32" fill="none">
+              <path
+                d="M2 26 L16 11 L30 20 L46 4 L60 16 L76 7 L98 23"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="4"
+              />
+            </svg>
+            <span className="hero-creative-ticket__message">
+              <strong>MAKE IT.</strong>
+              <strong>PLAY IT.</strong>
+            </span>
+          </div>
         </div>
         <a className="scroll-signal" href="#works">
           SCROLL <span aria-hidden="true">↓</span>
