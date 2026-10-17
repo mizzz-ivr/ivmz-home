@@ -1,9 +1,7 @@
-import type { CollectionConfig, PayloadRequest } from 'payload'
+import type { CollectionConfig } from 'payload'
 
 import { isAuthenticated } from '@/access/is-authenticated'
 import { isPayloadUnauthorizedError } from '@/security/payload-authorization'
-
-const canAccessAdmin = ({ req }: { req: PayloadRequest }) => Boolean(req.user)
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -11,7 +9,7 @@ export const Users: CollectionConfig = {
     useAsTitle: 'email',
   },
   access: {
-    admin: canAccessAdmin,
+    admin: isAuthenticated,
     unlock: isAuthenticated,
   },
   auth: {
