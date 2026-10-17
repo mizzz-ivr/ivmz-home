@@ -266,6 +266,7 @@ export function Mascot3D() {
     pointer.addEventListener('change', onPreference)
     motion.addEventListener('change', onPreference)
     canvas.addEventListener('webglcontextlost', onContextLost)
+    canvas.dataset.ready = 'true'
 
     return () => {
       alive = false
