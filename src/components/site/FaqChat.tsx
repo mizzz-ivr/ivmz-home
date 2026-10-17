@@ -32,10 +32,16 @@ const prefersReducedMotion = () =>
 const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
 
 /** Opens the chat from anywhere on the page (the FAQ section uses this). */
-export function ChatOpenButton({ children }: { children: React.ReactNode }) {
+export function ChatOpenButton({
+  children,
+  variant = 'primary',
+}: {
+  children: React.ReactNode
+  variant?: 'primary' | 'secondary'
+}) {
   return (
     <button
-      className="action-link action-primary"
+      className={variant === 'primary' ? 'action-link action-primary' : 'action-link'}
       type="button"
       onClick={() => window.dispatchEvent(new Event(OPEN_CHAT_EVENT))}
     >
@@ -255,7 +261,7 @@ export function FaqChat() {
             <p>
               <i aria-hidden="true" />
               {aiUnavailable
-                ? 'AIが混み合っています。FAQでご案内します'
+                ? 'AI応答を取得できませんでした。FAQでご案内します'
                 : aiEnabled === true
                   ? 'FAQ + AI で回答します'
                   : 'よくある質問にお答えします'}
