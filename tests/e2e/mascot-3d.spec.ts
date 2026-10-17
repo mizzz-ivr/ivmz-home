@@ -70,6 +70,7 @@ test('3D mascot renders and follows mouse', async ({ page, browserName }) => {
   test.skip(!webgl2Available, 'The CI browser does not provide a WebGL2 renderer')
 
   const canvas = page.locator('canvas[data-testid="mascot-3d"]')
+  await expect(canvas).toHaveAttribute('data-ready', 'true')
   const preflight = await page.evaluate(() => ({
     pointer: matchMedia('(hover: hover) and (pointer: fine)').matches,
     reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches,
