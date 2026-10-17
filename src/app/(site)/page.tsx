@@ -3,6 +3,7 @@ import { SectionIndex, ToolboxMarquee } from '@/components/site/SiteEnhancements
 import { StructuredData } from '@/components/seo/StructuredData'
 import { ChatOpenButton, FaqChat } from '@/components/site/FaqChat'
 import { HeroPointerSignal } from '@/components/site/SiteExperience'
+import { SignalPlayArt } from '@/components/site/SignalPlayArt'
 import { faqEntries } from '@/lib/faq-content'
 import { createFaqStructuredData } from '@/lib/structured-data'
 import { buildSteps } from '@/lib/about-content'
@@ -165,12 +166,7 @@ export default async function HomePage() {
             WEB / AI / OSS
           </div>
           <div className="avatar-halo" aria-hidden="true" />
-          <div className="orbit" aria-hidden="true">
-            <span className="orbit-ring" />
-            <span className="orbit-sat sat-a">{'</>'}</span>
-            <span className="orbit-sat sat-b">✦</span>
-            <span className="orbit-sat sat-c">●</span>
-          </div>
+          <SignalPlayArt />
           <div className="avatar-frame avatar-orb">
             <Image
               src={site.githubAvatarUrl}
