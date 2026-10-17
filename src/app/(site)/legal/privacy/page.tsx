@@ -82,7 +82,9 @@ const sections: readonly LegalSection[] = [
           ]}
         />
         <p>
-          本サイトでは、アクセス解析への同意がある場合に限りGoogle Analytics 4を利用し、識別用Cookieが保存されることがあります。同意前および拒否した場合はGoogle Analyticsのスクリプトを読み込まず、アクセス解析用Cookieも作成しません（管理画面の認証用Cookie等は別です）。同意はフッターの「アクセス解析の設定」から変更できます。
+          本サイトでは、アクセス解析への同意がある場合に限りGoogle Analytics
+          4を利用し、識別用Cookieが保存されることがあります。同意前および拒否した場合はGoogle
+          Analyticsのスクリプトを読み込まず、アクセス解析用Cookieも作成しません（管理画面の認証用Cookie等は別です）。同意はフッターの「アクセス解析の設定」から変更できます。
         </p>
       </>
     ),
