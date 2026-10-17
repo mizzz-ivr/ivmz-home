@@ -45,11 +45,6 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Identify Three mascot Prettier differences (temporary)
-        run: |
-          pnpm exec prettier --write src/components/site/Mascot3D.tsx tests/e2e/mascot-3d.spec.ts
-          git diff -- src/components/site/Mascot3D.tsx tests/e2e/mascot-3d.spec.ts
-          git restore -- src/components/site/Mascot3D.tsx tests/e2e/mascot-3d.spec.ts
       - run: pnpm format:check
       - run: pnpm lint
       - run: pnpm typecheck
