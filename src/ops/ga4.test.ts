@@ -10,7 +10,7 @@ const env = {
     client_email: 'viewer@test.iam.gserviceaccount.com',
     private_key: privateKey.export({ format: 'pem', type: 'pkcs8' }).toString(),
   }),
-} as NodeJS.ProcessEnv
+}
 
 describe('GA4 server-only aggregate reader', () => {
   it('does not call a provider if unset or malformed', async () => {
