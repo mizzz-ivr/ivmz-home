@@ -4,7 +4,8 @@ import { site } from '@/lib/site'
 export const CHAT_MAX_TURNS = 6
 export const CHAT_MAX_CONTENT = 300
 const MAX_REPLY_CHARS = 700
-const LLM_TIMEOUT_MS = 8_000
+const LLM_TIMEOUT_MS = 5_000
+const MODEL_TIMEOUT_MS = 3_000
 // Cloudflare retires models regularly (gemma-3-12b-it was retired in May 2026), so the default is
 // an ordered list: a model the provider no longer knows (400/404/410) falls through to the next.
 export const DEFAULT_MODELS = [
@@ -111,7 +112,7 @@ export async function askLlm(
             'Content-Type': 'application/json',
           },
           method: 'POST',
-          signal: AbortSignal.timeout(remaining),
+          signal: AbortSignal.timeout(Math.min(remaining, MODEL_TIMEOUT_MS)),
         },
       )
       if (!response.ok) {
@@ -127,7 +128,9 @@ export async function askLlm(
       const reply = text === null ? '' : cleanReply(text)
       return reply.length > 0 ? reply : null
     } catch {
-      return null
+      // A provider or model can time out independently; try the next allowed model
+      // while the shared deadline still has time. Never log user content.
+      continue
     }
   }
   return null
