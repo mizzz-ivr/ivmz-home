@@ -30,6 +30,8 @@ const MAX_DETAIL = 400
 const EMAIL_LIKE = /[^\s@]+@[^\s@]+\.[^\s@]+/g
 const IPV4_LIKE = /\b(?:\d{1,3}\.){3}\d{1,3}\b/g
 const MAX_TITLE = 120
+const SLACK_WEBHOOK_PATH = /^\/services\/[A-Za-z0-9_-]+\/[A-Za-z0-9_-]+\/[A-Za-z0-9_-]+$/
+const DISCORD_WEBHOOK_PATH = /^\/api(?:\/v\d+)?\/webhooks\/\d+\/[A-Za-z0-9._-]+$/
 
 // Best-effort throttle: the state lives in this serverless instance only, so a burst that fans out
 // over several instances can still produce a few duplicate messages. That is acceptable for the
@@ -71,16 +73,10 @@ export function parseWebhookUrl(value: string | undefined): URL | null {
       return null
     }
     if (url.hostname === 'hooks.slack.com') {
-      const isValidPath = /^\/services\/[A-Za-z0-9_-]+\/[A-Za-z0-9_-]+\/[A-Za-z0-9_-]+$/.test(
-        url.pathname,
-      )
-      return isValidPath ? url : null
+      return SLACK_WEBHOOK_PATH.test(url.pathname) ? url : null
     }
     if (url.hostname === 'discord.com' || url.hostname === 'discordapp.com') {
-      const isValidPath = /^\/api(?:\/v\d+)?\/webhooks\/\d+\/[A-Za-z0-9._-]+$/.test(
-        url.pathname,
-      )
-      return isValidPath ? url : null
+      return DISCORD_WEBHOOK_PATH.test(url.pathname) ? url : null
     }
     return null
   } catch {
