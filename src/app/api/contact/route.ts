@@ -10,6 +10,7 @@ import { getAttachmentRuntime } from '@/contact/attachments/runtime'
 import { verifyAttachmentTokens } from '@/contact/attachments/service'
 import { recipientFor } from '@/lib/contact-routing'
 import { isAllowedContactOrigin } from '@/security/contact-origin'
+import { readLimitedRequestText } from '@/security/read-limited-request'
 import { getTurnstileSecret, verifyTurnstile } from '@/security/turnstile'
 
 export const runtime = 'nodejs'
@@ -83,8 +84,8 @@ export async function POST(request: Request) {
     )
   }
 
-  const contentLength = Number(request.headers.get('content-length') ?? '0')
-  if (Number.isFinite(contentLength) && contentLength > CONTACT_BODY_LIMIT_BYTES) {
+  const incoming = await readLimitedRequestText(request, CONTACT_BODY_LIMIT_BYTES)
+  if (incoming.kind === 'too_large') {
     return json(
       {
         code: 'payload_too_large',
@@ -93,11 +94,7 @@ export async function POST(request: Request) {
       413,
     )
   }
-
-  let rawBody: string
-  try {
-    rawBody = await request.text()
-  } catch {
+  if (incoming.kind === 'invalid') {
     return json(
       {
         code: 'invalid_request',
@@ -107,15 +104,7 @@ export async function POST(request: Request) {
     )
   }
 
-  if (new TextEncoder().encode(rawBody).byteLength > CONTACT_BODY_LIMIT_BYTES) {
-    return json(
-      {
-        code: 'payload_too_large',
-        ok: false,
-      },
-      413,
-    )
-  }
+  const rawBody = incoming.text
 
   let input: unknown
   try {
