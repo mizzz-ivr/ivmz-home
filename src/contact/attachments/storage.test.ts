@@ -11,18 +11,21 @@ function setup(head: { ContentLength?: number; ETag?: string }, bytes: Uint8Arra
     }
     throw new Error('Unexpected command.')
   })
-  const storage = new S3AttachmentStorage({ send } as unknown as S3Client, 'private-test-bucket')
+  const client = { send } as unknown as S3Client
+  const storage = new S3AttachmentStorage(client, 'private-test-bucket')
   return { send, storage }
 }
 
 describe('S3AttachmentStorage.readObject', () => {
-  it('pins the scanned object version and limits the GET response to maxBytes + 1', async () => {
+  it('pins ETag and caps the S3 GET response', async () => {
     const { send, storage } = setup({ ContentLength: 3, ETag: '"original-etag"' }, Buffer.from('abc'))
-
-    await expect(storage.readObject('quarantine/test-id', 3)).resolves.toEqual(Buffer.from('abc'))
+    const content = await storage.readObject('quarantine/test-id', 3)
+    expect(content).toEqual(Buffer.from('abc'))
     const request = send.mock.calls[1][0]
     expect(request).toBeInstanceOf(GetObjectCommand)
-    if (!(request instanceof GetObjectCommand)) throw new Error('Expected GetObjectCommand.')
+    if (!(request instanceof GetObjectCommand)) {
+      throw new Error('Expected GetObjectCommand.')
+    }
     expect(request.input).toMatchObject({
       Bucket: 'private-test-bucket',
       IfMatch: '"original-etag"',
@@ -31,7 +34,7 @@ describe('S3AttachmentStorage.readObject', () => {
     })
   })
 
-  it('fails closed when the size is unknown, too large or the ETag is missing', async () => {
+  it('rejects unknown size, large content or absent ETag', async () => {
     for (const head of [
       {},
       { ContentLength: 4, ETag: '"etag"' },
