@@ -130,7 +130,10 @@ function metricReport(days: number) {
  * returns neither credentials, request bodies nor visitor data.
  */
 export async function fetchGA4Summary(
-  env: GA4Environment = process.env,
+  env: GA4Environment = {
+    GA4_PROPERTY_ID: process.env.GA4_PROPERTY_ID,
+    GA4_SERVICE_ACCOUNT_JSON: process.env.GA4_SERVICE_ACCOUNT_JSON,
+  },
   fetcher: Fetcher = fetch,
 ): Promise<AnalyticsSummary> {
   const config = parseConfig(env)
