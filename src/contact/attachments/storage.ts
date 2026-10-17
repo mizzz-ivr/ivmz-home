@@ -99,8 +99,8 @@ export class S3AttachmentStorage implements AttachmentStorage {
     const head = await this.client.send(new HeadObjectCommand({ Bucket: this.bucket, Key: key }))
     const expectedSize = head.ContentLength
     if (
-      !Number.isSafeInteger(expectedSize) ||
       expectedSize === undefined ||
+      !Number.isSafeInteger(expectedSize) ||
       expectedSize < 1 ||
       expectedSize > maxBytes
     ) {
