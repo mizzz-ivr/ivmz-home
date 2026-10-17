@@ -11,8 +11,11 @@ describe('shared chat/contact edge rate limit', () => {
     const files = readdirSync(edgeDir)
       .filter((filename) => filename.endsWith('.ts'))
       .filter((filename) => {
-        const source = readFileSync(new URL(`../../netlify/edge-functions/${filename}`, import.meta.url), 'utf8')
-        return /\\brateLimit:\\s*\\{/.test(source)
+        const source = readFileSync(
+          new URL(`../../netlify/edge-functions/${filename}`, import.meta.url),
+          'utf8',
+        )
+        return /\brateLimit:\s*\{/.test(source)
       })
       .sort()
     expect(files).toEqual(['contact-rate-limit.ts', 'payload-auth-rate-limit.ts'])
