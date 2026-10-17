@@ -115,7 +115,9 @@ describe('MascotClipController', () => {
   it('refuses malformed renderer actions or unknown clip names', () => {
     const { controller, idle, walk } = setup()
     const fake = { ...walk.clip, fadeOut: undefined } as unknown as MascotClipAction
-    expect(createMascotClipController({ idle: idle.clip, walk: fake, run: action().clip })).toBeNull()
+    expect(
+      createMascotClipController({ idle: idle.clip, walk: fake, run: action().clip }),
+    ).toBeNull()
 
     const invalid = 'turn' as MascotClipName
     expect(controller.transitionTo(invalid)).toBe(false)
