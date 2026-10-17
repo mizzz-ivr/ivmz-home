@@ -12,8 +12,10 @@ import './home.css'
 import './chat.css'
 import './errors.css'
 import './delight.css'
+import './mascot-3d.css'
 import { StructuredData } from '@/components/seo/StructuredData'
 import { Delights } from '@/components/site/Delights'
+import { Mascot3D } from '@/components/site/Mascot3D'
 import { SiteEnhancements } from '@/components/site/SiteEnhancements'
 import { SignatureIntro, SiteHeader } from '@/components/site/SiteExperience'
 import { SiteFooter } from '@/components/site/SiteFooter'
@@ -94,6 +96,7 @@ export default function SiteLayout({ children }: Readonly<{ children: React.Reac
         <SiteHeader />
         <SiteEnhancements />
         <Delights />
+        <Mascot3D />
         {children}
         <SiteFooter />
       </body>
