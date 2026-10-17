@@ -45,8 +45,11 @@ const ICON: Record<OpsAlertSeverity, string> = {
 }
 
 export function formatAlertText(alert: OpsAlert): string {
-  const scrub = (value: string) =>
-    value.replace(EMAIL_LIKE, '[email]').replace(IPV4_LIKE, '[ip]').replace(/[\r\n\t]/g, ' ')
+  const scrub = (value: string) => {
+    const withoutEmails = value.replace(EMAIL_LIKE, '[email]')
+    const withoutIps = withoutEmails.replace(IPV4_LIKE, '[ip]')
+    return withoutIps.replace(/[\r\n\t]/g, ' ')
+  }
   const detail = scrub(alert.detail ?? '').slice(0, MAX_DETAIL)
   const head = `${ICON[alert.severity]} [ivmz] ${scrub(alert.title).slice(0, MAX_TITLE)}`
   return detail ? `${head}\n${detail}` : head
