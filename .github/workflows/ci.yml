@@ -45,11 +45,6 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Check exact CSS formatting difference (temporary diagnostic)
-        run: |
-          pnpm exec prettier --write 'src/app/(site)/delight.css'
-          git diff -- 'src/app/(site)/delight.css'
-          git restore -- 'src/app/(site)/delight.css'
       - run: pnpm format:check
       - run: pnpm lint
       - run: pnpm typecheck
