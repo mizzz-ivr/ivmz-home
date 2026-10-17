@@ -122,9 +122,13 @@ export class S3AttachmentStorage implements AttachmentStorage {
 
     // Never buffer an untrusted S3 response without an application-level cap.
     // Even if an endpoint ignores Range, stop consuming the stream before allocating > maxBytes.
+    const stream = Body as AsyncIterable<Uint8Array>
+    if (typeof stream[Symbol.asyncIterator] !== 'function') {
+      throw new Error('Object body is not a readable stream.')
+    }
     const chunks: Buffer[] = []
     let received = 0
-    for await (const chunk of Body) {
+    for await (const chunk of stream) {
       const bytes = Buffer.from(chunk)
       if (bytes.length > maxBytes - received) {
         throw new Error('Object exceeds the allowed size during download.')
