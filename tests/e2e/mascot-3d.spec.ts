@@ -51,14 +51,41 @@ test('a real original GLB asset is served by the site', async ({ request }) => {
   expect(body.subarray(0, 4).toString('ascii')).toBe('glTF')
 })
 
+test('a failed model download does not retry on every pointer move', async ({
+  page,
+  browserName,
+}) => {
+  test.skip(browserName !== 'chromium', 'Desktop mouse input is tested in Chromium')
+  let attempted = 0
+  await page.route('**/mascot/ivmz-mascot-v1.glb', async (route) => {
+    attempted += 1
+    await route.fulfill({ status: 503, body: 'temporarily unavailable' })
+  })
+  await page.addInitScript(() => window.localStorage.setItem('ivmz-follow-pet', 'on'))
+  await gotoExpected(page, '/')
+
+  const canvas = page.locator('canvas[data-testid="mascot-3d"]')
+  await expect(canvas).toHaveAttribute('data-ready', 'true')
+  const supported = await page.evaluate(
+    () =>
+      matchMedia('(hover: hover) and (pointer: fine)').matches &&
+      !matchMedia('(prefers-reduced-motion: reduce)').matches,
+  )
+  test.skip(!supported, 'The test browser does not support fine pointer interaction')
+
+  await page.mouse.move(260, 240)
+  await expect.poll(() => attempted, { timeout: 15_000 }).toBe(1)
+  await page.mouse.move(310, 300)
+  await page.mouse.move(450, 380)
+  await page.waitForTimeout(300)
+
+  expect(attempted).toBe(1)
+  await expect(canvas).toHaveAttribute('data-active', 'false')
+  await expect(page.getByRole('link', { name: 'Selected Works' })).toBeVisible()
+})
+
 test('3D mascot renders and follows mouse', async ({ page, browserName }) => {
   test.skip(browserName !== 'chromium', 'Desktop WebGL2 playback is verified in Chromium')
-  const errors: string[] = []
-  page.on('console', (message) => {
-    if (message.type() === 'error' || message.type() === 'warning') errors.push(message.text())
-  })
-  page.on('pageerror', (error) => errors.push(error.message))
-  page.on('requestfailed', (request) => errors.push(`request failed: ${request.url()}`))
   await page.addInitScript(() => window.localStorage.setItem('ivmz-follow-pet', 'on'))
   await gotoExpected(page, '/')
 
@@ -71,21 +98,8 @@ test('3D mascot renders and follows mouse', async ({ page, browserName }) => {
 
   const canvas = page.locator('canvas[data-testid="mascot-3d"]')
   await expect(canvas).toHaveAttribute('data-ready', 'true')
-  const preflight = await page.evaluate(() => ({
-    pointer: matchMedia('(hover: hover) and (pointer: fine)').matches,
-    reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches,
-    enabled: localStorage.getItem('ivmz-follow-pet'),
-    visibility: document.visibilityState,
-  }))
-  console.log('Mascot3D preflight:', JSON.stringify(preflight))
   await page.mouse.move(280, 220)
-  try {
-    await expect(canvas).toHaveAttribute('data-active', 'true', { timeout: 15_000 })
-  } catch (error) {
-    console.log('Mascot3D browser errors:', JSON.stringify(errors.slice(-12)))
-    console.log('Mascot3D canvas:', await canvas.evaluate((node) => node.outerHTML))
-    throw error
-  }
+  await expect(canvas).toHaveAttribute('data-active', 'true', { timeout: 15_000 })
   const before = await canvas.getAttribute('style')
 
   await page.mouse.move(650, 360)
