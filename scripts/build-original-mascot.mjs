@@ -1,4 +1,6 @@
-// Generated original ivmz mascot: pearly white, blue accents, purple eyes; rigged GLB with idle/walk/run.\n// Run: node scripts/build-original-mascot.mjs\nimport { writeFileSync, mkdirSync } from 'node:fs'
+// Generated original ivmz mascot: pearly white, blue accents, purple eyes; rigged GLB with idle/walk/run.
+// Run: node scripts/build-original-mascot.mjs
+import { writeFileSync, mkdirSync, readFileSync } from 'node:fs'
 function buildMascotGlb() {
   const groups = new Map();
   const skinPivots = [
@@ -195,5 +197,14 @@ function buildMascotGlb() {
   output.set(bin, end + 8);
   return output;
 }
-mkdirSync('public/mascot', { recursive: true })
-writeFileSync('public/mascot/ivmz-mascot-v1.glb', buildMascotGlb())
+const modelPath = 'public/mascot/ivmz-mascot-v1.glb'
+const built = buildMascotGlb()
+if (process.argv.includes('--check')) {
+  const existing = readFileSync(modelPath)
+  if (!Buffer.from(built).equals(existing)) {
+    throw new Error('Mascot GLB differs from the reproducible model source')
+  }
+} else {
+  mkdirSync('public/mascot', { recursive: true })
+  writeFileSync(modelPath, built)
+}
