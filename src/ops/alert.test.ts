@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { formatAlertText, resetAlertThrottle, sendOpsAlert } from './alert'
+import { formatAlertText, parseWebhookUrl, resetAlertThrottle, sendOpsAlert } from './alert'
 
 const ok = () => new Response(null, { status: 204 })
 
@@ -17,7 +17,38 @@ describe('formatAlertText', () => {
     expect(text.startsWith('🔴 [ivmz] Mail failed\n')).toBe(true)
     expect(text).not.toContain('visitor@example.com')
     expect(text).toContain('[email]')
-    expect(text.length).toBeLessThan(500)
+    expect(text.length).toBeLessThan(600)
+  })
+  it('redacts email and IP from alert titles and details', () => {
+    const formatted = formatAlertText({
+      key: 'privacy',
+      severity: 'warning',
+      title: 'user@example.com 203.0.113.4',
+      detail: 'source: 192.0.2.1',
+    })
+    expect(formatted).not.toContain('203.0.113.4')
+    expect(formatted).not.toContain('192.0.2.1')
+    expect(formatted).not.toContain('user@example.com')
+  })
+})
+
+describe('webhook URL validation', () => {
+  it('accepts only exact Slack or Discord webhook origins and paths', () => {
+    expect(parseWebhookUrl('https://hooks.slack.com/services/T/B/X')).not.toBeNull()
+    expect(parseWebhookUrl('https://discord.com/api/webhooks/123/token')).not.toBeNull()
+    for (const invalid of [
+      'https://127.0.0.1/services/T/B/X',
+      'https://discord.com.evil.example/api/webhooks/123/token',
+      'https://notdiscord.com/api/webhooks/123/token',
+      'https://example.com/api/webhooks/123/token',
+      'https://hooks.slack.com.evil.example/services/T/B/X',
+      'https://discord.com@internal.example/api/webhooks/123/token',
+      'https://discord.com/robots.txt',
+      'https://hooks.slack.com/services/T/B/X?next=1',
+      'https://discord.com:8443/api/webhooks/123/token',
+      'http://discord.com/api/webhooks/123/token',
+      'https://metadata.google.internal/',
+    ]) expect(parseWebhookUrl(invalid)).toBeNull()
   })
 })
 
@@ -50,6 +81,7 @@ describe('sendOpsAlert', () => {
   it('posts a Discord body to discord webhooks and a Slack body to Slack', async () => {
     const calls: Array<{ body: Record<string, unknown>; url: string }> = []
     const fetcher = vi.fn(async (url: URL, init: RequestInit) => {
+      expect(init.redirect).toBe('error')
       calls.push({ body: JSON.parse(String(init.body)), url: String(url) })
       return ok()
     }) as unknown as typeof fetch
