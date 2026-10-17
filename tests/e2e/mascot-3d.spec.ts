@@ -2,7 +2,9 @@ import { expect, test } from '@playwright/test'
 
 import { gotoExpected } from './navigation'
 
-test('the original 3D mascot is optional and never steals pointer interaction', async ({ page }) => {
+test('the original 3D mascot is optional and never steals pointer interaction', async ({
+  page,
+}) => {
   await page.addInitScript(() => window.localStorage.setItem('ivmz-follow-pet', 'off'))
   await gotoExpected(page, '/')
 
