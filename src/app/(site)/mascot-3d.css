@@ -1,0 +1,40 @@
+.mascot-3d-canvas {
+  position: fixed;
+  z-index: 125;
+  top: 0;
+  left: 0;
+  display: block;
+  width: 156px;
+  height: 184px;
+  opacity: 0;
+  pointer-events: none;
+  user-select: none;
+  transform: translate3d(-250px, -250px, 0);
+  transition: opacity 160ms ease;
+}
+
+.mascot-3d-canvas[data-active='true'] {
+  opacity: 1;
+}
+
+.mascot-3d-toggle {
+  cursor: pointer;
+  border: 1px solid var(--color-line-strong);
+  border-radius: 999px;
+  background: var(--color-bg-elevated);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 0.75rem;
+  padding: 0.4rem 0.75rem;
+}
+
+.mascot-3d-toggle:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 3px;
+}
+
+@media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .mascot-3d-canvas {
+    display: none;
+  }
+}
