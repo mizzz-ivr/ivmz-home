@@ -71,10 +71,6 @@ describe('GET /api/contact/attachments/download', () => {
         user: { id: 'admin-1' },
       }),
     )
-    expect(createDownloadUrl).toHaveBeenCalledWith(
-      'clean/object-id',
-      'contact.pdf',
-      60,
-    )
+    expect(createDownloadUrl).toHaveBeenCalledWith('clean/object-id', 'contact.pdf', 60)
   })
 })
