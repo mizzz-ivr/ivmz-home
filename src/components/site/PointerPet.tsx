@@ -18,13 +18,6 @@ function preferenceEnabled(): boolean {
   }
 }
 
-function supportedPointer(): boolean {
-  return (
-    window.matchMedia('(hover: hover) and (pointer: fine)').matches &&
-    !window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  )
-}
-
 function bounded(value: number, minimum: number, maximum: number) {
   return Math.max(minimum, Math.min(Math.max(minimum, maximum), value))
 }
@@ -47,6 +40,7 @@ export function PointerPet() {
     let y = -PET_HEIGHT
     let targetX = x
     let targetY = y
+    const supported = () => pointer.matches && !motion.matches
 
     const stop = () => {
       node.classList.remove('is-active')
@@ -67,7 +61,7 @@ export function PointerPet() {
     }
 
     const onMove = (event: PointerEvent) => {
-      if (event.pointerType !== 'mouse' || !supportedPointer() || !preferenceEnabled()) return
+      if (event.pointerType !== 'mouse' || !supported() || !preferenceEnabled()) return
       targetX = bounded(event.clientX - 100, 8, window.innerWidth - PET_WIDTH - 8)
       targetY = bounded(event.clientY + 20, 8, window.innerHeight - PET_HEIGHT - 8)
       node.classList.add('is-active')
@@ -75,7 +69,7 @@ export function PointerPet() {
     }
 
     const onPreferenceChange = () => {
-      if (!supportedPointer() || !preferenceEnabled()) stop()
+      if (!supported() || !preferenceEnabled()) stop()
     }
 
     document.addEventListener('pointermove', onMove, { passive: true })
