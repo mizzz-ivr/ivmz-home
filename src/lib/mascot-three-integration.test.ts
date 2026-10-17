@@ -32,7 +32,8 @@ describe('real original mascot GLB playback', () => {
     const mixer = new AnimationMixer(gltf.scene)
     const walk = mixer.clipAction(gltf.animations[1])
     walk.play()
-    mixer.update(0.2)
+    // Sample between keyframes: at t=0.2s the walk cycle passes through zero rotation.
+    mixer.update(0.1)
 
     expect(Math.abs(leftLeg.rotation.x)).toBeGreaterThan(0.05)
     expect(leftLeg.rotation.x * rightLeg.rotation.x).toBeLessThan(0)
@@ -40,7 +41,7 @@ describe('real original mascot GLB playback', () => {
     walk.stop()
     const run = mixer.clipAction(gltf.animations[2])
     run.play()
-    mixer.update(0.1125)
+    mixer.update(0.05625)
     expect(Math.abs(leftLeg.rotation.x)).toBeGreaterThan(0.1)
 
     mixer.stopAllAction()
