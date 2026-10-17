@@ -194,12 +194,7 @@ export function Mascot3D() {
         renderer.setClearColor(0x000000, 0)
 
         const scene = new THREE.Scene()
-        const camera = new THREE.PerspectiveCamera(
-          37,
-          CANVAS_WIDTH / CANVAS_HEIGHT,
-          0.1,
-          50,
-        )
+        const camera = new THREE.PerspectiveCamera(37, CANVAS_WIDTH / CANVAS_HEIGHT, 0.1, 50)
         camera.position.set(0, 1.24, 5.5)
         camera.lookAt(0, 1.22, 0)
         scene.add(new THREE.AmbientLight(0xffffff, 1.8))
@@ -241,7 +236,10 @@ export function Mascot3D() {
     const onPointerMove = (event: PointerEvent) => {
       if (event.pointerType !== 'mouse' || !supportsMotion()) return
       const element = event.target
-      if (element instanceof Element && element.closest('input,textarea,select,[contenteditable]')) {
+      if (
+        element instanceof Element &&
+        element.closest('input,textarea,select,[contenteditable]')
+      ) {
         return
       }
       target = { x: event.clientX, y: event.clientY }
