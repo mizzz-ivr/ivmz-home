@@ -68,9 +68,7 @@ describe.skipIf(process.env.ANONYMOUS_DB_INTEGRATION !== 'true')(
       const input = { requestId, message: '並列POSTの冪等性を検証' }
 
       try {
-        const outcomes = await Promise.all(
-          Array.from({ length: 6 }, () => store.save(input)),
-        )
+        const outcomes = await Promise.all(Array.from({ length: 6 }, () => store.save(input)))
         expect(outcomes.filter((outcome) => outcome === 'created')).toHaveLength(1)
         expect(outcomes.filter((outcome) => outcome === 'duplicate')).toHaveLength(5)
 
