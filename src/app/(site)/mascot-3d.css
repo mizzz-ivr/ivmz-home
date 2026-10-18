@@ -40,8 +40,8 @@
 @media (hover: none), (pointer: coarse) {
   .mascot-3d-mobile-button {
     position: fixed;
-    z-index: 126;
-    bottom: max(12px, env(safe-area-inset-bottom));
+    z-index: 70;
+    bottom: max(94px, calc(env(safe-area-inset-bottom) + 82px));
     left: max(12px, env(safe-area-inset-left));
     display: grid;
     place-items: center;
@@ -66,8 +66,9 @@
 
   .mascot-3d-canvas {
     display: none;
+    z-index: 69;
     top: auto;
-    bottom: max(72px, calc(env(safe-area-inset-bottom) + 60px));
+    bottom: max(157px, calc(env(safe-area-inset-bottom) + 145px));
     left: max(12px, env(safe-area-inset-left));
     width: 124px;
     height: 146px;
