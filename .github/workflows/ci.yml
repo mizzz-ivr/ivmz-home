@@ -45,6 +45,9 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Prettier差分の一時診断
+        run: |
+          pnpm exec prettier src/messages/public-http.integration.test.ts | diff -u src/messages/public-http.integration.test.ts - || true
       - run: pnpm format:check
       - run: pnpm lint
       - run: pnpm typecheck

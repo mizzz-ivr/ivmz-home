@@ -54,8 +54,6 @@ describe.skipIf(process.env.ANONYMOUS_PUBLIC_HTTP_DB_INTEGRATION !== 'true')(
       })
       const getPage = (id: string) =>
         fetch(new URL(`/message/${id}`, base), { cache: 'no-store' })
-      const getImage = (id: string) =>
-        fetch(new URL(`/message/${id}/opengraph-image`, base), { cache: 'no-store' })
 
       const actorId = 1
       let approvedId: string | null = null
@@ -79,7 +77,15 @@ describe.skipIf(process.env.ANONYMOUS_PUBLIC_HTTP_DB_INTEGRATION !== 'true')(
         expect(html).not.toContain(secretNote)
         expect(html).not.toContain(requestId)
 
-        const og = await getImage(approvedId!)
+        const ogLocation = html.match(/<meta\\s+property="og:image"\\s+content="([^"]+)"/)?.[1]
+        expect(ogLocation).toBeDefined()
+        // Keep the generated metadata path and query, but never fetch an external origin.
+        const metadataUrl = new URL(ogLocation!, base)
+        expect(metadataUrl.pathname).toContain(`/message/${approvedId}/opengraph-image`)
+        const localImageUrl = new URL(`${metadataUrl.pathname}${metadataUrl.search}`, base)
+        const getImage = () => fetch(localImageUrl, { cache: 'no-store' })
+
+        const og = await getImage()
         expect(og.status).toBe(200)
         expect(og.headers.get('content-type')).toContain('image/png')
         expect(og.headers.get('cache-control')).toContain('no-store')
@@ -88,12 +94,12 @@ describe.skipIf(process.env.ANONYMOUS_PUBLIC_HTTP_DB_INTEGRATION !== 'true')(
 
         await changeAnonymousPublication(payload, doc.id, actorId, 'unpublish')
         expect((await getPage(approvedId!)).status).toBe(404)
-        expect((await getImage(approvedId!)).status).toBe(404)
+        expect((await getImage()).status).toBe(404)
 
         const second = await changeAnonymousPublication(payload, doc.id, actorId, 'publish')
         expect(second.publicId).not.toBe(approvedId)
         expect((await getPage(approvedId!)).status).toBe(404)
-        expect((await getImage(approvedId!)).status).toBe(404)
+        expect((await getImage()).status).toBe(404)
         expect((await getPage(second.publicId!)).status).toBe(200)
       } finally {
         const state = await payload.db.drizzle.execute(sql`
