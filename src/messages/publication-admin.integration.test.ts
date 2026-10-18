@@ -23,7 +23,9 @@ describe.skipIf(process.env.ANONYMOUS_PUBLICATION_DB_INTEGRATION !== 'true')(
       })
       const actorId = 1
       try {
-        await expect(changeAnonymousPublication(payload, doc.id, actorId, 'publish')).rejects.toMatchObject({
+        await expect(
+          changeAnonymousPublication(payload, doc.id, actorId, 'publish'),
+        ).rejects.toMatchObject({
           code: 'reply_not_ready',
         } satisfies Partial<PublicationRejected>)
         await payload.update({
@@ -33,7 +35,9 @@ describe.skipIf(process.env.ANONYMOUS_PUBLICATION_DB_INTEGRATION !== 'true')(
           data: { reply: '承認した返信', status: 'replied' },
         })
         const outcomes = await Promise.allSettled(
-          Array.from({ length: 4 }, () => changeAnonymousPublication(payload, doc.id, actorId, 'publish')),
+          Array.from({ length: 4 }, () =>
+            changeAnonymousPublication(payload, doc.id, actorId, 'publish'),
+          ),
         )
         const published = outcomes.filter((result) => result.status === 'fulfilled')
         expect(published).toHaveLength(1)

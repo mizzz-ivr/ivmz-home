@@ -22,8 +22,7 @@ export const AnonymousMessages: CollectionConfig = {
     read: isAuthenticated,
     update: isAuthenticated,
     // Published records must be withdrawn through the audited endpoint before deletion.
-    delete: ({ req }) =>
-      isAdminCollectionUser({ req }) ? { isPublic: { equals: false } } : false,
+    delete: ({ req }) => (isAdminCollectionUser({ req }) ? { isPublic: { equals: false } } : false),
   },
   hooks: {
     beforeChange: [
@@ -33,7 +32,10 @@ export const AnonymousMessages: CollectionConfig = {
           ((data?.reply !== undefined && data.reply !== originalDoc.reply) ||
             (data?.status !== undefined && data.status !== originalDoc.status))
         ) {
-          throw new APIError('公開中の返信と状態は編集できません。先に非公開へ切り替えてください。', 409)
+          throw new APIError(
+            '公開中の返信と状態は編集できません。先に非公開へ切り替えてください。',
+            409,
+          )
         }
         return data
       },

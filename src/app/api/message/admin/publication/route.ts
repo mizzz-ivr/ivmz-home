@@ -15,7 +15,11 @@ type PublicationDependencies = {
   enabled: boolean
   allowedOrigin: (origin: string | null) => boolean
   authenticate: (headers: Headers) => Promise<{ user: AdminSession; adminCollection: string }>
-  apply: (messageId: number, actorId: number, action: PublicationAction) => Promise<{ publicId: string | null }>
+  apply: (
+    messageId: number,
+    actorId: number,
+    action: PublicationAction,
+  ) => Promise<{ publicId: string | null }>
 }
 
 function respond(code: string, status: number, publicId?: string | null) {

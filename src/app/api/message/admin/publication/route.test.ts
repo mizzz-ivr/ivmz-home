@@ -27,14 +27,20 @@ function make() {
 describe('audited admin publication endpoint', () => {
   it('denies wrong origins, disabled mode, anonymous auth and other user collections', async () => {
     const { deps, handler } = make()
-    expect((await handler(request({ messageId: 1, action: 'publish' }, { origin: 'https://evil.test' }))).status).toBe(403)
+    expect(
+      (await handler(request({ messageId: 1, action: 'publish' }, { origin: 'https://evil.test' })))
+        .status,
+    ).toBe(403)
     expect(deps.authenticate).not.toHaveBeenCalled()
     deps.enabled = false
     expect((await handler(request({ messageId: 1, action: 'publish' }))).status).toBe(503)
     deps.enabled = true
     deps.authenticate.mockResolvedValueOnce({ user: null, adminCollection: 'users' })
     expect((await handler(request({ messageId: 1, action: 'publish' }))).status).toBe(401)
-    deps.authenticate.mockResolvedValueOnce({ user: { id: 9, collection: 'customers' }, adminCollection: 'users' })
+    deps.authenticate.mockResolvedValueOnce({
+      user: { id: 9, collection: 'customers' },
+      adminCollection: 'users',
+    })
     expect((await handler(request({ messageId: 1, action: 'publish' }))).status).toBe(403)
     expect(deps.apply).not.toHaveBeenCalled()
   })
@@ -51,8 +57,17 @@ describe('audited admin publication endpoint', () => {
       expect((await handler(request(input))).status).toBe(422)
     }
     expect((await handler(request('invalid-json'))).status).toBe(400)
-    expect((await handler(request({ messageId: 7, action: 'publish' }, { 'content-type': 'text/plain' }))).status).toBe(415)
-    expect((await handler(request({ messageId: 7, action: 'publish', padding: 'x'.repeat(2000) }))).status).toBe(413)
+    expect(
+      (
+        await handler(
+          request({ messageId: 7, action: 'publish' }, { 'content-type': 'text/plain' }),
+        )
+      ).status,
+    ).toBe(415)
+    expect(
+      (await handler(request({ messageId: 7, action: 'publish', padding: 'x'.repeat(2000) })))
+        .status,
+    ).toBe(413)
     expect(deps.apply).not.toHaveBeenCalled()
   })
 
