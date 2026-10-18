@@ -23,19 +23,19 @@ describe.skipIf(process.env.PAYLOAD_DB_BOUNDARY_AUDIT_INTEGRATION !== 'true')(
     it('audits the real schema using only catalog SELECT queries', async () => {
       assertLocalCiDatabase()
       const statement = readFileSync(
-        new URL('./audit-supabase-boundary.sql', import.meta.url),
+        new URL('../../scripts/audit-supabase-boundary.sql', import.meta.url),
         'utf8',
       )
       const [{ getPayload }, { default: config }] = await Promise.all([
         import('payload'),
-        import('../src/payload.config'),
+        import('../payload.config'),
       ])
       const payload = await getPayload({ config })
       const result = await payload.db.drizzle.execute(sql.raw(statement))
       const record = result.rows[0]
       expect(record).toBeDefined()
 
-      const count = (name) => Number(record[name])
+      const count = (name: string) => Number(record[name])
       expect(count('table_count')).toBeGreaterThan(0)
       expect(count('rls_enabled_tables')).toBe(count('table_count'))
       expect(count('rls_disabled_tables')).toBe(0)

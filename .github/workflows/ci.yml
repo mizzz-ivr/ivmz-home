@@ -53,7 +53,7 @@ jobs:
       - name: Payload用スキーマのRLSと公開権限を使い捨てDBで検証
         env:
           PAYLOAD_DB_BOUNDARY_AUDIT_INTEGRATION: 'true'
-        run: pnpm exec vitest run scripts/audit-supabase-boundary.integration.test.mjs
+        run: pnpm exec vitest run src/security/audit-db-boundary.integration.test.ts
       - run: pnpm generate:types
       - run: pnpm generate:importmap
       - name: 生成済みPayload成果物がコミットされていることを確認

@@ -20,7 +20,7 @@ NetlifyのProduction／Deploy Previewが誤って別環境のSupabaseに接続�
 - 読み取り専用の `scripts/audit-supabase-boundary.sql` を、SupabaseのSQL Editorか読み取り権限があるセッションからProduction・Previewそれぞれに対して**個別に**実行する。接続URL/パスワード/レコード本文は出力しない。
 - `table_count` と `rls_enabled_tables` を比較し、`rls_disabled_tables=0`、`anon_direct_access_objects=0`、`authenticated_direct_access_objects=0`、`security_definer_functions=0` を確認する。`anon_role_exists`/`authenticated_role_exists` がfalseなら、該当ロールの権限監査は**未実施扱い**にする。
 - 結果は**実行したDBロールの視点**であり、実際のNetlify `DATABASE_URL`の接続先・role、Supabase Data APIのExposed Schemasやバックアップ設定を証明するものではない。
-- CIでは使い捨てPostgreSQL17に既存Migrationを適用した後、`scripts/audit-supabase-boundary.integration.test.mjs`で同一SQLを実行する。CI/ローカルDB/専用フラグの条件を満たさない場合は実行を拒否する。**実Supabaseに対するCI接続・書込はしない**。
+- CIでは使い捨てPostgreSQL17に既存Migrationを適用した後、`src/security/audit-db-boundary.integration.test.ts`で同一SQLを実行する。CI/ローカルDB/専用フラグの条件を満たさない場合は実行を拒否する。**実Supabaseに対するCI接続・書込はしない**。
 - 2026-10-19実測：Productionは29テーブル（RLS 29・非有効0）、Previewは30テーブル（RLS 30・非有効0）。両方で`anon`・`authenticated`の直接アクセス可能オブジェクト0、スキーマUSAGE=false、当該スキーマのSECURITY DEFINER関数0。いずれも管理者`postgres`で実行した読み取り結果。
 
 ## Previewビルドのfail-closedガード
