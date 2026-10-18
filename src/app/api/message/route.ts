@@ -57,6 +57,17 @@ export function createAnonymousMessagePost(deps: Dependencies) {
     if (parsed.kind === 'honeypot') return json('received', 202)
     if (parsed.kind === 'invalid') return json('validation_error', 422, { errors: parsed.errors })
 
+    // An explicit acknowledgement is required even when a client bypasses the form.
+    // The acknowledgement is deliberately not stored in the public message payload.
+    if (
+      !raw ||
+      typeof raw !== 'object' ||
+      Array.isArray(raw) ||
+      (raw as Record<string, unknown>).publicationAcknowledged !== true
+    ) {
+      return json('publication_acknowledgment_required', 422)
+    }
+
     const token =
       raw && typeof raw === 'object' && !Array.isArray(raw)
         ? (raw as Record<string, unknown>).turnstileToken

@@ -55,12 +55,40 @@ describe('AnonymousMessageForm', () => {
     expect(submit.hasAttribute('disabled')).toBe(true)
     expect(request).not.toHaveBeenCalled()
     fireEvent.click(screen.getByRole('button', { name: 'ボット確認テスト' }))
+    expect(submit.hasAttribute('disabled')).toBe(true)
+    fireEvent.click(screen.getByRole('checkbox', { name: /管理者が公開を承認した場合/ }))
     fireEvent.click(submit)
     expect(await screen.findByText(/送信回数の上限に達しました/)).toBeTruthy()
     fireEvent.click(screen.getByRole('button', { name: '← 修正する' }))
     expect(
       (screen.getByRole('textbox', { name: 'メッセージ（匿名）' }) as HTMLTextAreaElement).value,
     ).toBe('メッセージ')
+    expect(request).toHaveBeenCalledTimes(1)
+  })
+
+  it('requires an explicit acknowledgement, resets it after editing, and sends only a boolean marker', async () => {
+    const request = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      Response.json({ ok: true, code: 'received' }, { status: 201 }),
+    )
+    render(<AnonymousMessageForm siteKey="test-site" />)
+    fireEvent.change(screen.getByRole('textbox', { name: 'メッセージ（匿名）' }), {
+      target: { value: '公開の可能性を理解しました' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: '内容を確認する ↗' }))
+    fireEvent.click(screen.getByRole('button', { name: 'ボット確認テスト' }))
+    const submit = screen.getByRole('button', { name: '匿名で送信する →' })
+    expect(submit.hasAttribute('disabled')).toBe(true)
+    const consent = screen.getByRole('checkbox', { name: /管理者が公開を承認した場合/ })
+    fireEvent.click(consent)
+    expect(submit.hasAttribute('disabled')).toBe(false)
+    fireEvent.click(screen.getByRole('button', { name: '← 修正する' }))
+    fireEvent.click(screen.getByRole('button', { name: '内容を確認する ↗' }))
+    expect(screen.getByRole('checkbox', { name: /管理者が公開を承認した場合/ }).hasAttribute('checked')).toBe(false)
+    fireEvent.click(screen.getByRole('checkbox', { name: /管理者が公開を承認した場合/ }))
+    fireEvent.click(screen.getByRole('button', { name: '匿名で送信する →' }))
+    expect(await screen.findByText('受け付けました！')).toBeTruthy()
+    const body = JSON.parse(String((request.mock.calls[0]?.[1] as RequestInit).body))
+    expect(body).toMatchObject({ publicationAcknowledged: true, message: '公開の可能性を理解しました' })
     expect(request).toHaveBeenCalledTimes(1)
   })
 
@@ -74,6 +102,7 @@ describe('AnonymousMessageForm', () => {
     })
     fireEvent.click(screen.getByRole('button', { name: '内容を確認する ↗' }))
     fireEvent.click(screen.getByRole('button', { name: 'ボット確認テスト' }))
+    fireEvent.click(screen.getByRole('checkbox', { name: /管理者が公開を承認した場合/ }))
     fireEvent.click(screen.getByRole('button', { name: '匿名で送信する →' }))
     expect(await screen.findByText('受け付けました！')).toBeTruthy()
     expect(screen.getByText(/公開や返信は保証していません/)).toBeTruthy()

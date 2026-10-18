@@ -8,4 +8,6 @@
 - Next.jsの`dynamic='force-dynamic'`、`revalidate=0`と`fetchCache='force-no-store'`を使用。Production先行PR #136で`/message/:path*`と`/api/message/:path*`に`Cache-Control: private, no-store`、`CDN-Cache-Control: no-store`、`Netlify-CDN-Cache-Control: no-store`を追加。OGレスポンスもno-storeを指定。
 - 一覧ページ・検索用サイトマップ登録・検索エンジンindexは設けない。共有URLを知る人が閲覧できる設計であり、非公開情報の持ち込みを禁止する運用審査・プライバシー通知が別途必要。
 - ローカル単体/E2EはフラグOFFの404とキャッシュ禁止、射影の4フィールド限定、不正ID・非公開・DB障害の拒否を検証する。
-- **未完了ゲート**：Issue #133での隔離Preview確認/実Turnstile/管理者認証、CDN実レスポンス/キャッシュ失効、iOS/Android実機、Privacy Policyと保持期間、OG日本語フォント/実画像検証。Productionでは本PRを未マージ・公開ページフラグOFFに維持する。
+- 送信画面では管理者が承認した投稿本文と返信が共有ページ・SNS用画像に公開され得る旨を編集画面と確認画面で明示する。送信確認の明示チェックがないリクエスト（false/未指定/文字列）はAPIで422とし、CAPTCHA・レート制限・DB保存へ進めない。チェックを外したままの送信はUIでも不可。
+- 公開理解のチェックはリクエスト内の必須真偽値であり、**DBに同意証跡を保存するものではない**。公開審査時は依然として個人情報や秘密情報の混入を人間が確認する必要がある。
+- **未完了ゲート**：Issue #133での隔離Preview確認/実Turnstile/管理者認証、CDN実レスポンス/キャッシュ失効、iOS/Android実機、Privacy Policyと保存・削除期間の運用確定、OG日本語フォント/実画像検証。Productionでは本PRを未マージ・公開ページフラグOFFに維持する。

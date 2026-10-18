@@ -4,7 +4,12 @@ import { POST, createAnonymousMessagePost } from './route'
 
 const origin = 'https://deploy-preview-129--ivmz-home.netlify.app'
 const requestId = '3f2b8f0e-1c52-4c1e-9b8a-6a1d2e5f7c90'
-const validBody = { message: 'ありがとう！', requestId, turnstileToken: 'challenge' }
+const validBody = {
+  message: 'ありがとう！',
+  requestId,
+  turnstileToken: 'challenge',
+  publicationAcknowledged: true,
+}
 const make = (body: unknown = validBody, headers: Record<string, string> = {}) =>
   new Request(origin + '/api/message', {
     method: 'POST',
@@ -59,6 +64,25 @@ describe('POST /api/message', () => {
     expect(plainText.status).toBe(415)
     deps.enabled = false
     expect((await handler(make())).status).toBe(503)
+    expect(deps.save).not.toHaveBeenCalled()
+  })
+
+  it('rejects submissions without explicit publication acknowledgement before CAPTCHA and persistence', async () => {
+    const { handler, deps } = setup()
+    for (const input of [
+      { ...validBody, publicationAcknowledged: false },
+      { ...validBody, publicationAcknowledged: 'true' },
+      { message: validBody.message, requestId, turnstileToken: 'challenge' },
+    ]) {
+      const response = await handler(make(input))
+      expect(response.status).toBe(422)
+      expect(await response.json()).toMatchObject({
+        ok: false,
+        code: 'publication_acknowledgment_required',
+      })
+    }
+    expect(deps.verifyCaptcha).not.toHaveBeenCalled()
+    expect(deps.consume).not.toHaveBeenCalled()
     expect(deps.save).not.toHaveBeenCalled()
   })
 

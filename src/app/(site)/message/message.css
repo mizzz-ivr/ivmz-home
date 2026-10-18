@@ -77,3 +77,18 @@
     padding: 20px;
   }
 }
+
+.message-publication-acknowledgment {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--color-line-strong);
+  line-height: 1.6;
+}
+
+.message-publication-acknowledgment input {
+  flex-shrink: 0;
+  margin-top: 0.35em;
+  accent-color: var(--color-primary);
+}
