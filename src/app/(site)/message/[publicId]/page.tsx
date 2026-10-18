@@ -61,15 +61,28 @@ export default async function ApprovedMessagePage({ params }: Props) {
       />
       <PageSection title="Message" description={<p>投稿者の名前や連絡先は表示しません。</p>}>
         <div style={{ display: 'grid', gap: 22, maxWidth: 800 }}>
-          <blockquote style={{ overflowWrap: 'anywhere', whiteSpace: 'pre-wrap', margin: 0, fontSize: 'clamp(1.15rem, 2.3vw, 1.65rem)' }}>
+          <blockquote
+            style={{
+              overflowWrap: 'anywhere',
+              whiteSpace: 'pre-wrap',
+              margin: 0,
+              fontSize: 'clamp(1.15rem, 2.3vw, 1.65rem)',
+            }}
+          >
             {approved.message}
           </blockquote>
-          <section aria-label="管理者からの返信" style={{ padding: '22px', border: '1px solid var(--color-line-strong)' }}>
+          <section
+            aria-label="管理者からの返信"
+            style={{ padding: '22px', border: '1px solid var(--color-line-strong)' }}
+          >
             <p className="signal-label">REPLY / IVMZ</p>
             <p style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{approved.reply}</p>
           </section>
           <p style={{ color: 'var(--color-muted)', fontSize: '0.85rem' }}>
-            公開日時：{new Intl.DateTimeFormat('ja-JP', { dateStyle: 'long', timeZone: 'Asia/Tokyo' }).format(new Date(approved.publishedAt))}
+            公開日時：
+            {new Intl.DateTimeFormat('ja-JP', { dateStyle: 'long', timeZone: 'Asia/Tokyo' }).format(
+              new Date(approved.publishedAt),
+            )}
           </p>
           <a className="action-link" href="/contact">
             Contact <span aria-hidden="true">→</span>
