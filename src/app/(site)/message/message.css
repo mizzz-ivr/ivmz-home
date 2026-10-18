@@ -1,0 +1,79 @@
+/* The anonymous message form deliberately reuses the site's Contact form controls. */
+.message-unavailable {
+  display: grid;
+  justify-items: start;
+  gap: 16px;
+  padding: clamp(24px, 5vw, 52px);
+  border: 1px solid var(--color-line-strong);
+  background: color-mix(in srgb, var(--color-bg) 95%, var(--color-primary) 5%);
+}
+
+.message-unavailable h3,
+.message-result h3 {
+  margin: 0;
+  font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+}
+
+.message-unavailable p,
+.message-result p,
+.message-guidance {
+  margin: 0;
+  color: var(--color-text-soft);
+  overflow-wrap: anywhere;
+}
+
+.message-form-shell {
+  max-width: 800px;
+}
+
+.message-field-meta {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  color: var(--color-muted);
+  font-size: 0.8rem;
+}
+
+.message-field-meta p {
+  margin: 0;
+  flex: 1 1 240px;
+}
+
+.message-field-meta output {
+  font: 700 0.8rem/1.5 var(--font-mono);
+  white-space: nowrap;
+}
+
+.message-field-meta .message-count-over {
+  color: var(--color-pink);
+}
+
+.message-review-text {
+  max-height: 60vh;
+  margin: 0;
+  padding: 18px;
+  overflow: auto;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  border: 1px solid var(--color-line-strong);
+  background: var(--color-bg);
+}
+
+.message-result {
+  display: grid;
+  justify-items: start;
+  gap: 16px;
+  max-width: 800px;
+}
+
+@media (max-width: 760px) {
+  .message-form-shell .contact-form {
+    padding: 20px;
+  }
+
+  .message-form-shell .contact-review {
+    padding: 20px;
+  }
+}
