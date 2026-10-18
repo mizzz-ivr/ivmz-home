@@ -102,6 +102,15 @@ export const AnonymousMessages: CollectionConfig = {
       admin: { ...readOnly, date: { pickerAppearance: 'dayAndTime' } },
     },
     {
+      name: 'publicationActions',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: '/components/admin/AnonymousPublicationActions#AnonymousPublicationActions',
+        },
+      },
+    },
+    {
       name: 'internalNote',
       type: 'textarea',
       maxLength: 4_000,
