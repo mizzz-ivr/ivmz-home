@@ -5,9 +5,7 @@ import { isAuthenticated } from '@/access/is-authenticated'
 import { AnonymousMessages } from './AnonymousMessages'
 
 const findField = (name: string) => {
-  const field = AnonymousMessages.fields.find(
-    (item) => 'name' in item && item.name === name,
-  )
+  const field = AnonymousMessages.fields.find((item) => 'name' in item && item.name === name)
   if (!field || !('name' in field)) throw new Error(`Missing field: ${name}`)
   return field
 }
