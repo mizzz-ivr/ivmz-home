@@ -52,8 +52,7 @@ describe.skipIf(process.env.ANONYMOUS_PUBLIC_HTTP_DB_INTEGRATION !== 'true')(
           internalNote: secretNote,
         },
       })
-      const getPage = (id: string) =>
-        fetch(new URL(`/message/${id}`, base), { cache: 'no-store' })
+      const getPage = (id: string) => fetch(new URL(`/message/${id}`, base), { cache: 'no-store' })
 
       const actorId = 1
       let approvedId: string | null = null
@@ -77,7 +76,7 @@ describe.skipIf(process.env.ANONYMOUS_PUBLIC_HTTP_DB_INTEGRATION !== 'true')(
         expect(html).not.toContain(secretNote)
         expect(html).not.toContain(requestId)
 
-        const ogLocation = html.match(/<meta\\s+property="og:image"\\s+content="([^"]+)"/)?.[1]
+        const ogLocation = html.match(/<meta\s+property="og:image"\s+content="([^"]+)"/)?.[1]
         expect(ogLocation).toBeDefined()
         // Keep the generated metadata path and query, but never fetch an external origin.
         const metadataUrl = new URL(ogLocation!, base)
