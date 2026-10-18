@@ -68,6 +68,24 @@ const nextConfig: NextConfig = {
       source: '/:path*',
       headers: securityHeaders,
     },
+    {
+      // Approved messages may later be withdrawn; no browser or CDN may retain a copy.
+      source: '/message/:path*',
+      headers: [
+        { key: 'Cache-Control', value: 'private, no-store, max-age=0, must-revalidate' },
+        { key: 'CDN-Cache-Control', value: 'no-store' },
+        { key: 'Netlify-CDN-Cache-Control', value: 'no-store' },
+        { key: 'X-Robots-Tag', value: 'noindex, nofollow' },
+      ],
+    },
+    {
+      source: '/api/message/:path*',
+      headers: [
+        { key: 'Cache-Control', value: 'private, no-store, max-age=0, must-revalidate' },
+        { key: 'CDN-Cache-Control', value: 'no-store' },
+        { key: 'Netlify-CDN-Cache-Control', value: 'no-store' },
+      ],
+    },
   ],
   images: {
     remotePatterns: [

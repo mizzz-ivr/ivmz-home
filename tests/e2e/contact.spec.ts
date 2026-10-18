@@ -88,3 +88,13 @@ test.describe('Contact form', () => {
     )
   })
 })
+
+
+test('keeps withdrawn future message paths out of browser and CDN caches', async ({ request }) => {
+  const response = await request.get('/message/this-is-not-a-public-message')
+  expect(response.status()).toBe(404)
+  expect(response.headers()['cache-control']).toContain('no-store')
+  expect(response.headers()['cdn-cache-control']).toBe('no-store')
+  expect(response.headers()['netlify-cdn-cache-control']).toBe('no-store')
+  expect(response.headers()['x-robots-tag']).toContain('noindex')
+})

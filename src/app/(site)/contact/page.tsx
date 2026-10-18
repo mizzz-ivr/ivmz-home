@@ -61,6 +61,9 @@ export default function ContactPage() {
             </a>
           </div>
           <p>
+            匿名のひとことメッセージは現在準備中です。受付開始までは通常のお問い合わせフォームをご利用ください。
+          </p>
+          <p>
             脆弱性報告などセキュリティに関する連絡は{' '}
             <a className="inline-link" href={`mailto:${site.securityEmail}`}>
               {site.securityEmail}
