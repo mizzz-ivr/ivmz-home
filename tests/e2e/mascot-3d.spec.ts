@@ -106,3 +106,75 @@ test('3D mascot renders and follows mouse', async ({ page, browserName }) => {
   await expect.poll(() => canvas.getAttribute('style'), { timeout: 10_000 }).not.toBe(before)
   await expect(canvas).toHaveCSS('pointer-events', 'none')
 })
+
+test('mobile mascot starts collapsed and only downloads its GLB after a tap', async ({
+  page,
+  browserName,
+}) => {
+  test.skip(browserName !== 'webkit', 'Touch-first behavior is verified on mobile WebKit')
+  await page.addInitScript(() => window.localStorage.setItem('ivmz-follow-pet', 'on'))
+  const downloads: string[] = []
+  page.on('request', (request) => {
+    if (request.url().includes('/mascot/ivmz-mascot-v1.glb')) downloads.push(request.url())
+  })
+  await gotoExpected(page, '/')
+
+  const canvas = page.locator('canvas[data-testid="mascot-3d"]')
+  const trigger = page.getByRole('button', { name: '3Dマスコットを表示する' })
+  await expect(canvas).toHaveAttribute('data-ready', 'true')
+  await expect(canvas).toHaveAttribute('data-active', 'false')
+  await expect(canvas).toBeHidden()
+  await expect(trigger).toBeVisible()
+  await expect(trigger).toHaveAttribute('aria-expanded', 'false')
+  expect(downloads).toHaveLength(0)
+
+  await trigger.click()
+  await expect(page.getByRole('button', { name: '3Dマスコットを閉じる' })).toHaveAttribute(
+    'aria-expanded',
+    'true',
+  )
+  await expect.poll(() => downloads.length, { timeout: 15_000 }).toBe(1)
+  await page.getByRole('button', { name: '3Dマスコットを閉じる' }).click()
+  await expect(canvas).toBeHidden()
+  await expect(canvas).toHaveAttribute('data-active', 'false')
+  await expect(page.getByRole('link', { name: 'Selected Works' })).toBeVisible()
+  await page.reload()
+  await expect(page.getByRole('button', { name: '3Dマスコットを表示する' })).toHaveAttribute(
+    'aria-expanded',
+    'false',
+  )
+})
+
+test('mobile mascot closes on outside tap, and global OFF hides the launcher', async ({
+  page,
+  browserName,
+}) => {
+  test.skip(browserName !== 'webkit', 'Touch-first behavior is verified on mobile WebKit')
+  await page.addInitScript(() => window.localStorage.setItem('ivmz-follow-pet', 'on'))
+  await gotoExpected(page, '/')
+  const trigger = page.getByRole('button', { name: '3Dマスコットを表示する' })
+  await trigger.click()
+  await expect(page.getByRole('button', { name: '3Dマスコットを閉じる' })).toBeVisible()
+  await page.locator('h1').first().tap()
+  await expect(trigger).toHaveAttribute('aria-expanded', 'false')
+  await page.locator('button.mascot-3d-toggle').click()
+  await expect(trigger).toHaveCount(0)
+  await expect(page.locator('canvas[data-testid="mascot-3d"]')).toBeHidden()
+})
+
+test('reduced-motion on mobile hides the trigger without fetching the model', async ({
+  page,
+  browserName,
+}) => {
+  test.skip(browserName !== 'webkit', 'Touch-first behavior is verified on mobile WebKit')
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.addInitScript(() => window.localStorage.setItem('ivmz-follow-pet', 'on'))
+  const requests: string[] = []
+  page.on('request', (request) => {
+    if (request.url().includes('/mascot/ivmz-mascot-v1.glb')) requests.push(request.url())
+  })
+  await gotoExpected(page, '/')
+  await expect(page.locator('button.mascot-3d-mobile-button')).toBeHidden()
+  await expect(page.locator('canvas[data-testid="mascot-3d"]')).toBeHidden()
+  expect(requests).toHaveLength(0)
+})
