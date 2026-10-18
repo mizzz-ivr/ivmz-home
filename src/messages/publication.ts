@@ -19,6 +19,9 @@ export type AnonymousMessagePublicationCandidate = {
 
 const PUBLIC_ID_PATTERN = /^[a-zA-Z0-9_-]{22,64}$/
 
+export const isValidAnonymousPublicId = (value: unknown): value is string =>
+  typeof value === 'string' && PUBLIC_ID_PATTERN.test(value)
+
 /**
  * Fail closed: do not project a record until an administrator has explicitly published a reply.
  * Reuse at every public server-side read, including OG/PNG routes.
