@@ -9,7 +9,12 @@ function normalize(value) {
 function containsProjectRef(url, projectRef) {
   const expectedRef = normalize(projectRef)
   const hostname = normalize(url.hostname)
-  const username = normalize(decodeURIComponent(url.username))
+  let username
+  try {
+    username = normalize(decodeURIComponent(url.username))
+  } catch {
+    return false
+  }
 
   if (!expectedRef) return false
 
@@ -35,8 +40,12 @@ export function assertPreviewDatabaseTarget(env = process.env) {
     throw new Error('DATABASE_URL is not configured for the preview deploy context')
   }
 
-  if (!/^[a-z0-9]+$/.test(previewProjectRef)) {
-    throw new Error('PAYLOAD_PREVIEW_DATABASE_PROJECT_REF is missing or invalid')
+  if (
+    !/^[a-z0-9]{20}$/.test(previewProjectRef) ||
+    !/^[a-z0-9]{20}$/.test(productionProjectRef) ||
+    previewProjectRef === productionProjectRef
+  ) {
+    throw new Error('Preview and Production project references must be valid and distinct')
   }
 
   let parsedDatabaseUrl
@@ -50,7 +59,7 @@ export function assertPreviewDatabaseTarget(env = process.env) {
     throw new Error('DATABASE_URL must use the postgres or postgresql protocol')
   }
 
-  if (productionProjectRef && containsProjectRef(parsedDatabaseUrl, productionProjectRef)) {
+  if (containsProjectRef(parsedDatabaseUrl, productionProjectRef)) {
     throw new Error('refusing to migrate the Production Supabase project from a preview deploy')
   }
 
