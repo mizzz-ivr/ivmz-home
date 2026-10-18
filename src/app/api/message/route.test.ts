@@ -42,7 +42,9 @@ describe('POST /api/message', () => {
 
   it('stores only a valid parsed message, not public flags, email, or CAPTCHA', async () => {
     const { handler, deps } = setup()
-    const response = await handler(make({ ...validBody, isPublic: true, reply: 'spoof', email: 'e@example.org' }))
+    const response = await handler(
+      make({ ...validBody, isPublic: true, reply: 'spoof', email: 'e@example.org' }),
+    )
     expect(response.status).toBe(201)
     expect(await response.json()).toEqual({ ok: true, code: 'received' })
     expect(response.headers.get('cache-control')).toBe('no-store')
@@ -51,8 +53,12 @@ describe('POST /api/message', () => {
 
   it('rejects wrong origin, absent config, and content type before persistence', async () => {
     const { deps, handler } = setup()
-    expect((await handler(make(validBody, { origin: 'https://attacker.invalid' }))).status).toBe(403)
-    expect((await handler(make(validBody, { 'content-type': 'text/plain' }))).status).toBe(415)
+    expect((await handler(make(validBody, { origin: 'https://attacker.invalid' }))).status).toBe(
+      403,
+    )
+    expect((await handler(make(validBody, { 'content-type': 'text/plain' }))).status).toBe(
+      415,
+    )
     deps.enabled = false
     expect((await handler(make())).status).toBe(503)
     expect(deps.save).not.toHaveBeenCalled()

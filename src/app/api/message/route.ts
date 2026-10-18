@@ -57,21 +57,27 @@ export function createAnonymousMessagePost(deps: Dependencies) {
     if (parsed.kind === 'honeypot') return json('received', 202)
     if (parsed.kind === 'invalid') return json('validation_error', 422, { errors: parsed.errors })
 
-    const token = raw && typeof raw === 'object' && !Array.isArray(raw)
-      ? (raw as Record<string, unknown>).turnstileToken
-      : undefined
+    const token =
+      raw && typeof raw === 'object' && !Array.isArray(raw)
+        ? (raw as Record<string, unknown>).turnstileToken
+        : undefined
     const ip = request.headers.get('x-nf-client-connection-ip')
     if ((await deps.verifyCaptcha(token, ip)) !== 'ok') return json('captcha_failed', 403)
 
     try {
-      if (!(await deps.consume(request, deps.hashKey))) return json('rate_limited', 429, { retryAfterSeconds: 600 })
+      if (!(await deps.consume(request, deps.hashKey))) {
+        return json('rate_limited', 429, { retryAfterSeconds: 600 })
+      }
 
       const result = await deps.save(parsed.value)
       if (result === 'conflict') return json('idempotency_conflict', 409)
       return json('received', result === 'created' ? 201 : 200)
     } catch (error) {
       // Do not log submitted text, IP, request ID, or bot token.
-      console.error('ANONYMOUS_MESSAGE_SAVE_FAILED', error instanceof Error ? error.name : 'UnknownError')
+      console.error(
+        'ANONYMOUS_MESSAGE_SAVE_FAILED',
+        error instanceof Error ? error.name : 'UnknownError',
+      )
       return json('service_unavailable', 503)
     }
   }
