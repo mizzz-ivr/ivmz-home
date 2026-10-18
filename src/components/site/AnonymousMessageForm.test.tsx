@@ -67,9 +67,9 @@ describe('AnonymousMessageForm', () => {
   })
 
   it('requires consent, resets on edit, and sends true', async () => {
-    const request = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      Response.json({ ok: true, code: 'received' }, { status: 201 }),
-    )
+    const request = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(Response.json({ ok: true, code: 'received' }, { status: 201 }))
     render(<AnonymousMessageForm siteKey="test-site" />)
     fireEvent.change(screen.getByRole('textbox', { name: 'メッセージ（匿名）' }), {
       target: { value: '公開の可能性を理解しました' },
