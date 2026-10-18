@@ -13,10 +13,11 @@ export const metadata = createPageMetadata({
 })
 
 export default function MessagePage() {
+  const hashKey = process.env.ANONYMOUS_MESSAGE_HASH_KEY
   const enabled =
     process.env.ANONYMOUS_MESSAGES_ENABLED === 'true' &&
     Boolean(process.env.TURNSTILE_SECRET_KEY) &&
-    Boolean(process.env.ANONYMOUS_MESSAGE_HASH_KEY?.length && process.env.ANONYMOUS_MESSAGE_HASH_KEY.length >= 32) &&
+    Boolean(hashKey && hashKey.length >= 32) &&
     Boolean(process.env.TURNSTILE_SITE_KEY)
 
   return (
@@ -59,13 +60,20 @@ export default function MessagePage() {
           <p>
             送信した文章は管理者のみが確認し、公開や返信を保証するものではありません。
             住所・連絡先などの個人情報や秘密情報は入力しないでください。
-            詳細は<a className="inline-link" href="/legal/privacy">プライバシーポリシー</a>をご覧ください。
+            詳細は
+            <a className="inline-link" href="/legal/privacy">
+              プライバシーポリシー
+            </a>
+            をご覧ください。
           </p>
         }
       >
         <p className="message-guidance">
           名前・メールアドレスの入力は不要です。長文でのご相談や返信をご希望の場合は
-          <a className="inline-link" href="/contact">Contact</a>をご利用ください。
+          <a className="inline-link" href="/contact">
+            Contact
+          </a>
+          をご利用ください。
         </p>
       </PageSection>
     </main>

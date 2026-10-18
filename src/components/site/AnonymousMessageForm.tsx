@@ -33,6 +33,8 @@ export function AnonymousMessageForm({ siteKey }: { siteKey: string }) {
   const [captchaToken, setCaptchaToken] = useState<string | null>(null)
   const [captchaKey, setCaptchaKey] = useState(0)
   const attemptId = useRef<string | null>(null)
+  const websiteRef = useRef<HTMLInputElement>(null)
+  const submittedWebsite = useRef('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const reviewRef = useRef<HTMLElement>(null)
   const feedbackRef = useRef<HTMLDivElement>(null)
@@ -65,6 +67,7 @@ export function AnonymousMessageForm({ siteKey }: { siteKey: string }) {
       return
     }
 
+    submittedWebsite.current = websiteRef.current?.value ?? ''
     setDraft(result.value.message)
     setError('')
     setPhase('review')
@@ -90,7 +93,12 @@ export function AnonymousMessageForm({ siteKey }: { siteKey: string }) {
       const response = await fetch('/api/message', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: draft, requestId, turnstileToken: captchaToken, website: '' }),
+        body: JSON.stringify({
+          message: draft,
+          requestId,
+          turnstileToken: captchaToken,
+          website: submittedWebsite.current,
+        }),
         signal: controller.signal,
       })
       const result = (await response.json().catch(() => ({}))) as MessageResponse
@@ -124,7 +132,12 @@ export function AnonymousMessageForm({ siteKey }: { siteKey: string }) {
 
   if (phase === 'sent') {
     return (
-      <div className="message-result contact-feedback" ref={feedbackRef} role="status" tabIndex={-1}>
+      <div
+        className="message-result contact-feedback"
+        ref={feedbackRef}
+        role="status"
+        tabIndex={-1}
+      >
         <h3>受け付けました！</h3>
         <p>メッセージを預かりました。公開や返信は保証していません。</p>
         <button className="contact-review-back" type="button" onClick={() => setPhase('edit')}>
@@ -147,12 +160,14 @@ export function AnonymousMessageForm({ siteKey }: { siteKey: string }) {
             value={message}
             onChange={(event) => edit(event.target.value)}
             aria-describedby="anonymous-message-hint anonymous-message-counter"
-            aria-invalid={tooLong || Boolean(error)}
+            aria-invalid={tooLong}
             required
             placeholder="感想、応援、気になることなど、お気軽にどうぞ。"
           />
           <div className="message-field-meta">
-            <p id="anonymous-message-hint">名前や連絡先は入力不要です。個人情報や秘密情報は送らないでください。</p>
+            <p id="anonymous-message-hint">
+              名前や連絡先は入力不要です。個人情報や秘密情報は送らないでください。
+            </p>
             <output
               id="anonymous-message-counter"
               aria-live="polite"
@@ -161,11 +176,22 @@ export function AnonymousMessageForm({ siteKey }: { siteKey: string }) {
               {count} / {ANONYMOUS_MESSAGE_MAX_CHARACTERS}文字
             </output>
           </div>
-          {tooLong ? <p className="contact-field-error" role="alert">300文字以内にしてください。</p> : null}
+          {tooLong ? (
+            <p className="contact-field-error" role="alert">
+              300文字以内にしてください。
+            </p>
+          ) : null}
         </div>
         <div className="contact-honeypot" aria-hidden="true">
           <label htmlFor="anonymous-website">Website</label>
-          <input id="anonymous-website" name="website" type="text" tabIndex={-1} autoComplete="off" />
+          <input
+            ref={websiteRef}
+            id="anonymous-website"
+            name="website"
+            type="text"
+            tabIndex={-1}
+            autoComplete="off"
+          />
         </div>
         <div className="contact-submit-row">
           <button className="contact-submit" type="submit" disabled={tooLong || !message.trim()}>
@@ -176,7 +202,12 @@ export function AnonymousMessageForm({ siteKey }: { siteKey: string }) {
       </form>
 
       {preview ? (
-        <section className="contact-review" aria-labelledby="anonymous-review-title" ref={reviewRef} tabIndex={-1}>
+        <section
+          className="contact-review"
+          aria-labelledby="anonymous-review-title"
+          ref={reviewRef}
+          tabIndex={-1}
+        >
           <h3 id="anonymous-review-title">送信前の確認</h3>
           <p>こちらの文章を匿名で送信します。内容に問題がなければ送信してください。</p>
           <p className="message-review-text">{draft}</p>

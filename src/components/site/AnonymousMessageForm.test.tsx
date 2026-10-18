@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from '@testing-library/react'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { AnonymousMessageForm } from './AnonymousMessageForm'
 
@@ -12,8 +12,18 @@ vi.mock('./TurnstileWidget', () => ({
   ),
 }))
 
+beforeEach(() => {
+  vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+    queueMicrotask(() => callback(0))
+    return 1
+  })
+  vi.stubGlobal('crypto', { randomUUID: () => '3f2b8f0e-1c52-4c1e-9b8a-6a1d2e5f7c90' })
+})
+
 afterEach(() => {
+  cleanup()
   vi.restoreAllMocks()
+  vi.unstubAllGlobals()
 })
 
 describe('AnonymousMessageForm', () => {
@@ -22,10 +32,14 @@ describe('AnonymousMessageForm', () => {
     const textarea = screen.getByRole('textbox', { name: 'メッセージ（匿名）' })
     fireEvent.change(textarea, { target: { value: '👨‍👩‍👧‍👦'.repeat(301) } })
     expect(screen.getByText('301 / 300文字')).toBeTruthy()
-    expect(screen.getByRole('button', { name: '内容を確認する ↗' }).hasAttribute('disabled')).toBe(true)
+    expect(
+      screen.getByRole('button', { name: '内容を確認する ↗' }).hasAttribute('disabled'),
+    ).toBe(true)
     fireEvent.change(textarea, { target: { value: 'ありがとうございます' } })
     expect(screen.getByText('10 / 300文字')).toBeTruthy()
-    expect(screen.getByRole('button', { name: '内容を確認する ↗' }).hasAttribute('disabled')).toBe(false)
+    expect(
+      screen.getByRole('button', { name: '内容を確認する ↗' }).hasAttribute('disabled'),
+    ).toBe(false)
   })
 
   it('preserves text across server errors and never submits before Turnstile token', async () => {
@@ -44,7 +58,9 @@ describe('AnonymousMessageForm', () => {
     fireEvent.click(submit)
     expect(await screen.findByText(/送信回数の上限に達しました/)).toBeTruthy()
     fireEvent.click(screen.getByRole('button', { name: '← 修正する' }))
-    expect((screen.getByRole('textbox', { name: 'メッセージ（匿名）' }) as HTMLTextAreaElement).value).toBe('メッセージ')
+    expect(
+      (screen.getByRole('textbox', { name: 'メッセージ（匿名）' }) as HTMLTextAreaElement).value,
+    ).toBe('メッセージ')
     expect(request).toHaveBeenCalledTimes(1)
   })
 
