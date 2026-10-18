@@ -23,9 +23,11 @@ describe('anonymous-messages inbox access', () => {
   it('never permits the message, idempotency key, or publication flags in client writes', () => {
     for (const name of ['message', 'requestId', 'isPublic', 'publicId', 'publishedAt']) {
       const field = findField(name)
-      expect('access' in field && field.access?.create).toBeTypeOf('function')
-      expect('access' in field && field.access?.update).toBeTypeOf('function')
-      expect('admin' in field && field.admin?.readOnly).toBe(true)
+      const policy = field as { access?: { create?: () => boolean; update?: () => boolean } }
+      const admin = field as { admin?: { readOnly?: boolean } }
+      expect(policy.access?.create?.()).toBe(false)
+      expect(policy.access?.update?.()).toBe(false)
+      expect(admin.admin?.readOnly).toBe(true)
     }
   })
 
@@ -38,9 +40,9 @@ describe('anonymous-messages inbox access', () => {
     const publicId = findField('publicId')
     const reply = findField('reply')
     const internalNote = findField('internalNote')
-    expect('unique' in requestId && requestId.unique).toBe(true)
-    expect('unique' in publicId && publicId.unique).toBe(true)
-    expect('access' in reply && reply.access).toBeUndefined()
-    expect('access' in internalNote && internalNote.access).toBeUndefined()
+    expect((requestId as { unique?: boolean }).unique).toBe(true)
+    expect((publicId as { unique?: boolean }).unique).toBe(true)
+    expect((reply as { access?: unknown }).access).toBeUndefined()
+    expect((internalNote as { access?: unknown }).access).toBeUndefined()
   })
 })
