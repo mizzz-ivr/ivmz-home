@@ -24,7 +24,7 @@ describe.skipIf(process.env.ANONYMOUS_DB_INTEGRATION !== 'true')(
       store = new PayloadAnonymousMessageStore()
     }, 30_000)
 
-    it('allows exactly five concurrent attempts per shared IP, then resets after expiry', async () => {
+    it('limits concurrent attempts and resets an expired window', async () => {
       const secret = `ci-anonymous-db-hmac-${randomUUID()}`
       const request = new Request('https://ivmz.ivrm.jp/api/message', {
         headers: { 'x-nf-client-connection-ip': '198.51.100.91' },
