@@ -5,7 +5,9 @@ import { isAuthenticated } from '@/access/is-authenticated'
 import { AnonymousMessages } from './AnonymousMessages'
 
 const findField = (name: string) => {
-  const field = AnonymousMessages.fields.find((item) => 'name' in item && item.name === name)
+  const field = AnonymousMessages.fields.find(
+    (item) => 'name' in item && item.name === name,
+  )
   if (!field || !('name' in field)) throw new Error(`Missing field: ${name}`)
   return field
 }
@@ -32,9 +34,13 @@ describe('anonymous-messages inbox access', () => {
     const publicField = findField('isPublic')
     expect('defaultValue' in status && status.defaultValue).toBe('new')
     expect('defaultValue' in publicField && publicField.defaultValue).toBe(false)
-    expect('unique' in findField('requestId') && findField('requestId').unique).toBe(true)
-    expect('unique' in findField('publicId') && findField('publicId').unique).toBe(true)
-    expect('access' in findField('reply') && findField('reply').access).toBeUndefined()
-    expect('access' in findField('internalNote') && findField('internalNote').access).toBeUndefined()
+    const requestId = findField('requestId')
+    const publicId = findField('publicId')
+    const reply = findField('reply')
+    const internalNote = findField('internalNote')
+    expect('unique' in requestId && requestId.unique).toBe(true)
+    expect('unique' in publicId && publicId.unique).toBe(true)
+    expect('access' in reply && reply.access).toBeUndefined()
+    expect('access' in internalNote && internalNote.access).toBeUndefined()
   })
 })
