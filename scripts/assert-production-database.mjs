@@ -71,7 +71,9 @@ const isExecutedDirectly =
 if (isExecutedDirectly) {
   try {
     const result = assertProductionDatabaseTarget()
-    console.log(`[production-db-guard] verified ${result.context} Supabase project ${result.projectRef}`)
+    console.log(
+      `[production-db-guard] verified ${result.context} Supabase project ${result.projectRef}`,
+    )
   } catch (error) {
     // Only emit constant validation messages, never the supplied connection string.
     const message = error instanceof Error ? error.message : 'unknown production DB guard error'
