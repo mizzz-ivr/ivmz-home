@@ -1,0 +1,32 @@
+name: Temporary Payload UI generated diff
+on:
+  push:
+    branches:
+      - feat/issue69-admin-publication-controls
+permissions:
+  contents: read
+jobs:
+  verify-generated-diff:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://payload:payload@127.0.0.1:5432/ivmz_home
+      PAYLOAD_SECRET: ci-only-secret-not-for-production-2026-ivmz-home
+      PAYLOAD_ALLOWED_ORIGINS: http://127.0.0.1:3000
+      PAYLOAD_PUBLIC_SERVER_URL: http://127.0.0.1:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.0
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Canonical formatting
+        run: pnpm exec prettier --write 'src/collections/AnonymousMessages.ts' 'src/components/admin/AnonymousPublicationActions.tsx' 'src/components/admin/AnonymousPublicationActionsClient.tsx' 'src/components/admin/AnonymousPublicationActionsClient.test.tsx' 'docs/anonymous-message-publication-ui.md'
+      - name: Generate Payload import map
+        run: pnpm generate:importmap
+      - name: Print generated diff for review
+        run: git diff -- 'src/collections/AnonymousMessages.ts' 'src/components/admin/AnonymousPublicationActions.tsx' 'src/components/admin/AnonymousPublicationActionsClient.tsx' 'src/components/admin/AnonymousPublicationActionsClient.test.tsx' 'docs/anonymous-message-publication-ui.md' 'src/app/(payload)/admin/importMap.js'
