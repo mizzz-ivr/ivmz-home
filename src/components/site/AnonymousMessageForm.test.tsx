@@ -65,7 +65,8 @@ describe('AnonymousMessageForm', () => {
     ).toBe('メッセージ')
     expect(request).toHaveBeenCalledTimes(1)
     fireEvent.click(screen.getByRole('button', { name: '内容を確認する ↗' }))
-    expect(screen.getByRole('button', { name: '匿名で送信する →' }).hasAttribute('disabled')).toBe(true)
+    const retrySubmit = screen.getByRole('button', { name: '匿名で送信する →' })
+    expect(retrySubmit.hasAttribute('disabled')).toBe(true)
   })
 
   it('confirms receipt without claiming it was published', async () => {
