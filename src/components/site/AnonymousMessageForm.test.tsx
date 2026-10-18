@@ -32,16 +32,20 @@ describe('AnonymousMessageForm', () => {
     const textarea = screen.getByRole('textbox', { name: 'メッセージ（匿名）' })
     fireEvent.change(textarea, { target: { value: '👨‍👩‍👧‍👦'.repeat(301) } })
     expect(screen.getByText('301 / 300文字')).toBeTruthy()
-    expect(screen.getByRole('button', { name: '内容を確認する ↗' }).hasAttribute('disabled')).toBe(true)
+    expect(screen.getByRole('button', { name: '内容を確認する ↗' }).hasAttribute('disabled')).toBe(
+      true,
+    )
     fireEvent.change(textarea, { target: { value: 'ありがとうございます' } })
     expect(screen.getByText('10 / 300文字')).toBeTruthy()
-    expect(screen.getByRole('button', { name: '内容を確認する ↗' }).hasAttribute('disabled')).toBe(false)
+    expect(screen.getByRole('button', { name: '内容を確認する ↗' }).hasAttribute('disabled')).toBe(
+      false,
+    )
   })
 
   it('preserves text across server errors and never submits before Turnstile token', async () => {
-    const request = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      Response.json({ ok: false, code: 'rate_limited' }, { status: 429 }),
-    )
+    const request = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(Response.json({ ok: false, code: 'rate_limited' }, { status: 429 }))
     render(<AnonymousMessageForm siteKey="test-site" />)
     fireEvent.change(screen.getByRole('textbox', { name: 'メッセージ（匿名）' }), {
       target: { value: 'メッセージ' },

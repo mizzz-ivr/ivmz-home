@@ -50,12 +50,24 @@ export default function MessagePage() {
       </PageSection>
       <PageSection
         title="ご利用にあたって"
-        description={<p>管理者のみが確認し、公開や返信を保証しません。個人情報や秘密情報は送らないでください。</p>}
+        description={
+          <p>
+            管理者のみが確認し、公開や返信を保証しません。個人情報や秘密情報は送らないでください。
+          </p>
+        }
       >
         <div className="message-guidance">
           <p>名前・メールアドレスは不要です。長文のご相談や返信をご希望の場合はContactへ。</p>
-          <p><a className="inline-link" href="/legal/privacy">プライバシーポリシー →</a></p>
-          <p><a className="inline-link" href="/contact">Contact →</a></p>
+          <p>
+            <a className="inline-link" href="/legal/privacy">
+              プライバシーポリシー →
+            </a>
+          </p>
+          <p>
+            <a className="inline-link" href="/contact">
+              Contact →
+            </a>
+          </p>
         </div>
       </PageSection>
     </main>
