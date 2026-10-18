@@ -22,7 +22,10 @@ describe.skipIf(process.env.PAYLOAD_DB_BOUNDARY_AUDIT_INTEGRATION !== 'true')(
   () => {
     it('audits the real schema using only catalog SELECT queries', async () => {
       assertLocalCiDatabase()
-      const statement = readFileSync(new URL('./audit-supabase-boundary.sql', import.meta.url), 'utf8')
+      const statement = readFileSync(
+        new URL('./audit-supabase-boundary.sql', import.meta.url),
+        'utf8',
+      )
       const [{ getPayload }, { default: config }] = await Promise.all([
         import('payload'),
         import('../src/payload.config'),
