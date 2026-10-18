@@ -23,6 +23,7 @@ const failureText: Record<string, string> = {
   idempotency_conflict: '別の文章との送信識別子が重複しました。内容を修正して再送してください。',
   rate_limited: '送信回数の上限に達しました。10分ほど時間をおいてからお試しください。',
   service_unavailable: '現在メッセージを受け付けられません。時間をおいてお試しください。',
+  publication_acknowledgment_required: '公開に関する説明を確認してから送信してください。',
 }
 
 export function AnonymousMessageForm({ siteKey }: { siteKey: string }) {
@@ -31,6 +32,7 @@ export function AnonymousMessageForm({ siteKey }: { siteKey: string }) {
   const [phase, setPhase] = useState<Phase>('edit')
   const [error, setError] = useState('')
   const [captchaToken, setCaptchaToken] = useState<string | null>(null)
+  const [publicationAcknowledged, setPublicationAcknowledged] = useState(false)
   const [captchaKey, setCaptchaKey] = useState(0)
   const attemptId = useRef<string | null>(null)
   const websiteRef = useRef<HTMLInputElement>(null)
@@ -46,6 +48,7 @@ export function AnonymousMessageForm({ siteKey }: { siteKey: string }) {
 
   function edit(next: string) {
     setMessage(next)
+    setPublicationAcknowledged(false)
     setError('')
     attemptId.current = null
   }
@@ -76,12 +79,14 @@ export function AnonymousMessageForm({ siteKey }: { siteKey: string }) {
 
   function backToEdit() {
     if (sendingRef.current) return
+    setPublicationAcknowledged(false)
     setPhase('edit')
     requestAnimationFrame(() => textareaRef.current?.focus())
   }
 
   async function send() {
-    if (sendingRef.current || phase !== 'review' || !captchaToken) return
+    if (sendingRef.current || phase !== 'review' || !captchaToken || !publicationAcknowledged)
+      return
     sendingRef.current = true
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), 10_000)
@@ -98,6 +103,7 @@ export function AnonymousMessageForm({ siteKey }: { siteKey: string }) {
           requestId,
           turnstileToken: captchaToken,
           website: submittedWebsite.current,
+          publicationAcknowledged,
         }),
         signal: controller.signal,
       })
@@ -106,6 +112,7 @@ export function AnonymousMessageForm({ siteKey }: { siteKey: string }) {
         attemptId.current = null
         setMessage('')
         setDraft('')
+        setPublicationAcknowledged(false)
         setPhase('sent')
         requestAnimationFrame(() => feedbackRef.current?.focus())
       } else {
@@ -197,7 +204,7 @@ export function AnonymousMessageForm({ siteKey }: { siteKey: string }) {
           <button className="contact-submit" type="submit" disabled={tooLong || !message.trim()}>
             内容を確認する ↗
           </button>
-          <p>メッセージは管理者が確認します。自動的に公開されることはありません。</p>
+          <p>投稿は最初は非公開です。管理者の承認後、本文と返信が共有される場合があります。</p>
         </div>
       </form>
 
@@ -211,6 +218,18 @@ export function AnonymousMessageForm({ siteKey }: { siteKey: string }) {
           <h3 id="anonymous-review-title">送信前の確認</h3>
           <p>こちらの文章を匿名で送信します。内容に問題がなければ送信してください。</p>
           <p className="message-review-text">{draft}</p>
+          <label className="message-publication-acknowledgment">
+            <input
+              type="checkbox"
+              checked={publicationAcknowledged}
+              disabled={phase === 'submitting'}
+              onChange={(event) => setPublicationAcknowledged(event.target.checked)}
+            />
+            <span>
+              管理者が公開を承認した場合、投稿本文と管理者からの返信が誰でも閲覧できる共有ページやSNS用画像に掲載されることを理解しました。
+              個人情報や秘密情報は含めていません。
+            </span>
+          </label>
           <TurnstileWidget key={captchaKey} siteKey={siteKey} onToken={setCaptchaToken} />
           <div className="contact-submit-row">
             <button
@@ -224,7 +243,7 @@ export function AnonymousMessageForm({ siteKey }: { siteKey: string }) {
             <button
               type="button"
               className="contact-submit"
-              disabled={phase === 'submitting' || !captchaToken}
+              disabled={phase === 'submitting' || !captchaToken || !publicationAcknowledged}
               onClick={send}
             >
               {phase === 'submitting' ? '送信中…' : '匿名で送信する →'}

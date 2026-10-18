@@ -55,6 +55,8 @@ describe('AnonymousMessageForm', () => {
     expect(submit.hasAttribute('disabled')).toBe(true)
     expect(request).not.toHaveBeenCalled()
     fireEvent.click(screen.getByRole('button', { name: 'ボット確認テスト' }))
+    expect(submit.hasAttribute('disabled')).toBe(true)
+    fireEvent.click(screen.getByRole('checkbox', { name: /管理者が公開を承認した場合/ }))
     fireEvent.click(submit)
     expect(await screen.findByText(/送信回数の上限に達しました/)).toBeTruthy()
     fireEvent.click(screen.getByRole('button', { name: '← 修正する' }))
@@ -62,6 +64,9 @@ describe('AnonymousMessageForm', () => {
       (screen.getByRole('textbox', { name: 'メッセージ（匿名）' }) as HTMLTextAreaElement).value,
     ).toBe('メッセージ')
     expect(request).toHaveBeenCalledTimes(1)
+    fireEvent.click(screen.getByRole('button', { name: '内容を確認する ↗' }))
+    const retrySubmit = screen.getByRole('button', { name: '匿名で送信する →' })
+    expect(retrySubmit.hasAttribute('disabled')).toBe(true)
   })
 
   it('confirms receipt without claiming it was published', async () => {
@@ -74,6 +79,7 @@ describe('AnonymousMessageForm', () => {
     })
     fireEvent.click(screen.getByRole('button', { name: '内容を確認する ↗' }))
     fireEvent.click(screen.getByRole('button', { name: 'ボット確認テスト' }))
+    fireEvent.click(screen.getByRole('checkbox', { name: /管理者が公開を承認した場合/ }))
     fireEvent.click(screen.getByRole('button', { name: '匿名で送信する →' }))
     expect(await screen.findByText('受け付けました！')).toBeTruthy()
     expect(screen.getByText(/公開や返信は保証していません/)).toBeTruthy()
