@@ -66,7 +66,7 @@ describe('AnonymousMessageForm', () => {
     expect(request).toHaveBeenCalledTimes(1)
   })
 
-  it('requires an explicit acknowledgement, resets it after editing, and sends only a boolean marker', async () => {
+  it('requires consent, resets on edit, and sends true', async () => {
     const request = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
       Response.json({ ok: true, code: 'received' }, { status: 201 }),
     )
@@ -83,7 +83,10 @@ describe('AnonymousMessageForm', () => {
     expect(submit.hasAttribute('disabled')).toBe(false)
     fireEvent.click(screen.getByRole('button', { name: '← 修正する' }))
     fireEvent.click(screen.getByRole('button', { name: '内容を確認する ↗' }))
-    expect((screen.getByRole('checkbox', { name: /管理者が公開を承認した場合/ }) as HTMLInputElement).checked).toBe(false)
+    const unchecked = screen.getByRole('checkbox', {
+      name: /管理者が公開を承認した場合/,
+    }) as HTMLInputElement
+    expect(unchecked.checked).toBe(false)
     fireEvent.click(screen.getByRole('checkbox', { name: /管理者が公開を承認した場合/ }))
     fireEvent.click(screen.getByRole('button', { name: '匿名で送信する →' }))
     expect(await screen.findByText('受け付けました！')).toBeTruthy()
