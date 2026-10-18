@@ -55,9 +55,7 @@ describe.skipIf(process.env.ANONYMOUS_PUBLIC_HTTP_DB_INTEGRATION !== 'true')(
       const getPage = (id: string) =>
         fetch(new URL(`/message/${id}`, base), { cache: 'no-store' })
       const getImage = (id: string) =>
-        fetch(new URL(`/message/${id}/opengraph-image`, base), {
-          cache: 'no-store',
-        })
+        fetch(new URL(`/message/${id}/opengraph-image`, base), { cache: 'no-store' })
 
       const actorId = 1
       let approvedId: string | null = null
