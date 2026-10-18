@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useSyncExternalStore } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 
 import {
   createMascotClipController,
@@ -69,15 +69,44 @@ export function Mascot3DPreference() {
  */
 export function Mascot3D() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const mobileButtonRef = useRef<HTMLButtonElement>(null)
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const enabled = useSyncExternalStore(subscribePreference, isEnabled, initialPreference)
+
+  useEffect(() => {
+    if (!mobileOpen) return
+
+    const onOutsideTap = (event: PointerEvent) => {
+      if (event.target instanceof Node && mobileButtonRef.current?.contains(event.target)) return
+      setMobileOpen(false)
+    }
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setMobileOpen(false)
+        mobileButtonRef.current?.focus()
+      }
+    }
+    document.addEventListener('pointerdown', onOutsideTap, { passive: true })
+    document.addEventListener('keydown', onEscape)
+    return () => {
+      document.removeEventListener('pointerdown', onOutsideTap)
+      document.removeEventListener('keydown', onEscape)
+    }
+  }, [mobileOpen])
 
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
 
     const pointer = window.matchMedia('(hover: hover) and (pointer: fine)')
+    const mobile = window.matchMedia('(hover: none), (pointer: coarse)')
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const onMobile = () => !pointer.matches && mobile.matches
     const supportsMotion = () =>
-      pointer.matches && !motion.matches && isEnabled() && document.visibilityState === 'visible'
+      (pointer.matches || (onMobile() && mobileOpen)) &&
+      !motion.matches &&
+      isEnabled() &&
+      document.visibilityState === 'visible'
 
     let alive = true
     let requestToken = 0
@@ -129,6 +158,12 @@ export function Mascot3D() {
 
       const elapsed = lastFrameTime ? Math.min((now - lastFrameTime) / 1000, 0.05) : 0.016
       lastFrameTime = now
+      if (onMobile()) {
+        // A stationary preview instead of a floating follower on narrow touch screens.
+        clipController?.transitionTo('idle')
+        renderFrame?.(elapsed, { ...state, facingRad: Math.PI / 2, locomotion: 'idle' })
+        return
+      }
       state = stepMascotFollow(state, target, elapsed, {
         width: window.innerWidth,
         height: window.innerHeight,
@@ -236,7 +271,7 @@ export function Mascot3D() {
     }
 
     const onPointerMove = (event: PointerEvent) => {
-      if (event.pointerType !== 'mouse' || !supportsMotion()) return
+      if (!pointer.matches || event.pointerType !== 'mouse' || !supportsMotion()) return
       const element = event.target
       if (
         element instanceof Element &&
@@ -249,12 +284,17 @@ export function Mascot3D() {
       else if (!loading) void beginLoad()
     }
     const onPreference = () => {
+      if (!onMobile() || motion.matches || !isEnabled()) setMobileOpen(false)
       if (!supportsMotion()) unload()
-      else loadFailed = false
+      else {
+        loadFailed = false
+        if (onMobile() && mobileOpen) void beginLoad()
+      }
     }
     const onVisibility = () => {
-      if (supportsMotion()) play()
-      else stop()
+      if (!supportsMotion()) stop()
+      else if (loaded) play()
+      else if (onMobile() && mobileOpen) void beginLoad()
     }
     const onContextLost = (event: Event) => {
       event.preventDefault()
@@ -268,9 +308,11 @@ export function Mascot3D() {
     window.addEventListener(PREFERENCE_EVENT, onPreference)
     window.addEventListener('storage', onPreference)
     pointer.addEventListener('change', onPreference)
+    mobile.addEventListener('change', onPreference)
     motion.addEventListener('change', onPreference)
     canvas.addEventListener('webglcontextlost', onContextLost)
     canvas.dataset.ready = 'true'
+    if (onMobile() && mobileOpen) void beginLoad()
 
     return () => {
       alive = false
@@ -280,20 +322,38 @@ export function Mascot3D() {
       window.removeEventListener(PREFERENCE_EVENT, onPreference)
       window.removeEventListener('storage', onPreference)
       pointer.removeEventListener('change', onPreference)
+      mobile.removeEventListener('change', onPreference)
       motion.removeEventListener('change', onPreference)
       canvas.removeEventListener('webglcontextlost', onContextLost)
     }
-  }, [])
+  }, [mobileOpen])
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="mascot-3d-canvas"
-      aria-hidden="true"
-      data-testid="mascot-3d"
-      data-active="false"
-      width={CANVAS_WIDTH}
-      height={CANVAS_HEIGHT}
-    />
+    <>
+      <canvas
+        ref={canvasRef}
+        id="mascot-3d-mobile-preview"
+        className="mascot-3d-canvas"
+        aria-hidden="true"
+        data-testid="mascot-3d"
+        data-active="false"
+        data-mobile-open={mobileOpen ? 'true' : 'false'}
+        width={CANVAS_WIDTH}
+        height={CANVAS_HEIGHT}
+      />
+      {enabled && (
+        <button
+          ref={mobileButtonRef}
+          type="button"
+          className="mascot-3d-mobile-button"
+          aria-expanded={mobileOpen}
+          aria-controls="mascot-3d-mobile-preview"
+          aria-label={mobileOpen ? '3Dマスコットを閉じる' : '3Dマスコットを表示する'}
+          onClick={() => setMobileOpen((open) => !open)}
+        >
+          {mobileOpen ? '閉じる ×' : '✦ 3D'}
+        </button>
+      )}
+    </>
   )
 }

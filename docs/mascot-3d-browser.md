@@ -46,3 +46,13 @@
 - Netlify Previewで目視確認する項目：3Dモデルが白/青/紫のオリジナル造形になっているか、移動方向への向き・歩幅・足運びが自然か、待機から走行への切替が分かるか、背景の透過・フォーム非干渉・OFF設定が機能するか。
 - GPU負荷・LCP/INP/CLS・WebGL Context Lost・Safari/モバイルでの実機確認が揃うまで**レビュー停止**とする。
 
+
+## モバイルのオンデマンド表示（Issue #125）
+
+- タッチ端末には48px以上の小型「✦ 3D」ボタンだけを出す。初期状態で3D Canvasは非表示、GLBとThree.jsを要求しない。
+- ユーザーがボタンをタップした場合のみ、画面左下のコンパクトな固定プレビューを表示。カーソル追従はせず、`idle` Clipのみを再生。
+- 再タップ、プレビュー外のタップ、Escapeで閉じる。Canvasは`pointer-events:none`・`aria-hidden=true`を維持し、閉じるとRAF/GLTF/WebGLリソースを破棄する。
+- **表示中かどうかはsession/localStorageへ永続化しない**。再ロード・ページ遷移で毎回閉じた状態に戻す。フッター設定の明示OFFは従来どおり優先する。
+- Reduced MotionではトリガーとCanvasを隠し、3Dを読み込まない。デスクトップfine pointerの追従は従来どおり。
+- 関連テスト：mobile WebKitで初期DL=0、タップ後GLB取得、再タップ/外タップ・再読込・OFF・reduced-motion、デスクトップの追従回帰。
+- 未確認：実機iOS Safari/Androidと低メモリ/WebGL loss時の挙動、320/375/390px・Chatとの重なり、GPU/INP/CLS。プレビュー目視と性能検証が完了するまで本番マージ不可。

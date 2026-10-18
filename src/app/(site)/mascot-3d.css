@@ -33,8 +33,63 @@
   outline-offset: 3px;
 }
 
-@media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
+.mascot-3d-mobile-button {
+  display: none;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .mascot-3d-mobile-button {
+    position: fixed;
+    z-index: 126;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    left: max(12px, env(safe-area-inset-left));
+    display: grid;
+    place-items: center;
+    min-width: 52px;
+    min-height: 48px;
+    padding: 0.4rem 0.7rem;
+    border: 1px solid var(--color-line-strong);
+    border-radius: 999px;
+    background: var(--color-bg-elevated);
+    color: var(--color-text);
+    box-shadow: var(--shadow-depth);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  .mascot-3d-mobile-button:focus-visible {
+    outline: 3px solid var(--color-primary);
+    outline-offset: 3px;
+  }
+
   .mascot-3d-canvas {
+    display: none;
+    top: auto;
+    bottom: max(72px, calc(env(safe-area-inset-bottom) + 60px));
+    left: max(12px, env(safe-area-inset-left));
+    width: 124px;
+    height: 146px;
+    transform: none !important;
+  }
+
+  .mascot-3d-canvas[data-mobile-open='true'] {
+    display: block;
+  }
+}
+
+@media (max-width: 360px) and (pointer: coarse) {
+  .mascot-3d-canvas {
+    width: 108px;
+    height: 128px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mascot-3d-canvas,
+  .mascot-3d-mobile-button {
     display: none;
   }
 }
+
