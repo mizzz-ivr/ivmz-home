@@ -33,15 +33,21 @@ describe('anonymous-messages inbox access', () => {
     const deletePolicy = AnonymousMessages.access?.delete
     if (typeof deletePolicy !== 'function') throw new Error('Missing delete access')
     const adminReq = {
-      req: { user: { id: 7, collection: 'users' }, payload: { config: { admin: { user: 'users' } } } },
+      req: {
+        user: { id: 7, collection: 'users' },
+        payload: { config: { admin: { user: 'users' } } },
+      },
     }
     expect(deletePolicy(adminReq as never)).toEqual({ isPublic: { equals: false } })
 
     const hook = AnonymousMessages.hooks?.beforeChange?.[0]
     if (!hook) throw new Error('Missing publication guard')
-    expect(() =>
-      hook({ data: { reply: '未承認の編集' }, originalDoc: { isPublic: true, reply: '承認済み' } } as never),
-    ).toThrow()
+    const updatePublishedReply = () =>
+      hook({
+        data: { reply: '未承認の編集' },
+        originalDoc: { isPublic: true, reply: '承認済み' },
+      } as never)
+    expect(updatePublishedReply).toThrow()
   })
 
   it('starts private and keeps the reply and triage editable for administrators', () => {
