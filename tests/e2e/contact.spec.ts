@@ -88,3 +88,12 @@ test.describe('Contact form', () => {
     )
   })
 })
+
+test('keeps withdrawn future message paths out of browser and CDN caches', async ({ request }) => {
+  const response = await request.get('/message/this-is-not-a-public-message')
+  expect(response.status()).toBe(404)
+  expect(response.headers()['cache-control']).toContain('no-store')
+  // Netlify may consume CDN policy headers before returning the response to browsers.
+  // The browser-visible Cache-Control header is the portable assertion here.
+  expect(response.headers()['x-robots-tag']).toContain('noindex')
+})
