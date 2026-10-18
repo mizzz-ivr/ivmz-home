@@ -47,16 +47,22 @@ describe('AnonymousPublicationActionsClient', () => {
   it('blocks unsaved edits and missing reviewed replies', () => {
     form.modified = true
     render(<AnonymousPublicationActionsClient enabled />)
-    expect(screen.getByRole('button', { name: '公開を承認する' }).hasAttribute('disabled')).toBe(true)
+    expect(screen.getByRole('button', { name: '公開を承認する' }).hasAttribute('disabled')).toBe(
+      true,
+    )
     cleanup()
     form.modified = false
     documentInfo.data.reply = ''
     render(<AnonymousPublicationActionsClient enabled />)
-    expect(screen.getByRole('button', { name: '公開を承認する' }).hasAttribute('disabled')).toBe(true)
+    expect(screen.getByRole('button', { name: '公開を承認する' }).hasAttribute('disabled')).toBe(
+      true,
+    )
   })
 
   it('requires explicit confirmation and sends only the document id and action', async () => {
-    const request = vi.fn().mockResolvedValue(Response.json({ ok: true, code: 'published', publicId: 'a'.repeat(22) }))
+    const request = vi
+      .fn()
+      .mockResolvedValue(Response.json({ ok: true, code: 'published', publicId: 'a'.repeat(22) }))
     vi.stubGlobal('fetch', request)
     render(<AnonymousPublicationActionsClient enabled />)
 
@@ -83,7 +89,9 @@ describe('AnonymousPublicationActionsClient', () => {
 
   it('requires a second confirmation for withdrawal and does not repeat a failed request', async () => {
     documentInfo.data.isPublic = true
-    const request = vi.fn().mockResolvedValue(Response.json({ ok: false, code: 'not_public' }, { status: 409 }))
+    const request = vi
+      .fn()
+      .mockResolvedValue(Response.json({ ok: false, code: 'not_public' }, { status: 409 }))
     vi.stubGlobal('fetch', request)
     render(<AnonymousPublicationActionsClient enabled />)
     fireEvent.click(screen.getByRole('button', { name: '公開を取り下げる' }))
@@ -99,6 +107,8 @@ describe('AnonymousPublicationActionsClient', () => {
     fireEvent.click(screen.getByRole('button', { name: '公開を承認する' }))
     fireEvent.click(screen.getByRole('button', { name: '公開を確定する' }))
     expect(await screen.findByText(/処理済みの可能性/)).toBeTruthy()
-    expect(screen.getByRole('button', { name: '公開を承認する' }).hasAttribute('disabled')).toBe(true)
+    expect(screen.getByRole('button', { name: '公開を承認する' }).hasAttribute('disabled')).toBe(
+      true,
+    )
   })
 })

@@ -56,7 +56,9 @@ export function AnonymousPublicationActionsClient({ enabled }: { enabled: boolea
       })
       const result = (await response.json().catch(() => ({}))) as PublicationResponse
       if (!response.ok || result.ok !== true) {
-        setMessage(errors[result.code ?? ''] ?? '操作に失敗しました。再読み込みして状態を確認してください。')
+        setMessage(
+          errors[result.code ?? ''] ?? '操作に失敗しました。再読み込みして状態を確認してください。',
+        )
         setConfirmAction(null)
         return
       }
@@ -68,7 +70,9 @@ export function AnonymousPublicationActionsClient({ enabled }: { enabled: boolea
           : '公開を取り下げ、監査履歴に記録しました。共有IDは無効になりました。',
       )
     } catch {
-      setMessage('通信が中断されました。処理済みの可能性があります。再読み込みして確認してください。')
+      setMessage(
+        '通信が中断されました。処理済みの可能性があります。再読み込みして確認してください。',
+      )
       setConfirmAction(null)
       setCompleted(true)
     } finally {
@@ -102,7 +106,9 @@ export function AnonymousPublicationActionsClient({ enabled }: { enabled: boolea
               : '返信を保存し、ステータスを「Replied」にしたあとで承認できます。送信者へ通知はしません。'}
           </p>
           {modified || processing ? (
-            <p role="status">未保存の編集があります。先に変更を保存してから承認・取り下げしてください。</p>
+            <p role="status">
+              未保存の編集があります。先に変更を保存してから承認・取り下げしてください。
+            </p>
           ) : null}
           {!isPublic && !canPublish ? (
             <p role="status">承認には投稿本文・保存済みの返信・Repliedステータスが必要です。</p>
@@ -116,18 +122,19 @@ export function AnonymousPublicationActionsClient({ enabled }: { enabled: boolea
               </p>
               {action === 'publish' ? (
                 <>
-                  <p style={{ overflowWrap: 'anywhere', whiteSpace: 'pre-wrap' }}>投稿：{content}</p>
+                  <p style={{ overflowWrap: 'anywhere', whiteSpace: 'pre-wrap' }}>
+                    投稿：{content}
+                  </p>
                   <p style={{ overflowWrap: 'anywhere', whiteSpace: 'pre-wrap' }}>返信：{reply}</p>
                 </>
               ) : null}
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 12 }}>
-                <button
-                  disabled={!ready}
-                  onClick={apply}
-                  style={{ minHeight: 44 }}
-                  type="button"
-                >
-                  {busy ? '処理中…' : action === 'publish' ? '公開を確定する' : '取り下げを確定する'}
+                <button disabled={!ready} onClick={apply} style={{ minHeight: 44 }} type="button">
+                  {busy
+                    ? '処理中…'
+                    : action === 'publish'
+                      ? '公開を確定する'
+                      : '取り下げを確定する'}
                 </button>
                 <button
                   disabled={busy}
@@ -154,7 +161,11 @@ export function AnonymousPublicationActionsClient({ enabled }: { enabled: boolea
           )}
         </>
       )}
-      {message ? <p role="status" style={{ margin: '12px 0 0' }}>{message}</p> : null}
+      {message ? (
+        <p role="status" style={{ margin: '12px 0 0' }}>
+          {message}
+        </p>
+      ) : null}
       {completed ? (
         <a
           href={`/admin/collections/anonymous-messages/${encodeURIComponent(String(messageId))}`}
