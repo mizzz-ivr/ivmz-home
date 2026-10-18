@@ -22,7 +22,8 @@ export async function resolveApprovedAnonymousMessage(
   try {
     const candidate = await findCandidate(publicId)
     if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) return null
-    return toPublicAnonymousMessage(candidate)
+    const approved = toPublicAnonymousMessage(candidate)
+    return approved?.publicId === publicId ? approved : null
   } catch {
     // DB failures are never a reason to return a previously-approved cached document.
     return null
