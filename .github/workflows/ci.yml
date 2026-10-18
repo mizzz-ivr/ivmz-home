@@ -62,6 +62,10 @@ jobs:
         env:
           ANONYMOUS_PUBLICATION_DB_INTEGRATION: 'true'
         run: pnpm exec vitest run src/messages/publication-admin.integration.test.ts
+      - name: 匿名投稿の公開→撤回→再公開と旧共有URL無効化を実DB検証
+        env:
+          ANONYMOUS_PUBLIC_READER_DB_INTEGRATION: 'true'
+        run: pnpm exec vitest run src/messages/public-reader.integration.test.ts
       - run: pnpm generate:types
       - run: pnpm generate:importmap
       - name: 生成済みPayload成果物がコミットされていることを確認
