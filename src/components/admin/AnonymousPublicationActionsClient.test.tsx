@@ -11,7 +11,8 @@ const form = { modified: false, processing: false }
 
 vi.mock('@payloadcms/ui', () => ({
   useDocumentInfo: () => documentInfo,
-  useForm: () => form,
+  useFormModified: () => form.modified,
+  useFormProcessing: () => form.processing,
 }))
 
 import { AnonymousPublicationActionsClient } from './AnonymousPublicationActionsClient'
@@ -81,8 +82,7 @@ describe('AnonymousPublicationActionsClient', () => {
       }),
     )
     expect(await screen.findByText(/公開を承認し、監査履歴に記録/)).toBeTruthy()
-    expect(screen.getByRole('link', { name: /最新の保存状態/ })).toHaveAttribute(
-      'href',
+    expect(screen.getByRole('link', { name: /最新の保存状態/ }).getAttribute('href')).toBe(
       '/admin/collections/anonymous-messages/42',
     )
   })

@@ -1,6 +1,6 @@
 'use client'
 
-import { useDocumentInfo, useForm } from '@payloadcms/ui'
+import { useDocumentInfo, useFormModified, useFormProcessing } from '@payloadcms/ui'
 import { useRef, useState } from 'react'
 
 type Action = 'publish' | 'unpublish'
@@ -20,7 +20,8 @@ const errors: Record<string, string> = {
 
 export function AnonymousPublicationActionsClient({ enabled }: { enabled: boolean }) {
   const { collectionSlug, data, id } = useDocumentInfo()
-  const { modified, processing } = useForm()
+  const modified = useFormModified()
+  const processing = useFormProcessing()
   const [confirmAction, setConfirmAction] = useState<Action | null>(null)
   const [message, setMessage] = useState('')
   const [completed, setCompleted] = useState(false)
