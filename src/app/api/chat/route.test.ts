@@ -60,6 +60,7 @@ describe('POST /api/chat', () => {
     expect(oversized.status).toBe(400)
     expect((await send({ messages: 'x'.repeat(10) })).status).toBe(400)
     expect((await send('x'.repeat(5000))).status).toBe(413)
+    expect((await send('あ'.repeat(1500))).status).toBe(413)
   })
 
   it('returns the model reply, and null when the provider fails', async () => {

@@ -4,8 +4,14 @@ export const runtime = 'nodejs'
 
 const DOWNLOAD_URL_TTL_SECONDS = 60
 
+const downloadHeaders = {
+  'Cache-Control': 'private, no-store',
+  'Referrer-Policy': 'no-referrer',
+  'X-Content-Type-Options': 'nosniff',
+}
+
 function plain(status: number) {
-  return new Response(null, { headers: { 'Cache-Control': 'no-store' }, status })
+  return new Response(null, { headers: downloadHeaders, status })
 }
 
 /**
@@ -14,7 +20,7 @@ function plain(status: number) {
  */
 export async function GET(request: Request) {
   const rowId = new URL(request.url).searchParams.get('row')
-  if (!rowId || rowId.length > 64) return plain(400)
+  if (!rowId || rowId.length > 64 || !/^[A-Za-z0-9_-]+$/.test(rowId)) return plain(400)
 
   const [{ getPayload }, { default: config }] = await Promise.all([
     import('payload'),
@@ -47,7 +53,7 @@ export async function GET(request: Request) {
     DOWNLOAD_URL_TTL_SECONDS,
   )
   return new Response(null, {
-    headers: { 'Cache-Control': 'no-store', Location: url },
+    headers: { ...downloadHeaders, Location: url },
     status: 302,
   })
 }
