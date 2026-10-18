@@ -92,12 +92,54 @@ export class S3AttachmentStorage implements AttachmentStorage {
   }
 
   async readObject(key: string, maxBytes: number) {
-    const head = await this.client.send(new HeadObjectCommand({ Bucket: this.bucket, Key: key }))
-    if ((head.ContentLength ?? 0) > maxBytes) throw new Error('Object exceeds the allowed size.')
+    if (!Number.isSafeInteger(maxBytes) || maxBytes < 1) {
+      throw new Error('Invalid object size limit.')
+    }
 
-    const { Body } = await this.client.send(new GetObjectCommand({ Bucket: this.bucket, Key: key }))
+    const head = await this.client.send(new HeadObjectCommand({ Bucket: this.bucket, Key: key }))
+    const expectedSize = head.ContentLength
+    if (
+      expectedSize === undefined ||
+      !Number.isSafeInteger(expectedSize) ||
+      expectedSize < 1 ||
+      expectedSize > maxBytes
+    ) {
+      throw new Error('Object exceeds the allowed size or has unknown length.')
+    }
+    if (!head.ETag) throw new Error('Object version cannot be verified.')
+
+    // HEAD and GET are separate requests: the quarantine object could be replaced in between.
+    // If-Match refuses a different version; Range caps download size even if it was replaced.
+    const { Body } = await this.client.send(
+      new GetObjectCommand({
+        Bucket: this.bucket,
+        IfMatch: head.ETag,
+        Key: key,
+        Range: `bytes=0-${maxBytes}`,
+      }),
+    )
     if (!Body) throw new Error('Object has no body.')
-    return Buffer.from(await Body.transformToByteArray())
+
+    // Never buffer an untrusted S3 response without an application-level cap.
+    // Even if an endpoint ignores Range, stop consuming the stream before allocating > maxBytes.
+    const stream = Body as AsyncIterable<Uint8Array>
+    if (typeof stream[Symbol.asyncIterator] !== 'function') {
+      throw new Error('Object body is not a readable stream.')
+    }
+    const chunks: Buffer[] = []
+    let received = 0
+    for await (const chunk of stream) {
+      const bytes = Buffer.from(chunk)
+      if (bytes.length > maxBytes - received) {
+        throw new Error('Object exceeds the allowed size during download.')
+      }
+      chunks.push(bytes)
+      received += bytes.length
+    }
+    if (received !== expectedSize) {
+      throw new Error('Object size changed during download.')
+    }
+    return Buffer.concat(chunks, received)
   }
 
   async putObject(key: string, bytes: Buffer, mime: string) {

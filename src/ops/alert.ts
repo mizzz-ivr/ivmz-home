@@ -28,6 +28,10 @@ const TIMEOUT_MS = 2_500
 const THROTTLE_MS = 10 * 60 * 1000
 const MAX_DETAIL = 400
 const EMAIL_LIKE = /[^\s@]+@[^\s@]+\.[^\s@]+/g
+const IPV4_LIKE = /\b(?:\d{1,3}\.){3}\d{1,3}\b/g
+const MAX_TITLE = 120
+const SLACK_WEBHOOK_PATH = /^\/services\/[A-Za-z0-9_-]+\/[A-Za-z0-9_-]+\/[A-Za-z0-9_-]+$/
+const DISCORD_WEBHOOK_PATH = /^\/api(?:\/v\d+)?\/webhooks\/\d+\/[A-Za-z0-9._-]+$/
 
 // Best-effort throttle: the state lives in this serverless instance only, so a burst that fans out
 // over several instances can still produce a few duplicate messages. That is acceptable for the
@@ -41,25 +45,43 @@ const ICON: Record<OpsAlertSeverity, string> = {
 }
 
 export function formatAlertText(alert: OpsAlert): string {
-  const detail = (alert.detail ?? '').replace(EMAIL_LIKE, '[email]').slice(0, MAX_DETAIL)
-  const head = `${ICON[alert.severity]} [ivmz] ${alert.title}`
+  const scrub = (value: string) => {
+    const withoutEmails = value.replace(EMAIL_LIKE, '[email]')
+    const withoutIps = withoutEmails.replace(IPV4_LIKE, '[ip]')
+    return withoutIps.replace(/[\r\n\t]/g, ' ')
+  }
+  const detail = scrub(alert.detail ?? '').slice(0, MAX_DETAIL)
+  const head = `${ICON[alert.severity]} [ivmz] ${scrub(alert.title).slice(0, MAX_TITLE)}`
   return detail ? `${head}\n${detail}` : head
 }
 
 function payloadFor(url: URL, text: string) {
   if (url.hostname === 'hooks.slack.com') return { text }
-  if (url.hostname.endsWith('discord.com') || url.hostname.endsWith('discordapp.com')) {
-    return { content: text, username: 'ivmz ops' }
-  }
-  return { content: text, text }
+  return { content: text, username: 'ivmz ops' }
 }
 
-/** The single definition of a usable webhook: https, no embedded credentials. */
+/** Only the documented Discord and Slack webhook endpoints can receive server-side alerts. */
 export function parseWebhookUrl(value: string | undefined): URL | null {
   if (!value) return null
   try {
     const url = new URL(value)
-    return url.protocol === 'https:' && !url.username && !url.password ? url : null
+    if (
+      url.protocol !== 'https:' ||
+      url.username ||
+      url.password ||
+      url.port ||
+      url.search ||
+      url.hash
+    ) {
+      return null
+    }
+    if (url.hostname === 'hooks.slack.com') {
+      return SLACK_WEBHOOK_PATH.test(url.pathname) ? url : null
+    }
+    if (url.hostname === 'discord.com' || url.hostname === 'discordapp.com') {
+      return DISCORD_WEBHOOK_PATH.test(url.pathname) ? url : null
+    }
+    return null
   } catch {
     return null
   }
@@ -87,6 +109,7 @@ export async function sendOpsAlert(
       body: JSON.stringify(payloadFor(url, formatAlertText(alert))),
       headers: { 'Content-Type': 'application/json' },
       method: 'POST',
+      redirect: 'error',
       signal: AbortSignal.timeout(TIMEOUT_MS),
     })
     if (response.ok) return 'sent'
