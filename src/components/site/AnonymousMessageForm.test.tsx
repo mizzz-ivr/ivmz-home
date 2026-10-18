@@ -83,7 +83,7 @@ describe('AnonymousMessageForm', () => {
     expect(submit.hasAttribute('disabled')).toBe(false)
     fireEvent.click(screen.getByRole('button', { name: '← 修正する' }))
     fireEvent.click(screen.getByRole('button', { name: '内容を確認する ↗' }))
-    expect(screen.getByRole('checkbox', { name: /管理者が公開を承認した場合/ }).hasAttribute('checked')).toBe(false)
+    expect((screen.getByRole('checkbox', { name: /管理者が公開を承認した場合/ }) as HTMLInputElement).checked).toBe(false)
     fireEvent.click(screen.getByRole('checkbox', { name: /管理者が公開を承認した場合/ }))
     fireEvent.click(screen.getByRole('button', { name: '匿名で送信する →' }))
     expect(await screen.findByText('受け付けました！')).toBeTruthy()
