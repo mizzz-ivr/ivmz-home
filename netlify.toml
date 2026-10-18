@@ -1,3 +1,10 @@
+[context.production]
+  command = "node scripts/assert-production-database.mjs && pnpm build"
+
+[context.production.environment]
+  PAYLOAD_PREVIEW_DATABASE_PROJECT_REF = "dzdgbkjmomvmexcbjyin"
+  PAYLOAD_PRODUCTION_DATABASE_PROJECT_REF = "drazbrcqnjxjuygfxmlz"
+
 [context.deploy-preview]
   command = "node scripts/assert-preview-database.mjs && PAYLOAD_DATABASE_POOL_MODE=session pnpm db:migrate && pnpm build"
 
