@@ -17,3 +17,9 @@
 - 公開Readerのレスポンスは`message, reply, publicId, publishedAt`の4項目に限定し、管理用メモやrequestIdの非露出をテストする。
 - `CI=true`・ローカルPostgreSQL宛・専用環境変数の3条件で検証を制限。テストレコードは終了時に消去する。
 - **検証範囲の限界**：これはDBに接続するサーバーReaderの結合テストであり、Netlify実環境のSSR/OG HTTPレスポンス・CDNキャッシュ・Turnstile・DB接続先隔離の証明ではない。Issue #133の実環境テストは引き続き必須。
+
+## SSR・OGのHTTP結合検証（隔離CI）
+- `src/messages/public-http.integration.test.ts`は使い捨てPostgreSQL17と`127.0.0.1:3100`で起動した本番ビルドのNext.jsを使用する。
+- 公開フラグを**ローカルCIサーバーのみ**ONにし、承認済みページのHTTP 200、OG PNGのシグネチャとno-store、内部メモ非露出、撤回・再承認後の旧URL/OG 404を検証する。
+- CI・localhost DB・localhost HTTPの三重制限を設け、テストデータを最後に消去する。Netlify Previewの環境変数・Supabaseへの書き込みは行わない。
+- **これはNext.jsの直接HTTP応答の検証であり、Netlify CDN・エッジキャッシュ・SNS側の画像キャッシュを通した検証ではない。** Issue #133の実Preview確認は引き続き未完了とする。

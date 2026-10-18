@@ -129,6 +129,25 @@ jobs:
           exit 1
       - name: Browser tests (Chromium)
         run: pnpm exec playwright test --project=chromium
+      - name: 承認済み共有SSR・OG・公開撤回を隔離CIのHTTPで検証
+        env:
+          ANONYMOUS_PUBLIC_HTTP_DB_INTEGRATION: 'true'
+          ANONYMOUS_PUBLIC_HTTP_BASE_URL: http://127.0.0.1:3100
+        shell: bash
+        run: |
+          set -euo pipefail
+          PORT=3100 ANONYMOUS_MESSAGE_PUBLIC_PAGES_ENABLED=true pnpm start > server-public.log 2>&1 &
+          public_server_pid=$!
+          trap 'kill "$public_server_pid" 2>/dev/null || true' EXIT
+          for attempt in {1..45}; do
+            if curl --silent --fail --output /dev/null http://127.0.0.1:3100/; then break; fi
+            if [ "$attempt" -eq 45 ]; then cat server-public.log; exit 1; fi
+            sleep 2
+          done
+          pnpm exec vitest run src/messages/public-http.integration.test.ts
+      - name: Public server log on failure
+        if: failure()
+        run: tail -n 100 server-public.log || true
       - name: Server log on failure
         if: failure()
         run: tail -n 100 server.log || true
