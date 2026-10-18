@@ -23,19 +23,15 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 export function anonymousMessageCharacterCount(message: string): number {
-  let count = 0
-  for (const _segment of graphemeSegmenter.segment(message)) {
-    count += 1
-  }
-  return count
+  return Array.from(graphemeSegmenter.segment(message)).length
 }
 
 function containsUnsupportedControls(value: string): boolean {
   for (const character of value) {
     const code = character.codePointAt(0)
-    if (code !== undefined && ((code < 32 && code !== 9 && code !== 10) || code === 127)) {
-      return true
-    }
+    if (code === undefined) continue
+    if (code === 127) return true
+    if (code < 32 && code !== 9 && code !== 10) return true
   }
   return false
 }
@@ -53,10 +49,10 @@ export function parseAnonymousMessageSubmission(input: unknown): AnonymousMessag
     return { kind: 'honeypot' }
   }
 
-  const message =
-    typeof input.message === 'string' ? input.message.replace(/\r\n?/g, '\n').trim() : ''
-  const requestId =
-    typeof input.requestId === 'string' ? input.requestId.trim().toLowerCase() : ''
+  const messageValue = typeof input.message === 'string' ? input.message : ''
+  const requestIdValue = typeof input.requestId === 'string' ? input.requestId : ''
+  const message = messageValue.replace(/\r\n?/g, '\n').trim()
+  const requestId = requestIdValue.trim().toLowerCase()
   const errors: ValidationErrors = {}
 
   if (!message) {
