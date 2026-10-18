@@ -85,7 +85,8 @@ export function AnonymousMessageForm({ siteKey }: { siteKey: string }) {
   }
 
   async function send() {
-    if (sendingRef.current || phase !== 'review' || !captchaToken || !publicationAcknowledged) return
+    if (sendingRef.current || phase !== 'review' || !captchaToken || !publicationAcknowledged)
+      return
     sendingRef.current = true
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), 10_000)
