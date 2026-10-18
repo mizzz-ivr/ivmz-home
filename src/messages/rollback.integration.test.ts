@@ -47,7 +47,6 @@ describe.skipIf(process.env.ANONYMOUS_DB_ROLLBACK !== 'true')(
           SELECT
             to_regclass('ivmz_home.anonymous_messages') AS inbox,
             to_regclass('ivmz_home.anonymous_message_rate_limits') AS limits,
-          to_regclass('ivmz_home.anonymous_message_publication_audit') AS audit,
             to_regclass('ivmz_home.anonymous_message_publication_audit') AS audit,
             to_regtype('ivmz_home.enum_anonymous_messages_status') AS status_enum
         `)
@@ -81,6 +80,7 @@ describe.skipIf(process.env.ANONYMOUS_DB_ROLLBACK !== 'true')(
         SELECT
           to_regclass('ivmz_home.anonymous_messages') AS inbox,
           to_regclass('ivmz_home.anonymous_message_rate_limits') AS limits,
+          to_regclass('ivmz_home.anonymous_message_publication_audit') AS audit,
           to_regclass('ivmz_home.anonymous_messages_request_id_idx') AS request_idx,
           to_regclass('ivmz_home.anonymous_message_rate_limits_expires_at_idx') AS expiry_idx
       `)
