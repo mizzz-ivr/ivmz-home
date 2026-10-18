@@ -52,10 +52,10 @@ describe('audited admin publication endpoint', () => {
       { messageId: '7', action: 'publish' },
       { messageId: 7, action: 'auto' },
       { messageId: 7, action: 'publish', isPublic: true },
-      [7, 'publish'],
     ]) {
       expect((await handler(request(input))).status).toBe(422)
     }
+    expect((await handler(request([7, 'publish']))).status).toBe(400)
     expect((await handler(request('invalid-json'))).status).toBe(400)
     expect(
       (
