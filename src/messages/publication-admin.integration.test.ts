@@ -80,6 +80,12 @@ describe.skipIf(process.env.ANONYMOUS_PUBLICATION_DB_INTEGRATION !== 'true')(
         `)
         expect(actions.rows.map((row) => row.action)).toEqual(['publish', 'unpublish', 'publish'])
       } finally {
+        const state = await payload.db.drizzle.execute(sql`
+          SELECT "is_public" FROM "ivmz_home"."anonymous_messages" WHERE "id" = ${doc.id}
+        `)
+        if (state.rows[0]?.is_public === true) {
+          await changeAnonymousPublication(payload, doc.id, actorId, 'unpublish')
+        }
         await payload.db.drizzle.execute(sql`
           DELETE FROM "ivmz_home"."anonymous_message_publication_audit" WHERE "message_id" = ${doc.id}
         `)
