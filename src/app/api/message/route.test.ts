@@ -53,12 +53,10 @@ describe('POST /api/message', () => {
 
   it('rejects wrong origin, absent config, and content type before persistence', async () => {
     const { deps, handler } = setup()
-    expect((await handler(make(validBody, { origin: 'https://attacker.invalid' }))).status).toBe(
-      403,
-    )
-    expect((await handler(make(validBody, { 'content-type': 'text/plain' }))).status).toBe(
-      415,
-    )
+    const wrongOrigin = await handler(make(validBody, { origin: 'https://attacker.invalid' }))
+    expect(wrongOrigin.status).toBe(403)
+    const plainText = await handler(make(validBody, { 'content-type': 'text/plain' }))
+    expect(plainText.status).toBe(415)
     deps.enabled = false
     expect((await handler(make())).status).toBe(503)
     expect(deps.save).not.toHaveBeenCalled()
