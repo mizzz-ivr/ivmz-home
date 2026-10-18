@@ -58,6 +58,10 @@ jobs:
         env:
           ANONYMOUS_DB_ROLLBACK: 'true'
         run: pnpm exec vitest run src/messages/rollback.integration.test.ts
+      - name: 匿名投稿の管理者公開承認・非公開化・監査の実DB検証
+        env:
+          ANONYMOUS_PUBLICATION_DB_INTEGRATION: 'true'
+        run: pnpm exec vitest run src/messages/publication-admin.integration.test.ts
       - run: pnpm generate:types
       - run: pnpm generate:importmap
       - name: 生成済みPayload成果物がコミットされていることを確認

@@ -1,6 +1,6 @@
-import type { CollectionConfig } from 'payload'
+import { APIError, type CollectionConfig } from 'payload'
 
-import { isAuthenticated } from '@/access/is-authenticated'
+import { isAdminCollectionUser, isAuthenticated } from '@/access/is-authenticated'
 
 const serverOwned = { create: () => false, update: () => false }
 const readOnly = { readOnly: true } as const
@@ -21,7 +21,25 @@ export const AnonymousMessages: CollectionConfig = {
     create: () => false,
     read: isAuthenticated,
     update: isAuthenticated,
-    delete: isAuthenticated,
+    // Published records must be withdrawn through the audited endpoint before deletion.
+    delete: ({ req }) => (isAdminCollectionUser({ req }) ? { isPublic: { equals: false } } : false),
+  },
+  hooks: {
+    beforeChange: [
+      ({ data, originalDoc }) => {
+        if (
+          originalDoc?.isPublic &&
+          ((data?.reply !== undefined && data.reply !== originalDoc.reply) ||
+            (data?.status !== undefined && data.status !== originalDoc.status))
+        ) {
+          throw new APIError(
+            '公開中の返信と状態は編集できません。先に非公開へ切り替えてください。',
+            409,
+          )
+        }
+        return data
+      },
+    ],
   },
   fields: [
     {
