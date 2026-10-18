@@ -11,3 +11,9 @@
 - 送信画面では管理者が承認した投稿本文と返信が共有ページ・SNS用画像に公開され得る旨を編集画面と確認画面で明示する。送信確認の明示チェックがないリクエスト（false/未指定/文字列）はAPIで422とし、CAPTCHA・レート制限・DB保存へ進めない。チェックを外したままの送信はUIでも不可。
 - 公開理解のチェックはリクエスト内の必須真偽値であり、**DBに同意証跡を保存するものではない**。公開審査時は依然として個人情報や秘密情報の混入を人間が確認する必要がある。
 - **未完了ゲート**：Issue #133での隔離Preview確認/実Turnstile/管理者認証、CDN実レスポンス/キャッシュ失効、iOS/Android実機、Privacy Policyと保存・削除期間の運用確定、OG日本語フォント/実画像検証。Productionでは本PRを未マージ・公開ページフラグOFFに維持する。
+
+## 公開→撤回のCI検証（リリース前）
+- `src/messages/public-reader.integration.test.ts` はGitHub Actionsの使い捨てPostgreSQL17だけで実行し、未公開→管理者承認→共有Reader取得→撤回→旧IDの404相当(null)→再承認後も旧IDが無効を確認する。
+- 公開Readerのレスポンスは`message, reply, publicId, publishedAt`の4項目に限定し、管理用メモやrequestIdの非露出をテストする。
+- `CI=true`・ローカルPostgreSQL宛・専用環境変数の3条件で検証を制限。テストレコードは終了時に消去する。
+- **検証範囲の限界**：これはDBに接続するサーバーReaderの結合テストであり、Netlify実環境のSSR/OG HTTPレスポンス・CDNキャッシュ・Turnstile・DB接続先隔離の証明ではない。Issue #133の実環境テストは引き続き必須。
