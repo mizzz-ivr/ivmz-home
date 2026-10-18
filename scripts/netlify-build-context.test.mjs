@@ -22,9 +22,7 @@ describe('Netlify build commands must not mutate unverified databases', () => {
   it.each(['deploy-preview', 'branch-deploy'])(
     'runs the Preview target guard but never auto-migrates in %s',
     (context) => {
-      expect(contextCommand(context)).toBe(
-        'node scripts/assert-preview-database.mjs && pnpm build',
-      )
+      expect(contextCommand(context)).toBe('node scripts/assert-preview-database.mjs && pnpm build')
     },
   )
 })
