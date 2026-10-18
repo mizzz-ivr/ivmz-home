@@ -7,3 +7,5 @@
 - Auditは管理者User ID・匿名メッセージ内部ID・action・作成時刻のみを保持。本文、IP、cookie、requestId、トークンは保管しない。RLS有効化・公開REST Collectionには含めない。
 - **未対応：** 操作用の管理画面ボタン、公開/共有SSR・OG、URLのキャッシュ制御、保持/削除・監査ログへの管理者専用可視化、Privacy Policyの明記、Preview実DB隔離と認証実機検証。Issue #69 / #133をOpen維持し、main/Productionへ未マージ。
 - **テスト観点：** 匿名401・非管理者403・越境Origin403・422/413・未返信409・重複承認409・複数並列承認1件だけ成功・監査の原子的保存・公開IDローテーション・撤回後の非公開、既存Contactとの回帰。
+
+- 追加のDB制約：PostgreSQLのBEFORE UPDATE/DELETEトリガーで公開中の返信・ステータスの変更と削除を拒否。CMSの変更フックを読み越した競合編集もDB境界で防ぐ。Migration rollback検査は監査テーブルとトリガーもdown→up対象にし、RLSの復元を確認。

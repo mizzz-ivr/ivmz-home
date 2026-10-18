@@ -44,6 +44,21 @@ describe.skipIf(process.env.ANONYMOUS_PUBLICATION_DB_INTEGRATION !== 'true')(
         const id = published[0].status === 'fulfilled' ? published[0].value.publicId : null
         expect(id).toMatch(/^[A-Za-z0-9_-]{22}$/)
 
+        // A stale admin write, even one queued while publication held the row lock,
+        // cannot replace an approved reply through direct SQL.
+        await expect(
+          payload.db.drizzle.execute(sql`
+            UPDATE "ivmz_home"."anonymous_messages"
+            SET "reply" = '未審査の内容'
+            WHERE "id" = ${doc.id}
+          `),
+        ).rejects.toThrow()
+        await expect(
+          payload.db.drizzle.execute(sql`
+            DELETE FROM "ivmz_home"."anonymous_messages" WHERE "id" = ${doc.id}
+          `),
+        ).rejects.toThrow()
+
         const audit = await payload.db.drizzle.execute(sql`
           SELECT "action" FROM "ivmz_home"."anonymous_message_publication_audit"
           WHERE "message_id" = ${doc.id}
