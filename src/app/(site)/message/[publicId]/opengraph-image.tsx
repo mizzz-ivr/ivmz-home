@@ -35,7 +35,15 @@ export default async function Image({ params }: { params: Promise<{ publicId: st
           fontFamily: 'sans-serif',
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 27, letterSpacing: 2, color: '#bcb8ff' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            fontSize: 27,
+            letterSpacing: 2,
+            color: '#bcb8ff',
+          }}
+        >
           <span>ivmz / MESSAGE</span>
           <span>ANONYMOUS / APPROVED</span>
         </div>
@@ -43,7 +51,15 @@ export default async function Image({ params }: { params: Promise<{ publicId: st
           <div style={{ fontSize: 48, fontWeight: 700, lineHeight: 1.4, overflowWrap: 'anywhere' }}>
             {compact(approved.message, 90)}
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, borderTop: '2px solid #6d67a3', paddingTop: 22 }}>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 12,
+              borderTop: '2px solid #6d67a3',
+              paddingTop: 22,
+            }}
+          >
             <span style={{ fontSize: 22, color: '#bcb8ff' }}>REPLY / IVMZ</span>
             <span style={{ fontSize: 30, lineHeight: 1.4, overflowWrap: 'anywhere' }}>
               {compact(approved.reply, 100)}
