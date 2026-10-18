@@ -23,6 +23,14 @@ NetlifyのProduction／Deploy Previewが誤って別環境のSupabaseに接続�
 - エラー出力にパスワード・URL・トークン・クエリパラメータを含めない。
 - Production側は別の`assert-production-database.mjs`で対応済み。両ガードとも接続文字列の構文・ホスト情報の検証であり、DBに実接続して証明するものではない。
 
+## 自動Migrationの停止
+
+- Netlifyの`deploy-preview`と`branch-deploy`から`pnpm db:migrate`の自動実行を削除した。**Project Refが正しいという文字列検査だけで、DBユーザー・権限・RLS・バックアップが保証されたと誤認してMigrationを実行しないため**。
+- Previewビルドでは接続先ガードを先行実行し、成功した場合のみ`pnpm build`する。build自体の接続・読み取り挙動も実Previewで引き続き検証する。
+- 実際のMigrationはPreview専用DBの接続先・実行ロール・権限・バックアップとロールバック手順を確認してから、運用者が明示的に実行する。現時点では**Preview DBへも書き込みを行わない**。
+- 将来の機能PRでSchemaが必要になった場合、Migration前はPreviewアプリがエラーを返す可能性がある。これは検証ゲートを迂回して自動Migrationする理由にはしない。
+- `scripts/netlify-build-context.test.mjs`で本番・Preview各contextのガード先行とPreviewの自動Migration不在をCIで検証する。
+
 ## リリース判定で残る必須確認
 
 1. NetlifyにおけるProductionビルドが、mainのガード追加後のコミットで`ready`になり、ガードの正常実行がビルドログで確認できること。
