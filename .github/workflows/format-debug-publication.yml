@@ -1,0 +1,25 @@
+name: Temporary formatter diff (publication)
+on:
+  push:
+    branches:
+      - feat/issue69-audited-publication
+permissions:
+  contents: read
+jobs:
+  prettier-diff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.0
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Prettier original changed TS files
+        run: pnpm exec prettier --write 'src/app/api/message/admin/publication/route.ts' 'src/app/api/message/admin/publication/route.test.ts' 'src/collections/AnonymousMessages.ts' 'src/messages/publication-admin.integration.test.ts'
+      - name: Show exact diff for reviewer
+        run: git diff -- 'src/app/api/message/admin/publication/route.ts' 'src/app/api/message/admin/publication/route.test.ts' 'src/collections/AnonymousMessages.ts' 'src/messages/publication-admin.integration.test.ts'
