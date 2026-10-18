@@ -5,6 +5,8 @@ import * as migration_20261009_042936_contact_attachments from './20261009_04293
 import * as migration_20261009_070000_enable_row_level_security from './20261009_070000_enable_row_level_security';
 import * as migration_20261013_004103_integration_settings from './20261013_004103_integration_settings';
 
+import * as migration_20261018_031000_anonymous_messages from './20261018_031000_anonymous_messages';
+
 export const migrations = [
   {
     up: migration_20260826_021855_initial_payload_foundation.up,
@@ -35,5 +37,10 @@ export const migrations = [
     up: migration_20261013_004103_integration_settings.up,
     down: migration_20261013_004103_integration_settings.down,
     name: '20261013_004103_integration_settings'
+  },
+  {
+    up: migration_20261018_031000_anonymous_messages.up,
+    down: migration_20261018_031000_anonymous_messages.down,
+    name: '20261018_031000_anonymous_messages',
   },
 ];
