@@ -24,6 +24,6 @@
 - ドメインパーサーと公開判定はネットワークやDBに依存しない。API、Payload、SSR/OGから再利用する。
 - `src/messages/*.test.ts` はPR段階でCIのVitestに組み込まれる。
 - 次段階ではHTTPの403/413/415/422/429/409、CAPTCHA失敗、並列投稿、認可、公開・非公開切替、HTML/絵文字、SSR/OG、migration up/down、既存`/contact`回帰を追加する。
-- 現段階で`/message`を公開しない。デザインPR・3D/セキュリティPRと合流させず、オーナー承認前のmainマージ・Productionデプロイは禁止。
+- 現段階で`/message`を公開しない。デザインPR・3D/セキュリティPRと合流させず、GitHub CIとNetlify Deploy Previewの必須チェックを通し、オーナー承認のうえでmainへ反映する。新しい投稿機能はまだ公開しない。
 
 関連: [Issue #69](https://github.com/mizzz-ivr/ivmz-home/issues/69)
