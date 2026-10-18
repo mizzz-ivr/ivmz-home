@@ -9,6 +9,8 @@ import * as migration_20261018_031000_anonymous_messages from './20261018_031000
 
 import * as migration_20261018_040000_anonymous_message_rate_limits from './20261018_040000_anonymous_message_rate_limits';
 
+import * as migration_20261018_050000_anonymous_publication_audit from './20261018_050000_anonymous_publication_audit';
+
 export const migrations = [
   {
     up: migration_20260826_021855_initial_payload_foundation.up,
@@ -49,5 +51,10 @@ export const migrations = [
     up: migration_20261018_040000_anonymous_message_rate_limits.up,
     down: migration_20261018_040000_anonymous_message_rate_limits.down,
     name: '20261018_040000_anonymous_message_rate_limits',
+  },
+  {
+    up: migration_20261018_050000_anonymous_publication_audit.up,
+    down: migration_20261018_050000_anonymous_publication_audit.down,
+    name: '20261018_050000_anonymous_publication_audit',
   },
 ];
