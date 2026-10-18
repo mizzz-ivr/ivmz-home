@@ -25,18 +25,12 @@ export default function MessagePage() {
       <PageHero
         index="MESSAGE / 07"
         title={<>Leave a signal.</>}
-        description={
-          <p>
-            名前もメールアドレスもいりません。気軽にひとこと、感想や応援を送ってください。
-          </p>
-        }
+        description={<p>名前もメールアドレスもいりません。感想や応援を気軽に送ってください。</p>}
         signal="MESSAGE / ANONYMOUS"
       />
       <PageSection
         title="ひとことを送る"
-        description={
-          <p>300文字以内のテキストを受け付けます。内容を確認してから送信できます。</p>
-        }
+        description={<p>300文字以内のテキストを、確認画面から送信できます。</p>}
       >
         {enabled ? (
           <AnonymousMessageForm siteKey={process.env.TURNSTILE_SITE_KEY!} />
@@ -56,25 +50,13 @@ export default function MessagePage() {
       </PageSection>
       <PageSection
         title="ご利用にあたって"
-        description={
-          <p>
-            送信した文章は管理者のみが確認し、公開や返信を保証するものではありません。
-            住所・連絡先などの個人情報や秘密情報は入力しないでください。
-            詳細は
-            <a className="inline-link" href="/legal/privacy">
-              プライバシーポリシー
-            </a>
-            をご覧ください。
-          </p>
-        }
+        description={<p>管理者のみが確認し、公開や返信を保証しません。個人情報や秘密情報は送らないでください。</p>}
       >
-        <p className="message-guidance">
-          名前・メールアドレスの入力は不要です。長文でのご相談や返信をご希望の場合は
-          <a className="inline-link" href="/contact">
-            Contact
-          </a>
-          をご利用ください。
-        </p>
+        <div className="message-guidance">
+          <p>名前・メールアドレスは不要です。長文のご相談や返信をご希望の場合はContactへ。</p>
+          <p><a className="inline-link" href="/legal/privacy">プライバシーポリシー →</a></p>
+          <p><a className="inline-link" href="/contact">Contact →</a></p>
+        </div>
       </PageSection>
     </main>
   )
