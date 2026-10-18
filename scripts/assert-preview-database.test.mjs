@@ -69,4 +69,45 @@ describe('assertPreviewDatabaseTarget', () => {
       'DATABASE_URL is not configured',
     )
   })
+
+  it('requires valid, distinct project references for every preview deploy', () => {
+    for (const overrides of [
+      { PAYLOAD_PRODUCTION_DATABASE_PROJECT_REF: '' },
+      { PAYLOAD_PREVIEW_DATABASE_PROJECT_REF: '' },
+      { PAYLOAD_PREVIEW_DATABASE_PROJECT_REF: 'short' },
+      { PAYLOAD_PRODUCTION_DATABASE_PROJECT_REF: 'short' },
+      { PAYLOAD_PRODUCTION_DATABASE_PROJECT_REF: PREVIEW_REF },
+      { PAYLOAD_PREVIEW_DATABASE_PROJECT_REF: PRODUCTION_REF },
+      { PAYLOAD_PRODUCTION_DATABASE_PROJECT_REF: 'malformed-project-id!' },
+    ]) {
+      expect(() => assertPreviewDatabaseTarget(baseEnv(overrides))).toThrow(
+        'Preview and Production project references must be valid and distinct',
+      )
+    }
+  })
+
+  it('rejects production pooler connections and disguised connection targets', () => {
+    for (const databaseUrl of [
+      `postgresql://postgres.${PRODUCTION_REF}:secret@aws-1.pooler.supabase.com/postgres`,
+      `postgresql://postgres:secret@db.${PREVIEW_REF}.supabase.co.attacker.invalid/postgres`,
+      `postgresql://postgres:secret@aws-1.pooler.supabase.com.attacker.invalid/postgres`,
+      'postgresql://postgres.other:secret@aws-1.pooler.supabase.com/postgres',
+      `https://db.${PREVIEW_REF}.supabase.co/postgres`,
+    ]) {
+      expect(() => assertPreviewDatabaseTarget(baseEnv({ DATABASE_URL: databaseUrl }))).toThrow()
+    }
+  })
+
+  it('rejects malformed pooler usernames without exposing credentials', () => {
+    const secret = 'NeverLeakCredentialsOrTokens'
+    const databaseUrl = `postgresql://%ZZ:${secret}@aws-1.pooler.supabase.com/postgres`
+    expect(() => assertPreviewDatabaseTarget(baseEnv({ DATABASE_URL: databaseUrl }))).toThrow(
+      'DATABASE_URL does not target the configured Preview Supabase project',
+    )
+    try {
+      assertPreviewDatabaseTarget(baseEnv({ DATABASE_URL: databaseUrl }))
+    } catch (error) {
+      expect(String(error)).not.toContain(secret)
+    }
+  })
 })
