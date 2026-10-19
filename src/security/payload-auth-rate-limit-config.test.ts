@@ -1,3 +1,5 @@
+import { readdirSync } from 'node:fs'
+
 import { describe, expect, it, vi } from 'vitest'
 
 import payloadAuthRateLimit, { config } from '../../netlify/edge-functions/payload-auth-rate-limit'
@@ -14,6 +16,16 @@ describe('Payload authentication rate-limit edge function', () => {
         aggregateBy: ['ip', 'domain'],
       },
     })
+  })
+
+  it('keeps the Netlify Free-plan limit of two code-based edge rate-limit rules', () => {
+    const rateLimitFiles = readdirSync(
+      new URL('../../netlify/edge-functions/', import.meta.url),
+    )
+      .filter((file) => file.endsWith('-rate-limit.ts'))
+      .sort()
+
+    expect(rateLimitFiles).toEqual(['contact-rate-limit.ts', 'payload-auth-rate-limit.ts'])
   })
 
   it('delegates allowed requests to the Payload authentication handler', async () => {
