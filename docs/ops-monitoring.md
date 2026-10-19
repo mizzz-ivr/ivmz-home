@@ -8,7 +8,7 @@
 | 運用ダッシュボード | 管理画面のトップ（`/admin`） | なし（デプロイすると表示されます） |
 | 失敗時のアラート | Discord／Slack | `OPS_ALERT_WEBHOOK_URL` |
 | 定期ヘルスチェック | GitHub Actions（失敗するとGitHubからメールが届く） | `OPS_HEALTH_TOKEN` ＋ GitHub のシークレット |
-| 保存期間を過ぎた問い合わせの削除 | GitHub Actions（毎週月曜に報告） | `OPS_HEALTH_TOKEN`、削除は `RETENTION_PURGE_ENABLED=true` |
+| 保存期間を過ぎた問い合わせの確認 | GitHub Actions（毎週月曜、集計のみ） | `OPS_HEALTH_TOKEN`（Netlify ProductionとGitHub Actionsの両方） |
 
 ## 1. 管理画面のダッシュボード
 
@@ -51,22 +51,38 @@
 3. GitHub のリポジトリ → Settings → Secrets and variables → Actions → **Secrets** に、同じ値を `OPS_HEALTH_TOKEN` として登録します。（任意）`OPS_ALERT_WEBHOOK_URL` も同じように登録すると、失敗が Discord にも届きます。
 4. 再デプロイします。Actions タブの「Ops Health」→「Run workflow」で、すぐに試せます。
 
-トークンを設定するまでは `/api/ops/health` は存在しない扱い（404）で、ワークフローも何もせず成功します。
+トークンが未設定だと `/api/ops/health` は404になります。GitHub側にもSecretがない場合、
+定期ヘルスチェックは**未実行のまま成功扱い**になり、実際の稼働状態は確認できません。
+GitHub側だけに設定されていてNetlify側が未設定の場合は404で警告扱いになります。
+**週次保持レポートはトークン未設定・404のどちらでも失敗**し、削除は実行しません。
+ヘルスチェックが緑色でも、Secretsの未設定がないことを別途確認してください。
 
-## 4. 保存期間を過ぎた問い合わせの削除
+## 4. 保存期間を過ぎた問い合わせの確認（定期ジョブは削除しない）
 
-プライバシーポリシーの「最後のやり取りから1年を目安に削除」を守るための仕組みです。**初期状態では何も削除しません。**
+プライバシーポリシーの「最後のやり取りから1年を目安に削除」に関して、
+現時点では**期限を過ぎた件数の確認だけ**を自動実行します。実際の削除運用はIssue #98で
+DBとS3の保持期間・バックアップ・失敗時の復旧方法を確定するまで保留しています。
 
-- 期間: 既定は365日（`CONTACT_RETENTION_DAYS` で30〜1825日）。基準は問い合わせの「最後の更新日」です（ステータスを変えたりメモを書いたりすると更新されます）。
-- 対象外: ステータスが **New（未対応）** のものは、まだ誰も読んでいないため削除しません。ダッシュボードに「期間を過ぎても未対応」の件数として表示されます。
-- 毎週月曜に、GitHub Actions が「何件が対象か」を報告します（実行結果の Summary に出ます）。
-- 実際に削除するには、次の **両方** が必要です。
-  1. Netlify の環境変数 `RETENTION_PURGE_ENABLED` を `true` にする
-  2. GitHub のリポジトリの Variables に `RETENTION_APPLY` = `true` を登録する
-- 1回の実行で削除する件数は最大200件です。残りは次回に回ります。
-- 添付ファイルは、これとは別に、S3 のライフサイクルで受付から90日後に自動削除されます。
+- DBの対象期間: 既定365日（`CONTACT_RETENTION_DAYS`で30〜1825日）。
+  最終更新日が基準で、ステータスがNew（未対応）の問い合わせは削除対象に含めません。
+- GitHub Actions `Ops Health` の週次`retention`ジョブは、
+  `scripts/ops-retention-report.mjs`を通じて`POST /api/ops/retention`に
+  空のJSON `{}`だけを送信し、削除対象件数の**dry-run**結果をSummaryに記録します。
+- `RETENTION_APPLY`をGitHub Variablesに設定しても、現在の週次ジョブからは
+  データ削除を実行できません。**この変数を有効化しないでください。**
+- 一方、API自身には手動削除用の処理が残っています。
+  正しいBearerトークン、リクエストの`apply: true`、
+  Netlify側の`RETENTION_PURGE_ENABLED=true`が揃うと最大200件ずつ削除可能です。
+  **保持方針と復旧計画が決まるまでは`RETENTION_PURGE_ENABLED`を設定しないでください。**
+  定期ジョブがdry-run専用であることは、APIを直接呼び出しても削除されないという意味ではありません。
+- 添付ファイル（S3 `clean/`）は現在90日、DBの問い合わせは365日を既定とするため、
+  DB参照だけ残り添付を取得できないケースがあり得ます。
+  保持日数を一方的に変更したり、過去データを自動で消去したりしないでください。
 
-まずは報告だけを数週間見て、対象の件数が想定どおりかを確認してから、上の2つを有効にすることをおすすめします。
+`OPS_HEALTH_TOKEN`が未設定の場合、週次レポートは失敗します。
+本番のトークン設定後はGitHub Actionsで`Ops Health` → `Run workflow` →
+`task: retention`を選び、**削除件数ではなくdry-runの件数だけ**が表示されることを確認します。
+エラーや応答本文に秘密値・問い合わせ本文を出力しない運用を維持してください。
 
 ## 5. トラブルシューティング
 
@@ -76,7 +92,7 @@
 | ヘルスチェックのワークフローが 401 | Netlify と GitHub の `OPS_HEALTH_TOKEN` が同じ値か（前後の空白に注意） |
 | ヘルスチェックのワークフローが 404 | Netlify に `OPS_HEALTH_TOKEN`（24文字以上）が入っているか、再デプロイ済みか |
 | アラートが届かない | `OPS_ALERT_WEBHOOK_URL` が Production で Functions／Runtime に入っているか。10分以内の同じ内容は送られません |
-| 削除が実行されない | `RETENTION_PURGE_ENABLED=true`（Netlify）と `RETENTION_APPLY=true`（GitHub の Variables）の両方 |
+| 定期保持レポートが失敗する | Netlify ProductionとGitHub Actions双方の`OPS_HEALTH_TOKEN`、404・401・5xxのエラー種別を確認する。保持ジョブはdry-run専用 |
 
 ## 仕組みの補足（開発者向け）
 
