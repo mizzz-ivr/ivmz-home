@@ -5,6 +5,7 @@ import { hasValidOpsToken, isOpsEndpointEnabled } from '@/ops/auth'
 import {
   PURGE_BATCH_LIMIT,
   isPurgeEnabled,
+  overdueNewRetentionWhere,
   resolveRetentionDays,
   retentionCutoff,
 } from '@/ops/retention'
@@ -43,13 +44,25 @@ export async function POST(request: Request) {
     await payload.count({ collection: 'contact-submissions', overrideAccess: true, where })
   ).totalDocs
 
-  if (!apply)
+  if (!apply) {
+    // New submissions are excluded from deletion, but their age must remain observable.
+    // Use createdAt: an internal note or triage edit must not hide an unanswered message.
+    const overdueNew = (
+      await payload.count({
+        collection: 'contact-submissions',
+        overrideAccess: true,
+        where: overdueNewRetentionWhere(cutoff),
+      })
+    ).totalDocs
+
     return json({
       days,
       dryRun: true,
       eligible,
+      overdueNew,
       willDeleteNow: Math.min(eligible, PURGE_BATCH_LIMIT),
     })
+  }
   if (!isPurgeEnabled()) return json({ code: 'purge_disabled', days, eligible }, 403)
 
   const batch = await payload.find({
