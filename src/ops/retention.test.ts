@@ -5,6 +5,7 @@ import {
   MAX_RETENTION_DAYS,
   MIN_RETENTION_DAYS,
   isPurgeEnabled,
+  overdueNewRetentionWhere,
   resolveRetentionDays,
   retentionCutoff,
 } from './retention'
@@ -22,6 +23,15 @@ describe('retention helpers', () => {
     expect(retentionCutoff(new Date('2027-01-31T00:00:00Z'), 30).toISOString()).toBe(
       '2027-01-01T00:00:00.000Z',
     )
+  })
+
+  it('reports overdue New submissions based on creation rather than admin edits', () => {
+    expect(overdueNewRetentionWhere('2025-10-20T00:00:00.000Z')).toEqual({
+      and: [
+        { createdAt: { less_than: '2025-10-20T00:00:00.000Z' } },
+        { status: { equals: 'new' } },
+      ],
+    })
   })
 
   it('purges only when explicitly enabled', () => {
