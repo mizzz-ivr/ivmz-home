@@ -69,7 +69,9 @@ DBとS3の保持期間・バックアップ・失敗時の復旧方法を確定�
   最終更新日が基準で、ステータスがNew（未対応）の問い合わせは削除対象に含めません。
 - GitHub Actions `Ops Health` の週次`retention`ジョブは、
   `scripts/ops-retention-report.mjs`を通じて`POST /api/ops/retention`に
-  空のJSON `{}`だけを送信し、削除対象件数の**dry-run**結果をSummaryに記録します。
+  空のJSON `{}`だけを送信し、削除対象件数`eligible`と受付から設定期間を超えた未対応件数`overdueNew`の**dry-run**結果をSummaryに記録します。
+  `overdueNew`は`createdAt`基準、`eligible`は`updatedAt`基準であり、両者を足して削除対象とみなしません。
+  Productionが新API未反映の場合は`overdueNew=unavailable`と表示し、**0件と誤認しない**ようにします。
 - `RETENTION_APPLY`をGitHub Variablesに設定しても、現在の週次ジョブからは
   データ削除を実行できません。**この変数を有効化しないでください。**
 - 一方、API自身には手動削除用の処理が残っています。

@@ -1,3 +1,5 @@
+import type { Where } from 'payload'
+
 /** Retention window for contact submissions (days since the record was last touched). */
 export const DEFAULT_RETENTION_DAYS = 365
 export const MIN_RETENTION_DAYS = 30
@@ -19,4 +21,11 @@ export function retentionCutoff(now: Date, days: number): Date {
 /** Deleting must be switched on explicitly; anything else only reports what would be deleted. */
 export function isPurgeEnabled(value: string | undefined = process.env.RETENTION_PURGE_ENABLED) {
   return value === 'true'
+}
+
+/** Aged untouched or triaged New messages remain excluded from automatic deletion. */
+export function overdueNewRetentionWhere(cutoff: string): Where {
+  return {
+    and: [{ createdAt: { less_than: cutoff } }, { status: { equals: 'new' } }],
+  }
 }
