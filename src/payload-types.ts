@@ -75,6 +75,7 @@ export interface Config {
     schedule: Schedule;
     'social-links': SocialLink;
     'contact-submissions': ContactSubmission;
+    'anonymous-messages': AnonymousMessage;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -90,6 +91,7 @@ export interface Config {
     schedule: ScheduleSelect<false> | ScheduleSelect<true>;
     'social-links': SocialLinksSelect<false> | SocialLinksSelect<true>;
     'contact-submissions': ContactSubmissionsSelect<false> | ContactSubmissionsSelect<true>;
+    'anonymous-messages': AnonymousMessagesSelect<false> | AnonymousMessagesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -332,6 +334,23 @@ export interface ContactSubmission {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "anonymous-messages".
+ */
+export interface AnonymousMessage {
+  id: number;
+  status: 'new' | 'read' | 'replied' | 'hidden' | 'spam';
+  message: string;
+  requestId: string;
+  reply?: string | null;
+  isPublic: boolean;
+  publicId?: string | null;
+  publishedAt?: string | null;
+  internalNote?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -385,6 +404,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'contact-submissions';
         value: number | ContactSubmission;
+      } | null)
+    | ({
+        relationTo: 'anonymous-messages';
+        value: number | AnonymousMessage;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -580,6 +603,22 @@ export interface ContactSubmissionsSelect<T extends boolean = true> {
       };
   notification?: T;
   notificationError?: T;
+  internalNote?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "anonymous-messages_select".
+ */
+export interface AnonymousMessagesSelect<T extends boolean = true> {
+  status?: T;
+  message?: T;
+  requestId?: T;
+  reply?: T;
+  isPublic?: T;
+  publicId?: T;
+  publishedAt?: T;
   internalNote?: T;
   updatedAt?: T;
   createdAt?: T;
