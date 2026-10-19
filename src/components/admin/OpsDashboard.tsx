@@ -24,6 +24,15 @@ function Stat({ title, value, note }: { title: string; value: number | string; n
   )
 }
 
+const retentionMessages = {
+  basis:
+    '集計はDBの最終更新日（管理者メモ・状態変更も含む）を基準とし、プライバシーポリシーの「最後のやり取り」とは一致しない場合があります。',
+  disabled:
+    '週次ジョブは件数確認（dry-run）のみです。サーバー側の削除許可もOFFのため、直接APIによる削除は拒否されます。DB/S3の安全な削除・復旧手順が整うまで停止を継続します。',
+  enabled:
+    '警告：RETENTION_PURGE_ENABLED=trueです。週次ジョブはdry-run専用ですが、認証済みの直接APIにapply: trueを送るとDB本文の削除が可能です。S3添付との削除整合・復旧手順が未実装のため、削除許可をOFFにしてください。',
+} as const
+
 const HEALTH: Record<string, { color: string; text: string }> = {
   degraded: { color: '#b45309', text: '要確認' },
   down: { color: '#b91c1c', text: '障害' },
@@ -61,11 +70,6 @@ const CHECKS: Array<{ hint: string; key: keyof OpsConfig; title: string }> = [
     hint: 'OPS_HEALTH_TOKEN(24文字以上)を設定すると、ヘルスチェックの窓口が有効になります。定期チェックには GitHub の Secrets にも同じ値が必要です。',
     key: 'healthToken',
     title: 'ヘルスチェックの窓口(サーバー側)',
-  },
-  {
-    hint: '確認後に RETENTION_PURGE_ENABLED=true で有効化します(未設定=削除しません)。',
-    key: 'purgeEnabled',
-    title: '保存期間を過ぎた問い合わせの削除許可(サーバー側)',
   },
 ]
 
@@ -165,21 +169,30 @@ export async function OpsDashboard({ payload, user }: ServerProps) {
           ) : null}
 
           <h3 style={{ margin: '20px 0 8px' }}>
-            保存期間(最後の更新から {stats.retention.days} 日)
+            保持期間の確認（最終更新から {stats.retention.days} 日）
           </h3>
           <p style={{ margin: 0 }}>
-            期間を過ぎた対応済みの問い合わせ: <strong>{stats.retention.eligible}</strong> 件
-            {config.purgeEnabled
-              ? '(サーバー側の削除許可はオン。実際の削除は毎週の定期実行で RETENTION_APPLY=true のときだけ行われます)'
-              : '(削除は許可されていません。削除されません)'}
-            ／ 期間を過ぎても未対応(New): <strong>{stats.retention.staleUnhandled}</strong> 件
-            (未対応は削除されません)
+            最終更新から期間を過ぎた対応済みの問い合わせ:{' '}
+            <strong>{stats.retention.eligible}</strong> 件
           </p>
+          <p style={{ margin: 0 }}>
+            期間を過ぎても未対応(New): <strong>{stats.retention.staleUnhandled}</strong> 件
+            （未対応は現行の削除処理では対象外）
+          </p>
+          <p style={{ margin: '8px 0 0' }}>{retentionMessages.basis}</p>
         </>
       ) : (
         <p style={{ color: '#b91c1c' }}>
           統計を取得できませんでした。データベースの状態を確認してください。
         </p>
+      )}
+
+      {config.purgeEnabled ? (
+        <p role="alert" style={{ color: '#b91c1c', margin: '8px 0 0' }}>
+          {retentionMessages.enabled}
+        </p>
+      ) : (
+        <p style={{ margin: '8px 0 0' }}>{retentionMessages.disabled}</p>
       )}
 
       <h3 style={{ margin: '20px 0 8px' }}>設定チェック</h3>
