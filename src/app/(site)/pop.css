@@ -104,6 +104,20 @@
   padding-top: clamp(40px, 5vw, 64px);
 }
 
+/* A small invitation to the FAQ chat, including tablet two-column layout. */
+.hero-actions > button {
+  cursor: pointer;
+}
+.hero-actions > button:focus-visible {
+  outline: 3px solid var(--color-cyan);
+  outline-offset: 4px;
+}
+@media (min-width: 561px) and (max-width: 760px) {
+  .hero-actions > button:last-child {
+    grid-column: 1 / -1;
+  }
+}
+
 /* ---- Marker highlight ---- */
 .marker {
   padding: 0 0.08em;

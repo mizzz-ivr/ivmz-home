@@ -118,7 +118,7 @@
 .chat-launcher {
   position: fixed;
   z-index: 75;
-  right: max(16px, env(safe-area-inset-right));
+  left: max(16px, env(safe-area-inset-left));
   bottom: max(16px, env(safe-area-inset-bottom));
   display: inline-flex;
   align-items: center;
@@ -185,7 +185,7 @@
 .chat-panel {
   position: fixed;
   z-index: 80;
-  right: max(16px, env(safe-area-inset-right));
+  left: max(16px, env(safe-area-inset-left));
   bottom: max(16px, env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
@@ -197,7 +197,7 @@
   background: var(--color-bg-elevated);
   color: var(--color-text);
   box-shadow: var(--shadow-depth);
-  transform-origin: 100% 100%;
+  transform-origin: 0 100%;
   animation: chat-pop 380ms var(--ease-signal);
 }
 .chat-panel[hidden] {
@@ -256,6 +256,11 @@
   to {
     box-shadow: 0 0 0 7px rgba(125, 255, 176, 0);
   }
+}
+.chat-connection-unavailable i {
+  background: var(--color-pop);
+  box-shadow: none;
+  animation: none;
 }
 .chat-close {
   margin-left: auto;
@@ -477,14 +482,12 @@
   }
 }
 @media (max-width: 560px) {
+  /* Keep the input above Netlify's external badge on narrow viewports. */
   .chat-panel {
-    inset: auto 0 0 0;
-    width: 100%;
-    height: min(86dvh, 640px);
-    border-radius: 22px 22px 0 0;
-    border-inline: 0;
-    border-bottom: 0;
-    padding-bottom: env(safe-area-inset-bottom);
+    inset: auto 10px max(78px, env(safe-area-inset-bottom)) 10px;
+    width: auto;
+    height: min(72dvh, 600px);
+    border-radius: 22px;
   }
   /* Keep the accessible name when only the avatar is shown. */
   .chat-launcher-label {

@@ -151,6 +151,9 @@ export default async function HomePage() {
             <a className="action-link" href="/contact">
               Contact <span aria-hidden="true">→</span>
             </a>
+            <ChatOpenButton variant="secondary">
+              ✦ チャットで質問 <span aria-hidden="true">↗</span>
+            </ChatOpenButton>
           </div>
           <div className="hero-status" aria-label="Current focus">
             <span>
