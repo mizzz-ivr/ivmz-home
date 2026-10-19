@@ -1,6 +1,6 @@
 import type { Payload, Where } from 'payload'
 
-import { retentionCutoff } from './retention'
+import { overdueNewRetentionWhere, retentionCutoff } from './retention'
 
 const COLLECTION = 'contact-submissions' as const
 const DAY_MS = 24 * 60 * 60 * 1000
@@ -118,9 +118,7 @@ export async function collectOpsStats(
   const eligible = await count({
     and: [{ updatedAt: { less_than: cutoff } }, { status: { not_equals: 'new' } }],
   })
-  const staleUnhandled = await count({
-    and: [{ updatedAt: { less_than: cutoff } }, { status: { equals: 'new' } }],
-  })
+  const staleUnhandled = await count(overdueNewRetentionWhere(cutoff))
 
   return {
     checkedAt: now.toISOString(),

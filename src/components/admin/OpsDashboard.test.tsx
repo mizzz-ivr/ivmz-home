@@ -46,7 +46,9 @@ async function renderDashboard(purgeEnabled: boolean) {
 describe('OpsDashboard retention display', () => {
   it('reports dry-run only and the disabled manual deletion path', async () => {
     const markup = await renderDashboard(false)
-    expect(markup).toContain('最終更新から')
+    expect(markup).toContain('最終更新から期間を過ぎた対応済み')
+    expect(markup).toContain('期間を過ぎても未対応(New)')
+    expect(markup).toContain('未対応(New)は受付日時（作成日）')
     expect(markup).toContain('最後のやり取り')
     expect(markup).toContain('週次ジョブは件数確認（dry-run）のみ')
     expect(markup).toContain('直接APIによる削除は拒否されます')

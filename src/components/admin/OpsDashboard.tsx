@@ -26,7 +26,7 @@ function Stat({ title, value, note }: { title: string; value: number | string; n
 
 const retentionMessages = {
   basis:
-    '集計はDBの最終更新日（管理者メモ・状態変更も含む）を基準とし、プライバシーポリシーの「最後のやり取り」とは一致しない場合があります。',
+    '対応済みはDBの最終更新日（管理者メモ・状態変更も含む）、未対応(New)は受付日時（作成日）を基準に集計します。いずれもプライバシーポリシーの「最後のやり取り」とは一致しない場合があります。',
   disabled:
     '週次ジョブは件数確認（dry-run）のみです。サーバー側の削除許可もOFFのため、直接APIによる削除は拒否されます。DB/S3の安全な削除・復旧手順が整うまで停止を継続します。',
   enabled:
@@ -168,9 +168,7 @@ export async function OpsDashboard({ payload, user }: ServerProps) {
             </div>
           ) : null}
 
-          <h3 style={{ margin: '20px 0 8px' }}>
-            保持期間の確認（最終更新から {stats.retention.days} 日）
-          </h3>
+          <h3 style={{ margin: '20px 0 8px' }}>保持期間の確認（{stats.retention.days} 日）</h3>
           <p style={{ margin: 0 }}>
             最終更新から期間を過ぎた対応済みの問い合わせ:{' '}
             <strong>{stats.retention.eligible}</strong> 件
