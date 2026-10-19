@@ -63,4 +63,15 @@ describe('OpsDashboard retention display', () => {
     expect(markup).toContain('S3添付との削除整合')
     expect(markup).not.toContain('RETENTION_APPLY=true')
   })
+
+  it('keeps the purge warning visible when database statistics fail', async () => {
+    vi.mocked(collectOpsStats).mockRejectedValue(new Error('Database unavailable'))
+    vi.mocked(readOpsConfig).mockResolvedValue({ ...config, purgeEnabled: true })
+    const element = await OpsDashboard({ user: { id: 1 } } as unknown as ServerProps)
+    const markup = renderToStaticMarkup(element)
+    expect(markup).toContain('統計を取得できませんでした')
+    expect(markup).toContain('role="alert"')
+    expect(markup).toContain('RETENTION_PURGE_ENABLED=true')
+    expect(markup).not.toContain('Database unavailable')
+  })
 })
