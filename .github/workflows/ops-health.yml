@@ -3,8 +3,8 @@ name: Ops Health
 # Scheduled production health check and weekly retention report for the contact inbox.
 # Needs the repository secret OPS_HEALTH_TOKEN (same value as the Netlify variable); without it the
 # jobs only print a notice and succeed. A failed run is e-mailed to you by GitHub automatically.
-# HTTP 404 from the site (token not set there, or the endpoint is not deployed yet) is a warning.
-# Optional: secret OPS_ALERT_WEBHOOK_URL (Discord/Slack), variables SITE_URL and RETENTION_APPLY.
+# The health endpoint treats 404 as a setup warning; weekly retention reports fail on any 404.
+# Optional: secret OPS_ALERT_WEBHOOK_URL (Discord/Slack) and variable SITE_URL.
 
 on:
   schedule:
@@ -82,55 +82,15 @@ jobs:
           echo "::error::Health check reported ${status} (HTTP ${code})"
           exit 1
 
+  # Dry-run only while DB (365 days) and S3 clean/ lifecycle (90 days) disagree (#98).
+  # A workflow variable must not silently enable destructive deletion.
   retention:
     if: ${{ github.event.schedule == '23 3 * * 1' || (github.event_name == 'workflow_dispatch' && github.event.inputs.task == 'retention') }}
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     steps:
-      - name: Report (and optionally apply) contact retention
+      - uses: actions/checkout@v4
+      - name: Report contact retention (dry-run only)
         env:
           OPS_HEALTH_TOKEN: ${{ secrets.OPS_HEALTH_TOKEN }}
-          RETENTION_APPLY: ${{ vars.RETENTION_APPLY }}
-        run: |
-          if [ -z "$OPS_HEALTH_TOKEN" ]; then
-            echo "::notice::OPS_HEALTH_TOKEN is not set; skipping retention."
-            exit 0
-          fi
-
-          # --fail-with-body: HTTP 4xx/5xx (expired token, purge disabled, server error) fail the step
-          # but keep the response body for the log.
-          call() {
-            curl -sS --fail-with-body --max-time 60 -X POST \
-              -H "Authorization: Bearer $OPS_HEALTH_TOKEN" \
-              -H 'Content-Type: application/json' -d "$1" "$SITE_URL/api/ops/retention"
-          }
-
-          if ! report=$(call '{}'); then
-            echo "::error::Retention report failed: $report"
-            exit 1
-          fi
-          echo "dry run: $report"
-          {
-            echo "### Retention report"
-            echo '```json'
-            echo "$report"
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
-
-          if [ "$RETENTION_APPLY" = "true" ]; then
-            if ! result=$(call '{"apply":true}'); then
-              echo "::error::Retention purge failed: $result"
-              exit 1
-            fi
-            echo "apply: $result"
-            {
-              echo "### Retention purge"
-              echo '```json'
-              echo "$result"
-              echo '```'
-            } >> "$GITHUB_STEP_SUMMARY"
-            if [ "$(echo "$result" | jq -r '.failed // 0')" != "0" ]; then
-              echo "::error::Some records could not be deleted: $result"
-              exit 1
-            fi
-          fi
+        run: node scripts/ops-retention-report.mjs

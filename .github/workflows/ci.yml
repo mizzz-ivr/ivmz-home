@@ -49,6 +49,8 @@ jobs:
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
+      - name: Retention dry-runの安全性・エラー処理を検証
+        run: node --test scripts/ops-retention-report.test.mjs
       - run: pnpm db:migrate
       - name: Payload用スキーマのRLSと公開権限を使い捨てDBで検証
         env:

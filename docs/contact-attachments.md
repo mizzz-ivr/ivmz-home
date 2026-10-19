@@ -114,6 +114,17 @@ Until steps 1–5 are done the form simply shows no file picker.
   visitor. Check GuardDuty findings for repeated attempts.
 - **Retention**: `clean/` objects expire after 90 days by default (`clean_retention_days`). The
   inbox row keeps the reference, so a download after expiry returns 404/503; export what you need.
+- **Scheduled DB retention report**: GitHub Actions `Ops Health` calls
+  `POST /api/ops/retention` with an empty JSON body and prints **numeric dry-run counts only**.
+  It cannot automatically delete submissions, regardless of the former `RETENTION_APPLY` variable.
+  The DB retention default (365 days) and S3 clean/ TTL (90 days) still disagree: see #98.
+  Do **not** re-enable deletion or change S3 lifecycle until an owner approves the policy and
+  deletion/rollback design. Missing `OPS_HEALTH_TOKEN`, 404 (unpublished/disabled endpoint),
+  401/403, invalid JSON, timeout or 5xx cause a failed weekly job, not a misleading success.
+  A 404 does not prove whether the endpoint or Production token configuration is missing.
+  Investigate the Production deploy SHA and token contexts without printing secrets.
+  The weekly report does not use actual submission bodies or attachment identifiers.
+
 - **Rate limits**: `/api/contact/attachments*` is limited to 120 requests/minute/IP at the edge.
 - **Rotating the secret**: changing `PAYLOAD_SECRET` invalidates in-flight tokens (visitors re-upload).
 
