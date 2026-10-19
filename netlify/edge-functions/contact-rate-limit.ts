@@ -10,8 +10,9 @@ export default async function contactRateLimit(
 }
 
 export const config = {
-  path: '/api/contact',
-  // Only submissions count against the quota; stray GETs must not lock out a real visitor.
+  // Free plans permit two code-based rules; share this one between Contact and Chat.
+  path: ['/api/contact', '/api/chat'],
+  // Limit POST only, leaving the chat availability GET and other reads unrestricted.
   method: 'POST',
   rateLimit: {
     action: 'rate_limit',
