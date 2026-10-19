@@ -163,22 +163,24 @@ export async function OpsDashboard({ payload, user }: ServerProps) {
             保持期間の確認（最終更新から {stats.retention.days} 日）
           </h3>
           <p style={{ margin: 0 }}>
-            最終更新から期間を過ぎた対応済みの問い合わせ: <strong>{stats.retention.eligible}</strong> 件
-            ／ 期間を過ぎても未対応(New): <strong>{stats.retention.staleUnhandled}</strong> 件
-            （未対応は現行の削除処理では対象外）
+            {'最終更新から期間を過ぎた対応済みの問い合わせ: '}
+            <strong>{stats.retention.eligible}</strong>
+            {' 件 ／ 期間を過ぎても未対応(New): '}
+            <strong>{stats.retention.staleUnhandled}</strong>
+            {' 件（未対応は現行の削除処理では対象外）'}
           </p>
           <p style={{ margin: '8px 0 0' }}>
-            集計はDBの最終更新日（管理者メモ・状態変更も含む）を基準とし、プライバシーポリシーの「最後のやり取り」とは一致しない場合があります。
+            {'集計はDBの最終更新日（管理者メモ・状態変更も含む）を基準とし、プライバシーポリシーの「最後のやり取り」とは一致しない場合があります。'}
           </p>
           {config.purgeEnabled ? (
             <p role="alert" style={{ color: '#b91c1c', margin: '8px 0 0' }}>
-              警告：RETENTION_PURGE_ENABLED=trueです。週次ジョブはdry-run専用ですが、認証済みの直接APIにapply: trueを送るとDB本文の削除が可能です。
-              S3添付との削除整合・復旧手順が未実装のため、削除許可をOFFにしてください。
+              {'警告：RETENTION_PURGE_ENABLED=trueです。週次ジョブはdry-run専用ですが、認証済みの直接APIにapply: trueを送るとDB本文の削除が可能です。'}
+              {'S3添付との削除整合・復旧手順が未実装のため、削除許可をOFFにしてください。'}
             </p>
           ) : (
             <p style={{ margin: '8px 0 0' }}>
-              週次ジョブは件数確認（dry-run）のみです。サーバー側の削除許可もOFFのため、直接APIによる削除は拒否されます。
-              DB/S3の安全な削除・復旧手順が整うまで停止を継続します。
+              {'週次ジョブは件数確認（dry-run）のみです。サーバー側の削除許可もOFFのため、直接APIによる削除は拒否されます。'}
+              {'DB/S3の安全な削除・復旧手順が整うまで停止を継続します。'}
             </p>
           )}
         </>
