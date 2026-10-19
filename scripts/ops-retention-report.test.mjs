@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 
 import { fetchRetentionSummary } from './ops-retention-report.mjs'
@@ -165,4 +166,17 @@ test('a future successful purge response is not accepted as a report', async () 
       }),
     /invalid dry-run summary/,
   )
+})
+
+test('scheduled retention remains dry-run-only even when GitHub variables are present', () => {
+  const workflow = readFileSync(
+    new URL('../.github/workflows/ops-health.yml', import.meta.url),
+    'utf8',
+  )
+  const retentionJob = workflow.split('\n  retention:\n')[1]
+
+  assert.ok(retentionJob, 'retention job must remain explicitly defined')
+  assert.match(retentionJob, /run: node scripts\/ops-retention-report\.mjs/)
+  assert.doesNotMatch(retentionJob, /RETENTION_APPLY|RETENTION_PURGE_ENABLED/)
+  assert.doesNotMatch(retentionJob, /apply:\s*true|--data|--request\s+DELETE/)
 })

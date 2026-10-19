@@ -122,14 +122,17 @@ Until steps 1–5 are done the form simply shows no file picker.
 - **Scheduled DB retention report**: GitHub Actions `Ops Health` calls
   `POST /api/ops/retention` with an empty JSON body and prints **numeric dry-run counts only**.
   It cannot automatically delete submissions, regardless of the former `RETENTION_APPLY` variable.
-  The DB retention default (365 days) and S3 clean/ TTL (90 days) still disagree: see #98.
-  Do **not** re-enable deletion or change S3 lifecycle until an owner approves the policy and
-  deletion/rollback design. Missing `OPS_HEALTH_TOKEN`, 404 (unpublished/disabled endpoint),
+  Under the 2026-10-20 owner-approved policy, DB contents are retained for 365 days and
+  S3 `clean/` binaries for 90 days. Different timelines are intentional, but reliable
+  deletion/retry and backup handling remain **unimplemented**: see
+  [contact retention policy](./contact-retention-policy.md) and #98.
+  Do **not** re-enable deletion or change S3 lifecycle before the cleanup/rollback
+  design is reviewed. Missing `OPS_HEALTH_TOKEN`, 404 (unpublished/disabled endpoint),
   401/403, invalid JSON, timeout or 5xx cause a failed weekly job, not a misleading success.
   A 404 does not prove whether the endpoint or Production token configuration is missing.
   Investigate the Production deploy SHA and token contexts without printing secrets.
   The weekly report does not use actual submission bodies or attachment identifiers.
-  The 2026-10-19 scheduled report received HTTP 404 ([Ops Health failure](https://github.com/mizzz-ivr/ivmz-home/actions/runs/39227312162)); this is an **unresolved Production rollout/configuration gate**, not evidence that retention succeeded. No deletion was requested.
+  The 2026-10-19 scheduled report received HTTP 404 ([Ops Health failure](https://github.com/mizzz-ivr/ivmz-home/actions/runs/39227312162)). Production has since deployed the newer main, but the `OPS_HEALTH_TOKEN` configuration and a successful authorized dry-run still need verification; the earlier 404 was not evidence of successful retention. No deletion was requested.
 
 
 - **Rate limits**: `/api/contact/attachments*` is limited to 120 requests/minute/IP at the edge.
