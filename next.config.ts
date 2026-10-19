@@ -21,6 +21,12 @@ const attachmentOrigin =
 const embedFrameOrigins =
   'https://www.youtube-nocookie.com https://platform.twitter.com https://www.instagram.com https://www.tiktok.com https://challenges.cloudflare.com'
 
+const analyticsEnabled = /^G-[A-Z0-9]{6,20}$/.test(process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? '')
+const analyticsScriptOrigin = analyticsEnabled ? ' https://www.googletagmanager.com' : ''
+const analyticsConnectOrigins = analyticsEnabled
+  ? ' https://www.google-analytics.com https://region1.google-analytics.com'
+  : ''
+
 const securityHeaders = [
   {
     key: 'Strict-Transport-Security',
@@ -44,9 +50,9 @@ const securityHeaders = [
   },
   {
     key: 'Content-Security-Policy-Report-Only',
-    value: `default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; frame-src ${embedFrameOrigins}; img-src 'self' data: https://i.ytimg.com https://avatars.githubusercontent.com${
-      attachmentOrigin ? `; connect-src 'self' ${attachmentOrigin}` : ''
-    }`,
+    value: `default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com${analyticsScriptOrigin}; frame-src ${embedFrameOrigins}; img-src 'self' data: https://i.ytimg.com https://avatars.githubusercontent.com; connect-src 'self'${
+      attachmentOrigin ? ` ${attachmentOrigin}` : ''
+    }${analyticsConnectOrigins}`,
   },
 ]
 
