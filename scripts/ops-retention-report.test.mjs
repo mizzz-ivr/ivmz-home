@@ -6,7 +6,7 @@ import { fetchRetentionSummary } from './ops-retention-report.mjs'
 
 const siteURL = 'https://ivmz.ivrm.jp'
 const token = 'ci-example-secret-longer-than-24-characters'
-const goodReport = { days: 365, dryRun: true, eligible: 4, willDeleteNow: 4 }
+const goodReport = { days: 365, dryRun: true, eligible: 4, overdueNew: 2, willDeleteNow: 4 }
 
 function response(body = goodReport, status = 200) {
   return Response.json(body, { status })
@@ -29,7 +29,7 @@ test('uses only POST dry-run with the canonical Production URL and no redirects'
     },
   })
   assert.equal(called, 1)
-  assert.deepEqual(result, { days: 365, eligible: 4, willDeleteNow: 4 })
+  assert.deepEqual(result, { days: 365, eligible: 4, overdueNew: 2, willDeleteNow: 4 })
 })
 
 test('requires a configured token before any network call', async () => {
@@ -120,6 +120,11 @@ test('rejects non-json responses and malformed dry-run payloads', async () => {
     { ...goodReport, dryRun: undefined },
     { ...goodReport, eligible: -1 },
     { ...goodReport, eligible: '4' },
+    { ...goodReport, overdueNew: -1 },
+    { ...goodReport, overdueNew: null },
+    { ...goodReport, overdueNew: '2' },
+    { ...goodReport, overdueNew: 1.5 },
+    { ...goodReport, overdueNew: Number.MAX_SAFE_INTEGER + 1 },
     { ...goodReport, eligible: 2, willDeleteNow: 3 },
     { ...goodReport, willDeleteNow: 201 },
     { ...goodReport, days: 0 },
@@ -153,6 +158,16 @@ test('rejects non-json responses and malformed dry-run payloads', async () => {
       }),
     /invalid JSON/,
   )
+})
+
+test('older Production response reports overdue New as unavailable, never zero', async () => {
+  const { overdueNew: _omitted, ...legacyReport } = goodReport
+  const result = await fetchRetentionSummary({
+    siteURL,
+    token,
+    request: async () => response(legacyReport),
+  })
+  assert.equal(result.overdueNew, null)
 })
 
 test('a future successful purge response is not accepted as a report', async () => {
