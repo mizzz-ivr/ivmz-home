@@ -161,7 +161,12 @@ test('rejects non-json responses and malformed dry-run payloads', async () => {
 })
 
 test('older Production response reports overdue New as unavailable, never zero', async () => {
-  const { overdueNew: _omitted, ...legacyReport } = goodReport
+  const legacyReport = {
+    days: goodReport.days,
+    dryRun: goodReport.dryRun,
+    eligible: goodReport.eligible,
+    willDeleteNow: goodReport.willDeleteNow,
+  }
   const result = await fetchRetentionSummary({
     siteURL,
     token,
