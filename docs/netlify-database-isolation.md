@@ -15,6 +15,14 @@ NetlifyのProduction／Deploy Previewが誤って別環境のSupabaseに接続�
 
 **注意：この結果だけではNetlify実行時に使用する`DATABASE_URL`の接続先・ユーザー・RLS適用状況を保証しない。** SQL実行ユーザーは検証用の`postgres`であり、Netlifyの実行ユーザーではない。
 
+## 再現可能なRLS・DB権限監査
+
+- 読み取り専用の `scripts/audit-supabase-boundary.sql` を、SupabaseのSQL Editorか読み取り権限があるセッションからProduction・Previewそれぞれに対して**個別に**実行する。接続URL/パスワード/レコード本文は出力しない。
+- `table_count` と `rls_enabled_tables` を比較し、`rls_disabled_tables=0`、`anon_direct_access_objects=0`、`authenticated_direct_access_objects=0`、`security_definer_functions=0` を確認する。`anon_role_exists`/`authenticated_role_exists` がfalseなら、該当ロールの権限監査は**未実施扱い**にする。
+- 結果は**実行したDBロールの視点**であり、実際のNetlify `DATABASE_URL`の接続先・role、Supabase Data APIのExposed Schemasやバックアップ設定を証明するものではない。
+- CIでは使い捨てPostgreSQL17に既存Migrationを適用した後、`src/security/audit-db-boundary.integration.test.ts`で同一SQLを実行する。CI/ローカルDB/専用フラグの条件を満たさない場合は実行を拒否する。**実Supabaseに対するCI接続・書込はしない**。
+- 2026-10-19実測：Productionは29テーブル（RLS 29・非有効0）、Previewは30テーブル（RLS 30・非有効0）。両方で`anon`・`authenticated`の直接アクセス可能オブジェクト0、スキーマUSAGE=false、当該スキーマのSECURITY DEFINER関数0。いずれも管理者`postgres`で実行した読み取り結果。
+
 ## Previewビルドのfail-closedガード
 
 - `assert-preview-database.mjs`は`deploy-preview`／`branch-deploy`以外を拒否する。
@@ -30,6 +38,19 @@ NetlifyのProduction／Deploy Previewが誤って別環境のSupabaseに接続�
 - 実際のMigrationはPreview専用DBの接続先・実行ロール・権限・バックアップとロールバック手順を確認してから、運用者が明示的に実行する。現時点では**Preview DBへも書き込みを行わない**。
 - 将来の機能PRでSchemaが必要になった場合、Migration前はPreviewアプリがエラーを返す可能性がある。これは検証ゲートを迂回して自動Migrationする理由にはしない。
 - `scripts/netlify-build-context.test.mjs`で本番・Preview各contextのガード先行とPreviewの自動Migration不在をCIで検証する。
+
+## Production Deployが旧コミットのままの場合の復旧確認
+
+Netlifyのサイトページ [ivmz-home](https://app.netlify.com/projects/ivmz-home) → Deploys と Project configuration → Developer settings → Continuous deployment を確認する。**新コミットへの反映が確認できるまで、Issue #133のProductionリリースゲートを完了にしない。**
+
+1. **現在の公開Deploy IDとcommit SHAを記録。** GitHubのmain HEADと一致しなければ、GitHub CIが成功していてもProduction反映は未完了とする。
+2. **Netlify Build statusを確認。** Stopped buildsなら変更理由・予算を確認してから有効化を判断する（有効化自体はビルドを起動しない）。Git連携の対象リポジトリとProduction branchが`mizzz-ivr/ivmz-home`・`main`か確認する。無断でGit連携を切断・再接続しない。
+3. **Skipped / locked / failedなどの状態を確認。** `[skip netlify]`・`[skip ci]`、Ignore buildsルール、Publish停止、承認待ち、Netlify build creditsやクォータ・ビルドログの失敗内容を区別する。
+4. Buildsが有効で、最新mainにビルドがない場合、管理権限者がNetlifyの **Deploys → Trigger deploy** から最新Production branchのデプロイを開始できる。**先に本番への公開が許可されたコミットか確認し、未知の差分や未検証のMigrationが含まれる場合は実行しない。**
+5. Productionの対象commit SHAがmain HEADと一致し、Deploy state=`ready`、ビルドログに`[production-db-guard] verified`を確認する。ログへ`DATABASE_URL`や資格情報を出さない。ガードが失敗すれば設定を修正し、他DB接続へ切り替えて迂回しない。
+6. 既存公開API・ページ・ContactのSmokeを確認してから切替完了とする。異常時はDeploysから既知の正常な以前のDeployへRollbackし、原因をIssueに記録する。
+
+Netlify公式：[Stop or activate builds](https://docs.netlify.com/build/configure-builds/stop-or-activate-builds/)、[Manage deploys](https://docs.netlify.com/deploy/manage-deploys/manage-deploys-overview/)、[Repository linking](https://docs.netlify.com/build/git-workflows/repo-permissions-linking/)。
 
 ## リリース判定で残る必須確認
 
