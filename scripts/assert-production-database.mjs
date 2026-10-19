@@ -17,7 +17,13 @@ function targetsSupabaseProject(url, projectRef) {
   } catch {
     return false
   }
-  return username === `postgres.${projectRef}`
+  const suffix = `.${projectRef}`
+  if (!username.endsWith(suffix)) return false
+
+  // Supabase Pooler usernames are <database-role>.<project-ref>.
+  // Keep a single, conventional unquoted role name: no empty or multi-dot prefixes.
+  const role = username.slice(0, -suffix.length)
+  return /^[a-z_][a-z0-9_]*$/.test(role)
 }
 
 /**

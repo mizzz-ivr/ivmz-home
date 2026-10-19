@@ -39,6 +39,25 @@ NetlifyのProduction／Deploy Previewが誤って別環境のSupabaseに接続�
 - 将来の機能PRでSchemaが必要になった場合、Migration前はPreviewアプリがエラーを返す可能性がある。これは検証ゲートを迂回して自動Migrationする理由にはしない。
 - `scripts/netlify-build-context.test.mjs`で本番・Preview各contextのガード先行とPreviewの自動Migration不在をCIで検証する。
 
+## ProductionビルドがDB接続先ガードで失敗した場合（2026-10-19実測）
+
+- Netlify Production #138〜#145のビルドは起動していたが、`node scripts/assert-production-database.mjs && pnpm build` で `Production DATABASE_URL does not target the configured Production project` と判定され**ビルド前に停止**していた。自動デプロイ停止やビルド上限超過が主因という従来の仮説は、この記録に対しては誤り。
+- 設定ファイルのProduction Refは `drazbrcqnjxjuygfxmlz`、Preview Refは `dzdgbkjmomvmexcbjyin`。Netlifyのサイト変数メタデータは `DATABASE_URL` のProduction値が存在し、**秘密値としてマスク**されていることを確認。ただし、そのホスト・ロール・実接続先は未確認。
+- 元のProductionガードはPooler接続ユーザーが `postgres.<Production Ref>` の場合のみ許可する。Previewガードと異なり、`app_runtime.<Production Ref>` などの**専用DBロール**は正しいProduction Refでも拒否していた。専用ロールが現場で使われていると確定したわけではない。
+- 対処候補のPRでProduction Poolerのユーザー判定を**形式が妥当な単一ロール名 + 正確に一致するProduction Ref**に限定して対応する。Preview・未知のProject Ref、偽Pooler host、不正なロール名は拒否したまま。Direct接続は従来どおり `db.<Production Ref>.supabase.co` のみ許可する。
+- **PRのマージ・本番再デプロイ前に、Netlify管理権限者がProduction contextの`DATABASE_URL`を管理画面内でのみ検証**する。URLそのもの、ホスト文字列、ロール名、パスワードをIssue・チャット・GitHub Actions・CIへ貼り付けない。
+  - Direct接続ならhostのProject RefがProduction Refと一致すること。
+  - Supabase Pooler接続ならhostが実SupabaseのPoolerで、usernameの末尾にあるProject RefがProduction Refと一致し、期待した専用DBロールであること。
+  - Preview Refや未知のRef・異なるホストの場合は、**コード側のガードを緩めず**、認可された正しいProduction DB接続資格情報にNetlifyの秘密変数を修正する。現在のURLを表示・コピーできないときはSupabaseで資格情報を安全に照合し、新しい秘密値を管理者が入力する。
+- この検査は「文字列が一致すること」の確認であり、実行ロールの必要最小権限、RLS、接続成功、バックアップ、Migration整合は別途確認が必要。Guardを無効化したデプロイは禁止。修正後のProductionビルドが `[production-db-guard] verified`、Ready、main SHA一致になるまでIssue #133はOpen維持。
+
+### 2026-10-20：接続設定確認後のリリース判定
+
+- 運用者から`DATABASE_URL`は正しいとの申告あり。これは**ユーザーによる確認結果**であり、マスクされたURLのhost/usernameを本監査ツールが独立検証した証拠ではない。資格情報の再掲やログ出力は行わない。
+- ProductionガードがPoolerの正しい専用ロール（例：`app_runtime.<Production Ref>`）を拒否していた可能性に対して、専用ロールを許容する修正と回帰テストを準備。ただし従来許可される`postgres.<Production Ref>`やDirect接続が正しく設定済みであった場合は、**ガード誤判定以外の原因**のため、本修正だけで正常化すると断定しない。
+- PRのCI・Deploy Preview・実Preview Smokeの成功を確認した後、Productionの変更差分・利用するロールと権限をレビューしてリリースする。Productionガードが失敗し続ける場合、エラーチェックを無効化・緩和せず、秘密情報を表示しない形でDB接続方式・Netlifyコンテキスト・Project Refを再確認する。
+- リリース後の受入条件は、Productionビルドログの`[production-db-guard] verified`、公開デプロイのcommit SHAと`ready`、既存ページとContact/CMSの非破壊的Smoke。必要なMigrationやDB書き込みは本リリースの対象外。
+
 ## Production Deployが旧コミットのままの場合の復旧確認
 
 Netlifyのサイトページ [ivmz-home](https://app.netlify.com/projects/ivmz-home) → Deploys と Project configuration → Developer settings → Continuous deployment を確認する。**新コミットへの反映が確認できるまで、Issue #133のProductionリリースゲートを完了にしない。**
