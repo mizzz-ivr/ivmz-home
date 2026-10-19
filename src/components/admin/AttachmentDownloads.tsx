@@ -39,6 +39,9 @@ export function AttachmentDownloads() {
   return (
     <div style={{ margin: '0 0 24px' }}>
       <p style={{ fontWeight: 700, margin: '0 0 8px' }}>Attachments (scanned, download)</p>
+      <p style={{ margin: '0 0 12px', opacity: 0.7 }}>
+        保存期限の経過などで、添付ファイルをダウンロードできない場合があります。
+      </p>
       <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
         {rows.map((row) => (
           <li key={row.id} style={{ margin: '0 0 6px' }}>
