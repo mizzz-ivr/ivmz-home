@@ -82,7 +82,9 @@ export async function fetchRetentionSummary({ siteURL, token, request = fetch })
     !Number.isSafeInteger(data.willDeleteNow) ||
     data.willDeleteNow < 0 ||
     data.willDeleteNow > data.eligible ||
-    data.willDeleteNow > 200
+    data.willDeleteNow > 200 ||
+    (data.overdueNew !== undefined &&
+      (!Number.isSafeInteger(data.overdueNew) || data.overdueNew < 0))
   ) {
     throw new Error('Retention check returned an invalid dry-run summary; no deletion attempted')
   }
@@ -90,6 +92,7 @@ export async function fetchRetentionSummary({ siteURL, token, request = fetch })
   return {
     days: data.days,
     eligible: data.eligible,
+    overdueNew: data.overdueNew ?? null,
     willDeleteNow: data.willDeleteNow,
   }
 }
@@ -100,7 +103,7 @@ async function main() {
     token: process.env.OPS_HEALTH_TOKEN,
   })
 
-  const summary = `Retention dry-run: days=${result.days}, eligible=${result.eligible}, willDeleteNow=${result.willDeleteNow}`
+  const summary = `Retention dry-run: days=${result.days}, eligible=${result.eligible}, overdueNew=${result.overdueNew ?? 'unavailable'}, willDeleteNow=${result.willDeleteNow}`
   console.info(summary)
   if (process.env.GITHUB_STEP_SUMMARY) {
     await appendFile(
