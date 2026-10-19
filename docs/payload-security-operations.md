@@ -35,7 +35,7 @@ Payload標準のaccount lockoutを維持したまま、Netlify code-based rate l
 
 P1 protectionはcredential stuffing / password sprayingの主入口であるPayload login endpointへ絞る。
 
-- 対象: `/api/users/login`
+- 対象: `POST /api/users/login` のみ。GET/HEADの状態確認ではquotaを消費しない
 - 実装: Netlify Edge Functionのcode-based rate limit
 - request chain: `context.next()` でNext/Payload handlerへ明示的に継続
 - limit: 10 requests / 60 seconds / domain + client IP
@@ -46,6 +46,16 @@ P1 protectionはcredential stuffing / password sprayingの主入口であるPayl
 `forgot-password` / `reset-password` / `unlock` / `refresh-token` / `verify`は同じrate-limit ruleへ安易にまとめない。実際のabuse modelとNetlify側のrule budgetを確認し、必要なendpointだけを追加する。
 
 rate limit probeでは実在Adminのemail/passwordを使用しない。
+
+### Issue #94 — Previewでの429発動差の調査
+
+2026-10の実Preview smokeでは同一コード/URLでもログイン失敗30件がすべて401の実行と、18件目で429になる実行が確認された。429が再現した事実だけでProductionを含む恒常的な防御の実効性が保証されたとは扱わない。
+
+- `payload-auth-rate-limit.ts`は`POST /api/users/login`だけを対象にし、GET/HEADで認証試行のレート制限枠を消費しない。Netlify Freeプランで利用できるcode-based rate-limitは2ルールという前提を変えない。
+- Deploy Previewの**対象SHA**に対するNetlify post-processingでのルール登録状態と、429発動時のログ/時刻を照合する。ビルド成功・Edge関数実行回数をルール有効化の根拠にしない。
+- Preview smokeは実在しない`example.invalid`アカウントだけを使用。HTTP/2同一接続の試験が429にならなければCIを失敗させ、単に試験回数を増やしたり、429 gateを削除したりしない。
+- Productionの承認なき連続ログインテストはしない。実行対象IP/ドメイン、他ユーザーへの誤遮断、Netlifyのプラン上限/登録ルール、NAT配下の共有IPの影響を別途確認する。
+- 状態：**未解決（Issue #94 Open）**。このメソッド限定は不要なGET/HEADによる誤計数を避けるための局所的な安全対策であり、429発動差の直接原因が特定されたわけではない。
 
 ## Security headers
 

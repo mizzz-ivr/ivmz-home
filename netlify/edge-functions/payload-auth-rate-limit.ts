@@ -11,6 +11,8 @@ export default async function payloadAuthRateLimit(
 
 export const config = {
   path: '/api/users/login',
+  // Only failed/successful credential submissions should spend the login quota.
+  method: 'POST',
   rateLimit: {
     action: 'rate_limit',
     windowLimit: 10,
