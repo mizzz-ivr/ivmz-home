@@ -113,7 +113,12 @@ Until steps 1–5 are done the form simply shows no file picker.
 - **Infected / failed scans** delete the quarantine object and report a generic reason to the
   visitor. Check GuardDuty findings for repeated attempts.
 - **Retention**: `clean/` objects expire after 90 days by default (`clean_retention_days`). The
-  inbox row keeps the reference, so a download after expiry returns 404/503; export what you need.
+  inbox row keeps the reference. The administrator-only download route first verifies the
+  S3 object exists: a missing object returns HTTP 404 (without issuing a signed URL), while
+  a storage permission/network error returns HTTP 503. This does **not** distinguish an
+  expired object from a missing object for another reason; no deletion or TTL extension occurs.
+  A file can still expire between the S3 existence check and the subsequent GET (TOCTOU).
+  The download link is not a guarantee of long-term retention. Export what you need.
 - **Scheduled DB retention report**: GitHub Actions `Ops Health` calls
   `POST /api/ops/retention` with an empty JSON body and prints **numeric dry-run counts only**.
   It cannot automatically delete submissions, regardless of the former `RETENTION_APPLY` variable.
