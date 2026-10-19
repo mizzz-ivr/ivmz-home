@@ -39,6 +39,19 @@ NetlifyのProduction／Deploy Previewが誤って別環境のSupabaseに接続�
 - 将来の機能PRでSchemaが必要になった場合、Migration前はPreviewアプリがエラーを返す可能性がある。これは検証ゲートを迂回して自動Migrationする理由にはしない。
 - `scripts/netlify-build-context.test.mjs`で本番・Preview各contextのガード先行とPreviewの自動Migration不在をCIで検証する。
 
+## Production Deployが旧コミットのままの場合の復旧確認
+
+Netlifyのサイトページ [ivmz-home](https://app.netlify.com/projects/ivmz-home) → Deploys と Project configuration → Developer settings → Continuous deployment を確認する。**新コミットへの反映が確認できるまで、Issue #133のProductionリリースゲートを完了にしない。**
+
+1. **現在の公開Deploy IDとcommit SHAを記録。** GitHubのmain HEADと一致しなければ、GitHub CIが成功していてもProduction反映は未完了とする。
+2. **Netlify Build statusを確認。** Stopped buildsなら変更理由・予算を確認してから有効化を判断する（有効化自体はビルドを起動しない）。Git連携の対象リポジトリとProduction branchが`mizzz-ivr/ivmz-home`・`main`か確認する。無断でGit連携を切断・再接続しない。
+3. **Skipped / locked / failedなどの状態を確認。** `[skip netlify]`・`[skip ci]`、Ignore buildsルール、Publish停止、承認待ち、Netlify build creditsやクォータ・ビルドログの失敗内容を区別する。
+4. Buildsが有効で、最新mainにビルドがない場合、管理権限者がNetlifyの **Deploys → Trigger deploy** から最新Production branchのデプロイを開始できる。**先に本番への公開が許可されたコミットか確認し、未知の差分や未検証のMigrationが含まれる場合は実行しない。**
+5. Productionの対象commit SHAがmain HEADと一致し、Deploy state=`ready`、ビルドログに`[production-db-guard] verified`を確認する。ログへ`DATABASE_URL`や資格情報を出さない。ガードが失敗すれば設定を修正し、他DB接続へ切り替えて迂回しない。
+6. 既存公開API・ページ・ContactのSmokeを確認してから切替完了とする。異常時はDeploysから既知の正常な以前のDeployへRollbackし、原因をIssueに記録する。
+
+Netlify公式：[Stop or activate builds](https://docs.netlify.com/build/configure-builds/stop-or-activate-builds/)、[Manage deploys](https://docs.netlify.com/deploy/manage-deploys/manage-deploys-overview/)、[Repository linking](https://docs.netlify.com/build/git-workflows/repo-permissions-linking/)。
+
 ## リリース判定で残る必須確認
 
 1. NetlifyにおけるProductionビルドが、mainのガード追加後のコミットで`ready`になり、ガードの正常実行がビルドログで確認できること。
