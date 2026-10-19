@@ -1,4 +1,5 @@
 import { readdirSync } from 'node:fs'
+import { resolve } from 'node:path'
 
 import { describe, expect, it, vi } from 'vitest'
 
@@ -19,7 +20,7 @@ describe('Payload authentication rate-limit edge function', () => {
   })
 
   it('keeps the Netlify Free-plan limit of two code-based edge rate-limit rules', () => {
-    const rateLimitFiles = readdirSync(new URL('../../netlify/edge-functions/', import.meta.url))
+    const rateLimitFiles = readdirSync(resolve(process.cwd(), 'netlify/edge-functions'))
       .filter((file) => file.endsWith('-rate-limit.ts'))
       .sort()
 
