@@ -124,6 +124,8 @@ Until steps 1–5 are done the form simply shows no file picker.
   A 404 does not prove whether the endpoint or Production token configuration is missing.
   Investigate the Production deploy SHA and token contexts without printing secrets.
   The weekly report does not use actual submission bodies or attachment identifiers.
+  The 2026-10-19 scheduled report received HTTP 404 ([Ops Health failure](https://github.com/mizzz-ivr/ivmz-home/actions/runs/39227312162)); this is an **unresolved Production rollout/configuration gate**, not evidence that retention succeeded. No deletion was requested.
+
 
 - **Rate limits**: `/api/contact/attachments*` is limited to 120 requests/minute/IP at the edge.
 - **Rotating the secret**: changing `PAYLOAD_SECRET` invalidates in-flight tokens (visitors re-upload).
