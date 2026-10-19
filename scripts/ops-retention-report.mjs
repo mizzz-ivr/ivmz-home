@@ -103,7 +103,10 @@ async function main() {
   const summary = `Retention dry-run: days=${result.days}, eligible=${result.eligible}, willDeleteNow=${result.willDeleteNow}`
   console.info(summary)
   if (process.env.GITHUB_STEP_SUMMARY) {
-    await appendFile(process.env.GITHUB_STEP_SUMMARY, `### Contact retention (dry-run only)\n\n${summary}\n`)
+    await appendFile(
+      process.env.GITHUB_STEP_SUMMARY,
+      `### Contact retention (dry-run only)\n\n${summary}\n`,
+    )
   }
 }
 
