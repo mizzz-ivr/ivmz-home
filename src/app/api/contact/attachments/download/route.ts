@@ -47,11 +47,20 @@ export async function GET(request: Request) {
   const attachments = await getAttachmentRuntime({ loadSettings: async () => null })
   if (!attachments) return plain(503)
 
-  const url = await attachments.storage.createDownloadUrl(
-    attachment.key,
-    attachment.filename,
-    DOWNLOAD_URL_TTL_SECONDS,
-  )
+  // A DB reference can outlive S3's clean/ retention window. Check availability before
+  // signing so administrators do not receive a working-looking URL to a missing object.
+  // A transient S3 error is not evidence that the object was deleted.
+  let url: string
+  try {
+    if (!(await attachments.storage.exists(attachment.key))) return plain(404)
+    url = await attachments.storage.createDownloadUrl(
+      attachment.key,
+      attachment.filename,
+      DOWNLOAD_URL_TTL_SECONDS,
+    )
+  } catch {
+    return plain(503)
+  }
   return new Response(null, {
     headers: { ...downloadHeaders, Location: url },
     status: 302,
