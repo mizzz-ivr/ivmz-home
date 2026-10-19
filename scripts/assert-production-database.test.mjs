@@ -33,6 +33,56 @@ describe('assertProductionDatabaseTarget', () => {
     ).toEqual({ context: 'production', projectRef: PROD })
   })
 
+  it('accepts a dedicated Production database role on the expected Supabase pooler', () => {
+    for (const role of ['app_runtime', 'payload_reader', 'postgres']) {
+      expect(
+        assertProductionDatabaseTarget(
+          env({
+            DATABASE_URL: `postgresql://${role}.${PROD}:secret@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres`,
+          }),
+        ),
+      ).toEqual({ context: 'production', projectRef: PROD })
+    }
+  })
+
+  it('rejects dedicated roles targeting Preview or unrelated Supabase projects', () => {
+    for (const projectRef of [PREVIEW, 'aaaaaaaaaaaaaaaaaaaa']) {
+      expect(() =>
+        assertProductionDatabaseTarget(
+          env({
+            DATABASE_URL: `postgresql://app_runtime.${projectRef}:secret@aws-1.pooler.supabase.com:6543/postgres`,
+          }),
+        ),
+      ).toThrow()
+    }
+    expect(() =>
+      assertProductionDatabaseTarget(
+        env({
+          DATABASE_URL: `postgresql://app_runtime.${PREVIEW}:secret@aws-1.pooler.supabase.com:6543/postgres`,
+        }),
+      ),
+    ).toThrow('must not target the Preview project')
+  })
+
+  it('rejects empty, multi-dot and malformed pooler usernames', () => {
+    for (const username of [
+      `.${PROD}`,
+      `postgres.admin.${PROD}`,
+      `app-runtime.${PROD}`,
+      `app_runtime.${PROD}.other`,
+      `postgres.${PREVIEW}`,
+      `app_runtime.${PROD}%2Eattacker`,
+    ]) {
+      expect(() =>
+        assertProductionDatabaseTarget(
+          env({
+            DATABASE_URL: `postgresql://${username}:secret@aws-1.pooler.supabase.com:6543/postgres`,
+          }),
+        ),
+      ).toThrow()
+    }
+  })
+
   it('rejects Preview and branch-deploy contexts', () => {
     for (const context of ['deploy-preview', 'branch-deploy', '', 'dev']) {
       expect(() => assertProductionDatabaseTarget(env({ CONTEXT: context }))).toThrow(
