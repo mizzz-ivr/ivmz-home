@@ -169,7 +169,10 @@ test('a future successful purge response is not accepted as a report', async () 
 })
 
 test('scheduled retention remains dry-run-only even when GitHub variables are present', () => {
-  const workflow = readFileSync(new URL('../.github/workflows/ops-health.yml', import.meta.url), 'utf8')
+  const workflow = readFileSync(
+    new URL('../.github/workflows/ops-health.yml', import.meta.url),
+    'utf8',
+  )
   const retentionJob = workflow.split('\n  retention:\n')[1]
 
   assert.ok(retentionJob, 'retention job must remain explicitly defined')
