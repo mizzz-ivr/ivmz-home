@@ -168,15 +168,13 @@ export async function OpsDashboard({ payload, user }: ServerProps) {
             </div>
           ) : null}
 
-          <h3 style={{ margin: '20px 0 8px' }}>
-            保持期間の確認（{stats.retention.days} 日）
-          </h3>
+          <h3 style={{ margin: '20px 0 8px' }}>保持期間の確認（{stats.retention.days} 日）</h3>
           <p style={{ margin: 0 }}>
             最終更新から期間を過ぎた対応済みの問い合わせ:{' '}
             <strong>{stats.retention.eligible}</strong> 件
           </p>
           <p style={{ margin: 0 }}>
-            受付から期間を過ぎても未対応(New): <strong>{stats.retention.staleUnhandled}</strong> 件
+            期間を過ぎても未対応(New): <strong>{stats.retention.staleUnhandled}</strong> 件
             （未対応は現行の削除処理では対象外）
           </p>
           <p style={{ margin: '8px 0 0' }}>{retentionMessages.basis}</p>
