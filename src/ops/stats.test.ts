@@ -1,6 +1,7 @@
 import type { Payload } from 'payload'
 import { describe, expect, it, vi } from 'vitest'
 
+import { overdueNewRetentionWhere, retentionCutoff } from './retention'
 import { collectOpsStats, deriveHealth, type OpsStats } from './stats'
 
 function fakePayload(
@@ -57,6 +58,24 @@ describe('collectOpsStats', () => {
       },
     ])
     expect(JSON.stringify(stats)).not.toContain('must-not-leak')
+  })
+
+  it('counts overdue New by creation even after an admin updates the record', async () => {
+    const now = new Date('2027-01-02T00:00:00Z')
+    const cutoff = retentionCutoff(now, 365).toISOString()
+    const overdueWhere = overdueNewRetentionWhere(cutoff)
+    const payload = fakePayload((where) =>
+      JSON.stringify(where) === JSON.stringify(overdueWhere) ? 3 : 0,
+    )
+
+    const stats = await collectOpsStats(payload, { now, retentionDays: 365 })
+
+    expect(stats.retention.staleUnhandled).toBe(3)
+    expect(payload.count).toHaveBeenCalledWith({
+      collection: 'contact-submissions',
+      overrideAccess: true,
+      where: overdueWhere,
+    })
   })
 
   it('only selects non-personal fields for the failure list', async () => {
