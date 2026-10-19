@@ -43,13 +43,24 @@ export async function POST(request: Request) {
     await payload.count({ collection: 'contact-submissions', overrideAccess: true, where })
   ).totalDocs
 
-  if (!apply)
+  if (!apply) {
+    // "New" is excluded from purging, but overdue records must remain visible to operators.
+    const overdueNew = (
+      await payload.count({
+        collection: 'contact-submissions',
+        overrideAccess: true,
+        where: { and: [{ updatedAt: { less_than: cutoff } }, { status: { equals: 'new' } }] },
+      })
+    ).totalDocs
+
     return json({
       days,
       dryRun: true,
       eligible,
+      overdueNew,
       willDeleteNow: Math.min(eligible, PURGE_BATCH_LIMIT),
     })
+  }
   if (!isPurgeEnabled()) return json({ code: 'purge_disabled', days, eligible }, 403)
 
   const batch = await payload.find({
