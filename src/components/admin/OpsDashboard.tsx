@@ -180,18 +180,19 @@ export async function OpsDashboard({ payload, user }: ServerProps) {
             （未対応は現行の削除処理では対象外）
           </p>
           <p style={{ margin: '8px 0 0' }}>{retentionMessages.basis}</p>
-          {config.purgeEnabled ? (
-            <p role="alert" style={{ color: '#b91c1c', margin: '8px 0 0' }}>
-              {retentionMessages.enabled}
-            </p>
-          ) : (
-            <p style={{ margin: '8px 0 0' }}>{retentionMessages.disabled}</p>
-          )}
         </>
       ) : (
         <p style={{ color: '#b91c1c' }}>
           統計を取得できませんでした。データベースの状態を確認してください。
         </p>
+      )}
+
+      {config.purgeEnabled ? (
+        <p role="alert" style={{ color: '#b91c1c', margin: '8px 0 0' }}>
+          {retentionMessages.enabled}
+        </p>
+      ) : (
+        <p style={{ margin: '8px 0 0' }}>{retentionMessages.disabled}</p>
       )}
 
       <h3 style={{ margin: '20px 0 8px' }}>設定チェック</h3>
