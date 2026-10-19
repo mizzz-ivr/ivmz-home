@@ -67,6 +67,9 @@ DBとS3の保持期間・バックアップ・失敗時の復旧方法を確定�
 
 - DBの対象期間: 既定365日（`CONTACT_RETENTION_DAYS`で30〜1825日）。
   最終更新日が基準で、ステータスがNew（未対応）の問い合わせは削除対象に含めません。
+  週次dry-runでは対象外のNewも`overdueNew`として**件数のみ**集計します。
+  これは`updatedAt`からの経過日数であり、「最後のやり取り」からの経過日数ではありません。
+  APIの旧バージョンが応答した場合は`not_available`と記録し、0件とは扱いません。
 - GitHub Actions `Ops Health` の週次`retention`ジョブは、
   `scripts/ops-retention-report.mjs`を通じて`POST /api/ops/retention`に
   空のJSON `{}`だけを送信し、削除対象件数の**dry-run**結果をSummaryに記録します。
