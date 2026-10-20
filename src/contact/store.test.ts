@@ -40,11 +40,13 @@ describe('PayloadContactStore.save', () => {
     })
 
     expect(create.mock.calls[0][0].data.attachments).toEqual(attachments)
+    expect(Date.parse(create.mock.calls[0][0].data.lastInteractionAt)).not.toBeNaN()
   })
 
   it('writes no attachments field for messages without files', async () => {
     await new PayloadContactStore().save(message)
     expect(create.mock.calls[0][0].data).not.toHaveProperty('attachments')
+    expect(Date.parse(create.mock.calls[0][0].data.lastInteractionAt)).not.toBeNaN()
   })
 
   it('does not write again for an already stored requestId', async () => {

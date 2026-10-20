@@ -4,6 +4,7 @@ import * as migration_20261009_021711_contact_submissions from './20261009_02171
 import * as migration_20261009_042936_contact_attachments from './20261009_042936_contact_attachments';
 import * as migration_20261009_070000_enable_row_level_security from './20261009_070000_enable_row_level_security';
 import * as migration_20261013_004103_integration_settings from './20261013_004103_integration_settings';
+import * as migration_20261020_120000_contact_last_interaction_at from './20261020_120000_contact_last_interaction_at';
 
 export const migrations = [
   {
@@ -35,5 +36,10 @@ export const migrations = [
     up: migration_20261013_004103_integration_settings.up,
     down: migration_20261013_004103_integration_settings.down,
     name: '20261013_004103_integration_settings'
+  },
+  {
+    up: migration_20261020_120000_contact_last_interaction_at.up,
+    down: migration_20261020_120000_contact_last_interaction_at.down,
+    name: '20261020_120000_contact_last_interaction_at'
   },
 ];
