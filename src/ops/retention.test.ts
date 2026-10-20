@@ -7,6 +7,7 @@ import {
   isPurgeEnabled,
   agedRetentionWhere,
   agedWithAttachmentsWhere,
+  createdOverdueUpdatedRecentWhere,
   overdueNewRetentionWhere,
   resolveRetentionDays,
   retentionCutoff,
@@ -46,6 +47,17 @@ describe('retention helpers', () => {
         { updatedAt: { less_than: cutoff } },
         { status: { not_equals: 'new' } },
         { 'attachments.id': { exists: true } },
+      ],
+    })
+  })
+
+  it('identifies records older than the cutoff with a newer admin or interaction update', () => {
+    const cutoff = '2025-10-20T00:00:00.000Z'
+    expect(createdOverdueUpdatedRecentWhere(cutoff)).toEqual({
+      and: [
+        { createdAt: { less_than: cutoff } },
+        { updatedAt: { greater_than_equal: cutoff } },
+        { status: { not_equals: 'new' } },
       ],
     })
   })

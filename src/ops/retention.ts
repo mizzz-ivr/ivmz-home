@@ -41,6 +41,20 @@ export function agedWithAttachmentsWhere(cutoff: string): Where {
   }
 }
 
+/**
+ * Old submissions whose newer update hides them from the updatedAt expiry count.
+ * Audit only: the update can be a legitimate interaction or an administrative change.
+ */
+export function createdOverdueUpdatedRecentWhere(cutoff: string): Where {
+  return {
+    and: [
+      { createdAt: { less_than: cutoff } },
+      { updatedAt: { greater_than_equal: cutoff } },
+      { status: { not_equals: 'new' } },
+    ],
+  }
+}
+
 /** Aged untouched or triaged New messages remain excluded from automatic deletion. */
 export function overdueNewRetentionWhere(cutoff: string): Where {
   return {

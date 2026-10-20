@@ -20,7 +20,13 @@ const stats: OpsStats = {
   latestFailures: [],
   notification: { failed: 0, sent: 0, skipped: 0, stuckPending: 0, unknown: 0 },
   received: { last24h: 0, last30d: 0, last7d: 0, total: 4 },
-  retention: { days: 365, eligible: 2, staleUnhandled: 1, withAttachments: 1 },
+  retention: {
+    days: 365,
+    eligible: 2,
+    reviewRecentUpdates: 3,
+    staleUnhandled: 1,
+    withAttachments: 1,
+  },
   unread: 1,
   withAttachments30d: 0,
 }
@@ -49,6 +55,8 @@ describe('OpsDashboard retention display', () => {
     expect(markup).toContain('最終更新から期間を過ぎた対応済み')
     expect(markup).toContain('上記のうち添付参照あり（安全なDB/S3整合削除が必要）')
     expect(markup).toContain('添付参照ありはS3実体が残っている件数ではありません')
+    expect(markup).toContain('受付は期限超過・最終更新は期間内（非New・要確認）')
+    expect(markup).toContain('管理操作と実際のやり取りを区別できず、削除候補には加算しません')
     expect(markup).toContain('期間を過ぎても未対応(New)')
     expect(markup).toContain('未対応(New)は受付日時（作成日）')
     expect(markup).toContain('最後のやり取り')
