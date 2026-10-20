@@ -1,7 +1,7 @@
 import type { Access } from 'payload'
 import { describe, expect, it } from 'vitest'
 
-import { ContactSubmissions } from '@/collections/ContactSubmissions'
+import { canDeleteContactSubmission, ContactSubmissions } from '@/collections/ContactSubmissions'
 import { Users } from '@/collections/Users'
 
 import { isAuthenticated } from './is-authenticated'
@@ -32,7 +32,11 @@ describe('Payload admin collection access', () => {
   it('applies the same guard to the contact inbox and admin panel', () => {
     expect(ContactSubmissions.access?.read).toBe(isAuthenticated)
     expect(ContactSubmissions.access?.update).toBe(isAuthenticated)
-    expect(ContactSubmissions.access?.delete).toBe(isAuthenticated)
+    expect(ContactSubmissions.access?.delete).toBe(canDeleteContactSubmission)
+    expect(canDeleteContactSubmission(accessArgs('users'))).toEqual({
+      'attachments.id': { exists: false },
+    })
+    expect(canDeleteContactSubmission(accessArgs('customers'))).toBe(false)
     expect(Users.access?.admin).toBe(isAuthenticated)
   })
 })
