@@ -3,6 +3,7 @@ import {
   PURGE_BATCH_LIMIT,
   agedRetentionWhere,
   agedWithAttachmentsWhere,
+  createdOverdueUpdatedRecentWhere,
   overdueNewRetentionWhere,
   resolveRetentionDays,
   retentionCutoff,
@@ -51,6 +52,16 @@ export async function POST(request: Request) {
     })
   ).totalDocs
 
+  // Creation age may exceed the cutoff even when administrative edits reset updatedAt.
+  // Audit only: these are not added to deletion candidates.
+  const reviewRecentUpdates = (
+    await payload.count({
+      collection: 'contact-submissions',
+      overrideAccess: true,
+      where: createdOverdueUpdatedRecentWhere(cutoff),
+    })
+  ).totalDocs
+
   // New submissions remain outside deletion candidates but are visible in the report.
   // Creation date prevents admin notes from masking long-unanswered messages.
   const overdueNew = (
@@ -66,6 +77,7 @@ export async function POST(request: Request) {
     dryRun: true,
     eligible,
     overdueNew,
+    reviewRecentUpdates,
     withAttachments,
     // Historical field: estimated batch size only. No apply endpoint is enabled.
     willDeleteNow: Math.min(eligible, PURGE_BATCH_LIMIT),

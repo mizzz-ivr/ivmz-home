@@ -1,7 +1,12 @@
 import type { Payload } from 'payload'
 import { describe, expect, it, vi } from 'vitest'
 
-import { agedWithAttachmentsWhere, overdueNewRetentionWhere, retentionCutoff } from './retention'
+import {
+  agedWithAttachmentsWhere,
+  createdOverdueUpdatedRecentWhere,
+  overdueNewRetentionWhere,
+  retentionCutoff,
+} from './retention'
 import { collectOpsStats, deriveHealth, type OpsStats } from './stats'
 
 function fakePayload(
@@ -21,7 +26,7 @@ const base: OpsStats = {
   latestFailures: [],
   notification: { failed: 0, sent: 3, skipped: 0, stuckPending: 0, unknown: 0 },
   received: { last24h: 1, last30d: 3, last7d: 3, total: 9 },
-  retention: { days: 365, eligible: 0, staleUnhandled: 0, withAttachments: 0 },
+  retention: { days: 365, eligible: 0, reviewRecentUpdates: 0, staleUnhandled: 0, withAttachments: 0 },
   unread: 0,
   withAttachments30d: 0,
 }
@@ -93,6 +98,23 @@ describe('collectOpsStats', () => {
       where: attachedWhere,
     })
     expect(payload.find).toHaveBeenCalledTimes(1)
+  })
+
+  it('counts old non-New records whose updates hide their creation age', async () => {
+    const now = new Date('2027-01-02T00:00:00Z')
+    const cutoff = retentionCutoff(now, 365).toISOString()
+    const reviewWhere = createdOverdueUpdatedRecentWhere(cutoff)
+    const payload = fakePayload((where) =>
+      JSON.stringify(where) === JSON.stringify(reviewWhere) ? 4 : 0,
+    )
+    const stats = await collectOpsStats(payload, { now, retentionDays: 365 })
+
+    expect(stats.retention.reviewRecentUpdates).toBe(4)
+    expect(payload.count).toHaveBeenCalledWith({
+      collection: 'contact-submissions',
+      overrideAccess: true,
+      where: reviewWhere,
+    })
   })
 
   it('only selects non-personal fields for the failure list', async () => {
