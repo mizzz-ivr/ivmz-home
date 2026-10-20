@@ -39,10 +39,7 @@ describe('retention helpers', () => {
   it('counts expired non-New records consistently, including the attachment-bearing subset', () => {
     const cutoff = '2025-10-20T00:00:00.000Z'
     expect(agedRetentionWhere(cutoff)).toEqual({
-      and: [
-        { updatedAt: { less_than: cutoff } },
-        { status: { not_equals: 'new' } },
-      ],
+      and: [{ updatedAt: { less_than: cutoff } }, { status: { not_equals: 'new' } }],
     })
     expect(agedWithAttachmentsWhere(cutoff)).toEqual({
       and: [
