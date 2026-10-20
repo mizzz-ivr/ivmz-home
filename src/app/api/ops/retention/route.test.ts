@@ -89,9 +89,7 @@ describe('POST /api/ops/retention', () => {
         collection: 'contact-submissions',
         overrideAccess: true,
         where: expect.objectContaining({
-          and: expect.arrayContaining([
-            { status: { not_equals: 'new' } },
-          ]),
+          and: expect.arrayContaining([{ status: { not_equals: 'new' } }]),
         }),
       }),
     )
