@@ -145,7 +145,7 @@ export const ContactSubmissions: CollectionConfig = {
       access: submittedFieldAccess,
       admin: {
         description:
-          'Files that passed malware and content checks. Download requires admin login. Submissions with attachments cannot be deleted until safe storage cleanup is implemented.',
+          'Files that passed the malware scan and content checks. Stored privately; open them with the download path (admin login required).',
         readOnly: true,
       },
       fields: [
