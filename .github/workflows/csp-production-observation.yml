@@ -1,0 +1,43 @@
+name: CSP Production Observation
+
+on:
+  # PR runs validate the observation harness itself against the currently deployed
+  # Production site. Policy changes are validated after their Git-based Production
+  # deployment by running this workflow explicitly via workflow_dispatch.
+  pull_request:
+    branches: [main]
+    paths:
+      - .github/workflows/csp-production-observation.yml
+      - tests/e2e/csp-observation.spec.ts
+      - playwright.config.ts
+      - package.json
+      - pnpm-lock.yaml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  production-csp-observation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      E2E_BASE_URL: https://ivmz.ivrm.jp
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.0
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium webkit
+      - name: Observe Production CSP Report-Only violations
+        run: pnpm test:csp-observe
