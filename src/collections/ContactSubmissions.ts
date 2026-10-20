@@ -1,4 +1,9 @@
-import { APIError, type Access, type CollectionBeforeDeleteHook, type CollectionConfig } from 'payload'
+import {
+  APIError,
+  type Access,
+  type CollectionBeforeDeleteHook,
+  type CollectionConfig,
+} from 'payload'
 
 import { isAdminCollectionUser, isAuthenticated } from '@/access/is-authenticated'
 import { contactCategories } from '@/contact/schema'
@@ -20,10 +25,7 @@ export const canDeleteContactSubmission: Access = ({ req }) => {
  * Defense in depth for server-side Local API calls using overrideAccess.
  * Never remove a DB reference before S3 cleanup/retry/restore is implemented.
  */
-export const preventAttachedSubmissionDeletion: CollectionBeforeDeleteHook = async ({
-  id,
-  req,
-}) => {
+export const preventAttachedSubmissionDeletion: CollectionBeforeDeleteHook = async ({ id, req }) => {
   const submission = await req.payload.findByID({
     collection: 'contact-submissions',
     depth: 0,

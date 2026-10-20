@@ -7,10 +7,7 @@ import {
   preventAttachedSubmissionDeletion,
 } from './ContactSubmissions'
 
-function request(
-  findByID: ReturnType<typeof vi.fn>,
-  collection: string | null = 'users',
-) {
+function request(findByID: ReturnType<typeof vi.fn>, collection: string | null = 'users') {
   return {
     payload: {
       config: { admin: { user: 'users' } },
@@ -24,15 +21,17 @@ describe('ContactSubmissions deletion guard', () => {
   it('denies guests and accounts outside the configured CMS admin collection', () => {
     for (const collection of [null, 'other-users']) {
       const req = request(vi.fn(), collection)
-      expect(canDeleteContactSubmission({ req } as Parameters<typeof canDeleteContactSubmission>[0])).toBe(false)
+      expect(
+        canDeleteContactSubmission({ req } as Parameters<typeof canDeleteContactSubmission>[0]),
+      ).toBe(false)
     }
   })
 
   it('restricts standard CMS deletion to submissions without attachment references', () => {
     const req = request(vi.fn())
-    expect(canDeleteContactSubmission({ req } as Parameters<typeof canDeleteContactSubmission>[0])).toEqual({
-      'attachments.id': { exists: false },
-    })
+    expect(
+      canDeleteContactSubmission({ req } as Parameters<typeof canDeleteContactSubmission>[0]),
+    ).toEqual({ 'attachments.id': { exists: false } })
     expect(ContactSubmissions.access?.delete).toBe(canDeleteContactSubmission)
     expect(ContactSubmissions.hooks?.beforeDelete).toContain(preventAttachedSubmissionDeletion)
   })
