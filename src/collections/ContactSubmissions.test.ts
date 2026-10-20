@@ -36,6 +36,21 @@ describe('ContactSubmissions deletion guard', () => {
     expect(ContactSubmissions.hooks?.beforeDelete).toContain(preventAttachedSubmissionDeletion)
   })
 
+  it('does not reveal attachment metadata to guests or other authenticated collections', async () => {
+    for (const collection of [null, 'other-users']) {
+      const findByID = vi.fn().mockResolvedValue({
+        attachments: [{ id: 'row-1' }],
+      })
+      await expect(
+        preventAttachedSubmissionDeletion({
+          id: 42,
+          req: request(findByID, collection),
+        } as Parameters<typeof preventAttachedSubmissionDeletion>[0]),
+      ).rejects.toMatchObject({ status: 403 })
+      expect(findByID).not.toHaveBeenCalled()
+    }
+  })
+
   it('refuses deletion of attached submissions even when the caller overrides access', async () => {
     const findByID = vi.fn().mockResolvedValue({
       attachments: [{ id: 'row-1', key: 'clean/secret-key' }],

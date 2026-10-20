@@ -29,6 +29,10 @@ export const preventAttachedSubmissionDeletion: CollectionBeforeDeleteHook = asy
   id,
   req,
 }) => {
+  // Payload invokes beforeDelete before its document-level access check.
+  // Deny guests and non-admin users before reading the existence or attachment state.
+  if (!isAdminCollectionUser({ req })) throw new APIError('Forbidden', 403)
+
   const submission = await req.payload.findByID({
     collection: 'contact-submissions',
     depth: 0,
