@@ -50,18 +50,17 @@ describe('OpsDashboard retention display', () => {
     expect(markup).toContain('期間を過ぎても未対応(New)')
     expect(markup).toContain('未対応(New)は受付日時（作成日）')
     expect(markup).toContain('最後のやり取り')
-    expect(markup).toContain('週次ジョブは件数確認（dry-run）のみ')
-    expect(markup).toContain('直接APIによる削除は拒否されます')
+    expect(markup).toContain('週次ジョブ・直接APIともに件数確認（dry-run）のみ')
+    expect(markup).toContain('apply: trueによる削除はコード側で拒否（HTTP 403）')
     expect(markup).not.toContain('RETENTION_APPLY=true')
     expect(markup).not.toContain('role="alert"')
   })
 
-  it('warns instead of showing a green check when manual deletion is enabled', async () => {
+  it('warns about a legacy deletion flag despite the hard server-side block', async () => {
     const markup = await renderDashboard(true)
     expect(markup).toContain('role="alert"')
     expect(markup).toContain('RETENTION_PURGE_ENABLED=true')
-    expect(markup).toContain('週次ジョブはdry-run専用')
-    expect(markup).toContain('apply: true')
+    expect(markup).toContain('apply: trueによる削除をHTTP 403で拒否')
     expect(markup).toContain('S3添付との削除整合')
     expect(markup).not.toContain('RETENTION_APPLY=true')
   })

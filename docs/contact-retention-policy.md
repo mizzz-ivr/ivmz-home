@@ -23,10 +23,10 @@ S3 Lifecycleの削除は非同期処理であり、90日到達時刻に即座に
 2. 添付のcleanオブジェクト作成後90日を過ぎると、S3 Lifecycleが削除する。本文は原則残す。
 3. 添付を管理者が開く際は認証・Payloadアクセス検査後にS3存在確認を行う。対象がない場合はHTTP404、S3障害時は503、存在時のみ短期署名URLに302する（PR #145）。
 4. 本文の365日経過候補は、週次`Ops Health`の**dry-runだけ**で報告する（PR #144）。削除は自動実行しない。
-5. 削除と監査/復元の仕組みの検証・承認が完了するまで、`RETENTION_PURGE_ENABLED`や`RETENTION_APPLY`を設定しない。
+5. 削除と監査/復元の仕組みの検証・承認が完了するまで、`RETENTION_PURGE_ENABLED`や`RETENTION_APPLY`を設定しない。現在はAPI自身も`apply: true`をHTTP 403で拒否する。
 
-現行APIには**直接リクエスト`apply: true`と環境側`RETENTION_PURGE_ENABLED=true`の両方で削除を行える経路**が残っている。
-GitHubの週次ジョブがdry-run専用であることと、APIが完全に削除不能であることを混同しない。
+以前のAPIには**直接リクエスト`apply: true`と環境側`RETENTION_PURGE_ENABLED=true`で削除できる経路**が残っていた。Issue #98の安全対策でこの経路を一時的に停止し、`apply: true`を認証後HTTP 403（`retention_apply_unavailable`）で拒否する。環境フラグだけを有効化してもDB削除は実行できない。
+ただし、Payload CMSの管理者による通常の個別削除権限やS3のLifecycleは別経路であり、この変更ですべての削除手段を停止したわけではない。
 
 ## 3. 例外と未解決点
 
@@ -38,7 +38,7 @@ GitHubの週次ジョブがdry-run専用であることと、APIが完全に削�
 
 ## 4. DB/S3削除整合の推奨実装
 
-**現段階では設計のみ。** DB削除は既存`POST /api/ops/retention`で`payload.delete`するだけで、S3オブジェクトとの原子的な削除ではない。
+**現段階では設計のみ。** 旧`POST /api/ops/retention`のDB単体削除（`payload.delete`）は安全な整合処理を備えていなかったため停止した。再有効化にはS3オブジェクトとの非原子的な削除への対策が必要。
 
 - 事前照合: 削除要求の権限・保有例外・参照するオブジェクトキーの帰属を検証し、状態を保護されたDBのアウトボックスに記録する。個人情報/S3キーを公開ログ・Issueに含めない。
 - S3削除: 対象の`clean/`だけを処理し、成功または既に存在しない404を冪等な完了とする。403/5xx/タイムアウトは**削除完了とみなさず**、再試行可能な状態とする。

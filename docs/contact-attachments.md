@@ -123,7 +123,8 @@ Until steps 1–5 are done the form simply shows no file picker.
   `POST /api/ops/retention` with an empty JSON body and prints **numeric dry-run counts only**.
   It cannot automatically delete submissions, regardless of the former `RETENTION_APPLY` variable.
   Under the 2026-10-20 owner-approved policy, DB contents are retained for 365 days and
-  S3 `clean/` binaries for 90 days. Different timelines are intentional, but reliable
+  S3 `clean/` binaries for 90 days. Different timelines are intentional. The direct API
+  now rejects `apply: true` with HTTP 403 regardless of the legacy deletion flag, while reliable
   deletion/retry and backup handling remain **unimplemented**: see
   [contact retention policy](./contact-retention-policy.md) and #98.
   Do **not** re-enable deletion or change S3 lifecycle before the cleanup/rollback
