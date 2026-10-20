@@ -26,7 +26,13 @@ const base: OpsStats = {
   latestFailures: [],
   notification: { failed: 0, sent: 3, skipped: 0, stuckPending: 0, unknown: 0 },
   received: { last24h: 1, last30d: 3, last7d: 3, total: 9 },
-  retention: { days: 365, eligible: 0, reviewRecentUpdates: 0, staleUnhandled: 0, withAttachments: 0 },
+  retention: {
+    days: 365,
+    eligible: 0,
+    reviewRecentUpdates: 0,
+    staleUnhandled: 0,
+    withAttachments: 0,
+  },
   unread: 0,
   withAttachments30d: 0,
 }

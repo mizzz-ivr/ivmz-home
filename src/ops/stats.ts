@@ -139,7 +139,13 @@ export async function collectOpsStats(
     latestFailures,
     notification: { failed, sent, skipped, stuckPending, unknown },
     received: { last24h, last30d, last7d, total },
-    retention: { days: options.retentionDays, eligible, reviewRecentUpdates, staleUnhandled, withAttachments },
+    retention: {
+      days: options.retentionDays,
+      eligible,
+      reviewRecentUpdates,
+      staleUnhandled,
+      withAttachments,
+    },
     unread,
     withAttachments30d,
   }
