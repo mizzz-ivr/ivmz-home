@@ -97,5 +97,4 @@ describe('POST /api/ops/retention', () => {
       expect(del).not.toHaveBeenCalled()
     }
   })
-
 })
