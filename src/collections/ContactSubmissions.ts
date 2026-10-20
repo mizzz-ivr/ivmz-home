@@ -25,7 +25,10 @@ export const canDeleteContactSubmission: Access = ({ req }) => {
  * Defense in depth for server-side Local API calls using overrideAccess.
  * Never remove a DB reference before S3 cleanup/retry/restore is implemented.
  */
-export const preventAttachedSubmissionDeletion: CollectionBeforeDeleteHook = async ({ id, req }) => {
+export const preventAttachedSubmissionDeletion: CollectionBeforeDeleteHook = async ({
+  id,
+  req,
+}) => {
   const submission = await req.payload.findByID({
     collection: 'contact-submissions',
     depth: 0,
@@ -39,10 +42,7 @@ export const preventAttachedSubmissionDeletion: CollectionBeforeDeleteHook = asy
     submission.attachments != null &&
     (!Array.isArray(submission.attachments) || submission.attachments.length > 0)
   ) {
-    throw new APIError(
-      '添付ファイル付きの問い合わせは、安全な削除手順が整うまで削除できません。',
-      409,
-    )
+    throw new APIError('添付ファイル付きの問い合わせは、安全な削除手順が整うまで削除できません。', 409)
   }
 }
 
