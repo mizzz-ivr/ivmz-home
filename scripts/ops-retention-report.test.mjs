@@ -195,7 +195,13 @@ test('older Production response reports overdue New as unavailable, never zero',
 })
 
 test('an older dry-run without attachment counts shows unavailable, not zero', async () => {
-  const { withAttachments: _withAttachments, ...legacyReport } = goodReport
+  const legacyReport = {
+    days: goodReport.days,
+    dryRun: goodReport.dryRun,
+    eligible: goodReport.eligible,
+    overdueNew: goodReport.overdueNew,
+    willDeleteNow: goodReport.willDeleteNow,
+  }
   const result = await fetchRetentionSummary({
     siteURL,
     token,
