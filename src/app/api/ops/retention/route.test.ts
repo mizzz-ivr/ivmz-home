@@ -36,7 +36,10 @@ beforeEach(() => {
     find: mocks.find,
     delete: mocks.delete,
   })
-  mocks.count.mockResolvedValueOnce({ totalDocs: 3 }).mockResolvedValueOnce({ totalDocs: 2 })
+  mocks.count
+    .mockResolvedValueOnce({ totalDocs: 3 })
+    .mockResolvedValueOnce({ totalDocs: 1 })
+    .mockResolvedValueOnce({ totalDocs: 2 })
 })
 
 describe('POST /api/ops/retention', () => {
@@ -80,9 +83,10 @@ describe('POST /api/ops/retention', () => {
       dryRun: true,
       eligible: 3,
       overdueNew: 2,
+      withAttachments: 1,
       willDeleteNow: 3,
     })
-    expect(mocks.count).toHaveBeenCalledTimes(2)
+    expect(mocks.count).toHaveBeenCalledTimes(3)
     expect(mocks.count).toHaveBeenNthCalledWith(
       1,
       expect.objectContaining({
@@ -95,6 +99,17 @@ describe('POST /api/ops/retention', () => {
     )
     expect(mocks.count).toHaveBeenNthCalledWith(
       2,
+      expect.objectContaining({
+        where: expect.objectContaining({
+          and: expect.arrayContaining([
+            { status: { not_equals: 'new' } },
+            { 'attachments.id': { exists: true } },
+          ]),
+        }),
+      }),
+    )
+    expect(mocks.count).toHaveBeenNthCalledWith(
+      3,
       expect.objectContaining({
         where: expect.objectContaining({
           and: expect.arrayContaining([{ status: { equals: 'new' } }]),

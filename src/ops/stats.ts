@@ -1,6 +1,11 @@
 import type { Payload, Where } from 'payload'
 
-import { overdueNewRetentionWhere, retentionCutoff } from './retention'
+import {
+  agedRetentionWhere,
+  agedWithAttachmentsWhere,
+  overdueNewRetentionWhere,
+  retentionCutoff,
+} from './retention'
 
 const COLLECTION = 'contact-submissions' as const
 const DAY_MS = 24 * 60 * 60 * 1000
@@ -28,7 +33,7 @@ export type OpsStats = {
     unknown: number
   }
   received: { last24h: number; last30d: number; last7d: number; total: number }
-  retention: { days: number; eligible: number; staleUnhandled: number }
+  retention: { days: number; eligible: number; staleUnhandled: number; withAttachments: number }
   unread: number
   withAttachments30d: number
 }
@@ -115,9 +120,8 @@ export async function collectOpsStats(
   })
 
   const cutoff = retentionCutoff(now, options.retentionDays).toISOString()
-  const eligible = await count({
-    and: [{ updatedAt: { less_than: cutoff } }, { status: { not_equals: 'new' } }],
-  })
+  const eligible = await count(agedRetentionWhere(cutoff))
+  const withAttachments = await count(agedWithAttachmentsWhere(cutoff))
   const staleUnhandled = await count(overdueNewRetentionWhere(cutoff))
 
   return {
@@ -127,7 +131,7 @@ export async function collectOpsStats(
     latestFailures,
     notification: { failed, sent, skipped, stuckPending, unknown },
     received: { last24h, last30d, last7d, total },
-    retention: { days: options.retentionDays, eligible, staleUnhandled },
+    retention: { days: options.retentionDays, eligible, staleUnhandled, withAttachments },
     unread,
     withAttachments30d,
   }
