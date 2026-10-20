@@ -12,6 +12,11 @@ test('chat note explains external AI use without showing the provider name', asy
   await expect(page.locator('.chat-note')).toContainText('外部AIへ送信して回答を作ります')
   await expect(page.locator('.chat-note')).toContainText('送信内容は当サイトでは保存しません')
   await expect(page.locator('.chat-note')).not.toContainText('Cloudflare')
+
+  await page.getByRole('button', { name: '個人情報の扱いは？' }).click()
+  const log = page.getByRole('log', { name: '会話' })
+  await expect(log).toContainText('外部AIへ送信されます')
+  await expect(log).not.toContainText('Cloudflare Workers AI')
 })
 
 test('chat note correctly describes local-only behavior when AI is unavailable', async ({
