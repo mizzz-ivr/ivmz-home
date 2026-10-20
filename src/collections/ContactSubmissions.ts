@@ -42,7 +42,10 @@ export const preventAttachedSubmissionDeletion: CollectionBeforeDeleteHook = asy
     submission.attachments != null &&
     (!Array.isArray(submission.attachments) || submission.attachments.length > 0)
   ) {
-    throw new APIError('添付ファイル付きの問い合わせは、安全な削除手順が整うまで削除できません。', 409)
+    throw new APIError(
+      '添付ファイル付きの問い合わせは、安全な削除手順が整うまで削除できません。',
+      409,
+    )
   }
 }
 
