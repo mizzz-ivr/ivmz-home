@@ -112,7 +112,7 @@ Until steps 1–5 are done the form simply shows no file picker.
   to retry. Objects stuck in `quarantine/` expire after 1 day (lifecycle rule).
 - **Infected / failed scans** delete the quarantine object and report a generic reason to the
   visitor. Check GuardDuty findings for repeated attempts.
-- **Retention**: `clean/` objects expire after 90 days by default (`clean_retention_days`). The
+- **Retention**: `clean/` objects expire after 90 days by default (`clean_retention_days`). CMS and Local API deletion of submissions containing attachment references is blocked until reliable S3 cleanup is implemented; admin deletion of submissions without attachments remains available. The
   inbox row keeps the reference. The administrator-only download route first verifies the
   S3 object exists: a missing object returns HTTP 404 (without issuing a signed URL), while
   a storage permission/network error returns HTTP 503. This does **not** distinguish an
