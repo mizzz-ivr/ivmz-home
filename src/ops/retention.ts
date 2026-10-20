@@ -23,6 +23,24 @@ export function isPurgeEnabled(value: string | undefined = process.env.RETENTION
   return value === 'true'
 }
 
+/** Aged non-New records: read-only candidate estimate, never authorization to delete. */
+export function agedRetentionWhere(cutoff: string): Where {
+  return {
+    and: [{ updatedAt: { less_than: cutoff } }, { status: { not_equals: 'new' } }],
+  }
+}
+
+/** Aged non-New records with stored S3 attachment references require coordinated cleanup. */
+export function agedWithAttachmentsWhere(cutoff: string): Where {
+  return {
+    and: [
+      { updatedAt: { less_than: cutoff } },
+      { status: { not_equals: 'new' } },
+      { 'attachments.id': { exists: true } },
+    ],
+  }
+}
+
 /** Aged untouched or triaged New messages remain excluded from automatic deletion. */
 export function overdueNewRetentionWhere(cutoff: string): Where {
   return {

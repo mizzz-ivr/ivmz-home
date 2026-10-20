@@ -6,7 +6,14 @@ import { fetchRetentionSummary } from './ops-retention-report.mjs'
 
 const siteURL = 'https://ivmz.ivrm.jp'
 const token = 'ci-example-secret-longer-than-24-characters'
-const goodReport = { days: 365, dryRun: true, eligible: 4, overdueNew: 2, willDeleteNow: 4 }
+const goodReport = {
+  days: 365,
+  dryRun: true,
+  eligible: 4,
+  overdueNew: 2,
+  withAttachments: 1,
+  willDeleteNow: 4,
+}
 
 function response(body = goodReport, status = 200) {
   return Response.json(body, { status })
@@ -29,7 +36,13 @@ test('uses only POST dry-run with the canonical Production URL and no redirects'
     },
   })
   assert.equal(called, 1)
-  assert.deepEqual(result, { days: 365, eligible: 4, overdueNew: 2, willDeleteNow: 4 })
+  assert.deepEqual(result, {
+    days: 365,
+    eligible: 4,
+    overdueNew: 2,
+    withAttachments: 1,
+    willDeleteNow: 4,
+  })
 })
 
 test('requires a configured token before any network call', async () => {
@@ -121,6 +134,11 @@ test('rejects non-json responses and malformed dry-run payloads', async () => {
     { ...goodReport, eligible: -1 },
     { ...goodReport, eligible: '4' },
     { ...goodReport, overdueNew: -1 },
+    { ...goodReport, withAttachments: -1 },
+    { ...goodReport, withAttachments: '1' },
+    { ...goodReport, withAttachments: null },
+    { ...goodReport, withAttachments: 1.5 },
+    { ...goodReport, withAttachments: 5 },
     { ...goodReport, overdueNew: null },
     { ...goodReport, overdueNew: '2' },
     { ...goodReport, overdueNew: 1.5 },
@@ -173,6 +191,17 @@ test('older Production response reports overdue New as unavailable, never zero',
     request: async () => response(legacyReport),
   })
   assert.equal(result.overdueNew, null)
+  assert.equal(result.withAttachments, null)
+})
+
+test('an older dry-run without attachment counts shows unavailable, not zero', async () => {
+  const { withAttachments: _withAttachments, ...legacyReport } = goodReport
+  const result = await fetchRetentionSummary({
+    siteURL,
+    token,
+    request: async () => response(legacyReport),
+  })
+  assert.equal(result.withAttachments, null)
 })
 
 test('a future successful purge response is not accepted as a report', async () => {

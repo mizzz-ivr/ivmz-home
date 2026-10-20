@@ -5,6 +5,8 @@ import {
   MAX_RETENTION_DAYS,
   MIN_RETENTION_DAYS,
   isPurgeEnabled,
+  agedRetentionWhere,
+  agedWithAttachmentsWhere,
   overdueNewRetentionWhere,
   resolveRetentionDays,
   retentionCutoff,
@@ -30,6 +32,23 @@ describe('retention helpers', () => {
       and: [
         { createdAt: { less_than: '2025-10-20T00:00:00.000Z' } },
         { status: { equals: 'new' } },
+      ],
+    })
+  })
+
+  it('counts expired non-New records consistently, including the attachment-bearing subset', () => {
+    const cutoff = '2025-10-20T00:00:00.000Z'
+    expect(agedRetentionWhere(cutoff)).toEqual({
+      and: [
+        { updatedAt: { less_than: cutoff } },
+        { status: { not_equals: 'new' } },
+      ],
+    })
+    expect(agedWithAttachmentsWhere(cutoff)).toEqual({
+      and: [
+        { updatedAt: { less_than: cutoff } },
+        { status: { not_equals: 'new' } },
+        { 'attachments.id': { exists: true } },
       ],
     })
   })

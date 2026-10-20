@@ -1,8 +1,8 @@
-import type { Where } from 'payload'
-
 import { hasValidOpsToken, isOpsEndpointEnabled } from '@/ops/auth'
 import {
   PURGE_BATCH_LIMIT,
+  agedRetentionWhere,
+  agedWithAttachmentsWhere,
   overdueNewRetentionWhere,
   resolveRetentionDays,
   retentionCutoff,
@@ -35,12 +35,20 @@ export async function POST(request: Request) {
 
   const days = resolveRetentionDays(process.env.CONTACT_RETENTION_DAYS)
   const cutoff = retentionCutoff(new Date(), days).toISOString()
-  const where: Where = {
-    and: [{ updatedAt: { less_than: cutoff } }, { status: { not_equals: 'new' } }],
-  }
-
   const eligible = (
-    await payload.count({ collection: 'contact-submissions', overrideAccess: true, where })
+    await payload.count({
+      collection: 'contact-submissions',
+      overrideAccess: true,
+      where: agedRetentionWhere(cutoff),
+    })
+  ).totalDocs
+
+  const withAttachments = (
+    await payload.count({
+      collection: 'contact-submissions',
+      overrideAccess: true,
+      where: agedWithAttachmentsWhere(cutoff),
+    })
   ).totalDocs
 
   // New submissions remain outside deletion candidates but are visible in the report.
@@ -58,6 +66,7 @@ export async function POST(request: Request) {
     dryRun: true,
     eligible,
     overdueNew,
+    withAttachments,
     // Historical field: estimated batch size only. No apply endpoint is enabled.
     willDeleteNow: Math.min(eligible, PURGE_BATCH_LIMIT),
   })
