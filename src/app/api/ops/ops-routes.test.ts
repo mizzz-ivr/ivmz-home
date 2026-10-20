@@ -82,56 +82,19 @@ describe('POST /api/ops/retention', () => {
     expect(del).not.toHaveBeenCalled()
   })
 
-  it('refuses to delete unless purging is enabled in the environment', async () => {
-    count.mockResolvedValue({ totalDocs: 3 })
-    const response = await retention(post({ apply: true }))
-    expect(response.status).toBe(403)
-    expect((await response.json()).code).toBe('purge_disabled')
-    expect(del).not.toHaveBeenCalled()
-  })
+  it('refuses apply requests with or without the legacy flag, without DB access', async () => {
+    for (const flag of ['', 'true']) {
+      vi.stubEnv('RETENTION_PURGE_ENABLED', flag)
+      count.mockClear()
+      find.mockClear()
+      del.mockClear()
 
-  it('deletes only the eligible records when both guards are satisfied', async () => {
-    vi.stubEnv('RETENTION_PURGE_ENABLED', 'true')
-    count.mockResolvedValue({ totalDocs: 2 })
-    find.mockResolvedValue({ docs: [{ id: 1 }, { id: 2 }] })
-
-    const body = await (await retention(post({ apply: true }))).json()
-    expect(body).toMatchObject({ deleted: 2, dryRun: false, failed: 0 })
-    expect(del).toHaveBeenCalledTimes(2)
-
-    const query = JSON.stringify(find.mock.calls[0][0].where)
-    expect(query).toContain('"not_equals":"new"')
-    expect(query).toContain('updatedAt')
-  })
-
-  it('re-checks eligibility inside every delete and skips records that changed meanwhile', async () => {
-    vi.stubEnv('RETENTION_PURGE_ENABLED', 'true')
-    count.mockResolvedValue({ totalDocs: 2 })
-    find.mockResolvedValue({ docs: [{ id: 1 }, { id: 2 }] })
-    // The second record was set back to "New" after the batch was selected: nothing matches.
-    del
-      .mockResolvedValueOnce({ docs: [{ id: 1 }], errors: [] })
-      .mockResolvedValueOnce({ docs: [], errors: [] })
-
-    const body = await (await retention(post({ apply: true }))).json()
-    expect(body).toMatchObject({ deleted: 1, failed: 0, skipped: 1 })
-
-    for (const [args] of del.mock.calls) {
-      expect(args.id).toBeUndefined()
-      const where = JSON.stringify(args.where)
-      expect(where).toContain('"not_equals":"new"')
-      expect(where).toContain('updatedAt')
-      expect(where).toContain('"id"')
+      const response = await retention(post({ apply: true }))
+      expect(response.status).toBe(403)
+      expect((await response.json()).code).toBe('retention_apply_unavailable')
+      expect(count).not.toHaveBeenCalled()
+      expect(find).not.toHaveBeenCalled()
+      expect(del).not.toHaveBeenCalled()
     }
-  })
-
-  it('counts delete errors as failures', async () => {
-    vi.stubEnv('RETENTION_PURGE_ENABLED', 'true')
-    count.mockResolvedValue({ totalDocs: 1 })
-    find.mockResolvedValue({ docs: [{ id: 1 }] })
-    del.mockResolvedValueOnce({ docs: [], errors: [{ id: 1, message: 'x' }] })
-
-    const body = await (await retention(post({ apply: true }))).json()
-    expect(body).toMatchObject({ deleted: 0, failed: 1 })
   })
 })

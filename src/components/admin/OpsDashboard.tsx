@@ -28,9 +28,9 @@ const retentionMessages = {
   basis:
     '対応済みはDBの最終更新日（管理者メモ・状態変更も含む）、未対応(New)は受付日時（作成日）を基準に集計します。いずれもプライバシーポリシーの「最後のやり取り」とは一致しない場合があります。',
   disabled:
-    '週次ジョブは件数確認（dry-run）のみです。サーバー側の削除許可もOFFのため、直接APIによる削除は拒否されます。DB/S3の安全な削除・復旧手順が整うまで停止を継続します。',
+    '週次ジョブ・直接APIともに件数確認（dry-run）のみです。apply: trueによる削除はコード側で拒否（HTTP 403）されます。DB/S3の安全な削除・復旧手順が整うまで停止を継続します。',
   enabled:
-    '警告：RETENTION_PURGE_ENABLED=trueです。週次ジョブはdry-run専用ですが、認証済みの直接APIにapply: trueを送るとDB本文の削除が可能です。S3添付との削除整合・復旧手順が未実装のため、削除許可をOFFにしてください。',
+    '警告：RETENTION_PURGE_ENABLED=trueですが、現行コードはapply: trueによる削除をHTTP 403で拒否します。S3添付との削除整合・復旧手順が未実装のため、今後の誤解放を防ぐためにも環境変数をOFFにしてください。',
 } as const
 
 const HEALTH: Record<string, { color: string; text: string }> = {
