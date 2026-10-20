@@ -1,11 +1,57 @@
-import type { CollectionConfig } from 'payload'
+import {
+  APIError,
+  type Access,
+  type CollectionBeforeDeleteHook,
+  type CollectionConfig,
+} from 'payload'
 
-import { isAuthenticated } from '@/access/is-authenticated'
+import { isAdminCollectionUser, isAuthenticated } from '@/access/is-authenticated'
 import { contactCategories } from '@/contact/schema'
 
 const submittedFieldAdmin = { readOnly: true } as const
 /** Submitted content is immutable through the Admin UI, REST and Local API (server uses overrideAccess). */
 const submittedFieldAccess = { create: () => false, update: () => false }
+
+/**
+ * Only inbox records without S3 references may be removed through normal CMS permissions.
+ * Other users must not infer whether an attachment exists.
+ */
+export const canDeleteContactSubmission: Access = ({ req }) => {
+  if (!isAdminCollectionUser({ req })) return false
+  return { 'attachments.id': { exists: false } }
+}
+
+/**
+ * Defense in depth for server-side Local API calls using overrideAccess.
+ * Never remove a DB reference before S3 cleanup/retry/restore is implemented.
+ */
+export const preventAttachedSubmissionDeletion: CollectionBeforeDeleteHook = async ({
+  id,
+  req,
+}) => {
+  // Payload invokes beforeDelete before its document-level access check.
+  // Deny guests and non-admin users before reading the existence or attachment state.
+  if (!isAdminCollectionUser({ req })) throw new APIError('Forbidden', 403)
+
+  const submission = await req.payload.findByID({
+    collection: 'contact-submissions',
+    depth: 0,
+    id,
+    overrideAccess: true,
+    req,
+    select: { attachments: true },
+  })
+
+  if (
+    submission.attachments != null &&
+    (!Array.isArray(submission.attachments) || submission.attachments.length > 0)
+  ) {
+    throw new APIError(
+      '添付ファイル付きの問い合わせは、安全な削除手順が整うまで削除できません。',
+      409,
+    )
+  }
+}
 
 /**
  * Inbox for /contact. Records are created only by the server route through the Local API
@@ -20,10 +66,11 @@ export const ContactSubmissions: CollectionConfig = {
   },
   access: {
     create: () => false,
-    delete: isAuthenticated,
+    delete: canDeleteContactSubmission,
     read: isAuthenticated,
     update: isAuthenticated,
   },
+  hooks: { beforeDelete: [preventAttachedSubmissionDeletion] },
   fields: [
     {
       name: 'status',
