@@ -10,8 +10,11 @@ test('chat note explains external AI use without showing the provider name', asy
 
   // Netlify Preview injects a debug iframe over the launcher. Reuse the production
   // open-chat event rather than clicking through the third-party overlay.
-  await page.evaluate(() => window.dispatchEvent(new Event('ivmz:open-chat')))
-  await expect(page.getByRole('dialog', { name: 'FAQ Assistant' })).toBeVisible()
+  const chat = page.getByRole('dialog', { name: 'FAQ Assistant' })
+  await expect(async () => {
+    await page.evaluate(() => window.dispatchEvent(new Event('ivmz:open-chat')))
+    await expect(chat).toBeVisible({ timeout: 1_000 })
+  }).toPass()
   await expect(page.locator('.chat-note')).toContainText('外部AIへ送信')
   await expect(page.locator('.chat-note')).toContainText('個人情報は入力しないでください')
   await expect(page.locator('.chat-note')).not.toContainText('Cloudflare')
@@ -32,8 +35,11 @@ test('chat note correctly describes local-only behavior when AI is unavailable',
 
   // Netlify Preview injects a debug iframe over the launcher. Reuse the production
   // open-chat event rather than clicking through the third-party overlay.
-  await page.evaluate(() => window.dispatchEvent(new Event('ivmz:open-chat')))
-  await expect(page.getByRole('dialog', { name: 'FAQ Assistant' })).toBeVisible()
+  const chat = page.getByRole('dialog', { name: 'FAQ Assistant' })
+  await expect(async () => {
+    await page.evaluate(() => window.dispatchEvent(new Event('ivmz:open-chat')))
+    await expect(chat).toBeVisible({ timeout: 1_000 })
+  }).toPass()
   await expect(page.locator('.chat-note')).toContainText('この端末の中だけで処理され')
   await expect(page.locator('.chat-note')).toContainText('送信も保存もされません', {
     timeout: 15_000,
