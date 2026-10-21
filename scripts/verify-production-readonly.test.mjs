@@ -14,7 +14,9 @@ function mockResponse(path, override = {}) {
     'x-robots-tag': 'noindex',
     ...override.headers,
   })
-  if (probe.admin && status >= 300 && status < 400) headers.set('location', '/admin/login')
+  if (probe.admin && status >= 300 && status < 400 && !headers.has('location')) {
+    headers.set('location', '/admin/login')
+  }
   return new Response(probe.docs ? JSON.stringify(override.json ?? { docs: [] }) : '', {
     status,
     headers,
