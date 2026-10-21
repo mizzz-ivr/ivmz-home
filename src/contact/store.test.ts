@@ -2,8 +2,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const find = vi.fn()
 const create = vi.fn()
+const update = vi.fn()
 
-vi.mock('payload', () => ({ getPayload: async () => ({ create, find }) }))
+vi.mock('payload', () => ({ getPayload: async () => ({ create, find, update }) }))
 vi.mock('../payload.config', () => ({ default: {} }))
 
 import { PayloadContactStore } from './store'
@@ -21,6 +22,7 @@ const message = {
 beforeEach(() => {
   find.mockReset().mockResolvedValue({ docs: [] })
   create.mockReset().mockResolvedValue({ id: 7 })
+  update.mockReset().mockResolvedValue({ id: 7 })
 })
 
 describe('PayloadContactStore.save', () => {
@@ -56,5 +58,30 @@ describe('PayloadContactStore.save', () => {
       id: 3,
     })
     expect(create).not.toHaveBeenCalled()
+  })
+})
+
+describe('PayloadContactStore.markNotification', () => {
+  it('does not extend the visitor interaction timestamp when email status changes', async () => {
+    const store = new PayloadContactStore()
+
+    await store.markNotification(7, 'sent')
+    await store.markNotification(7, 'unknown', 'NotificationTimeout')
+
+    expect(update).toHaveBeenNthCalledWith(1, {
+      collection: 'contact-submissions',
+      data: { notification: 'sent', notificationError: null },
+      id: 7,
+      overrideAccess: true,
+    })
+    expect(update).toHaveBeenNthCalledWith(2, {
+      collection: 'contact-submissions',
+      data: { notification: 'unknown', notificationError: 'NotificationTimeout' },
+      id: 7,
+      overrideAccess: true,
+    })
+    for (const [options] of update.mock.calls) {
+      expect(options.data).not.toHaveProperty('lastInteractionAt')
+    }
   })
 })
