@@ -144,6 +144,13 @@ export const ContactSubmissions: CollectionConfig = {
       unique: true,
     },
     {
+      name: 'lastInteractionAt',
+      type: 'date',
+      label: '記録された最終対話日時（現在は受付時のみ）',
+      access: submittedFieldAccess,
+      admin: submittedFieldAdmin,
+    },
+    {
       name: 'attachments',
       type: 'array',
       access: submittedFieldAccess,

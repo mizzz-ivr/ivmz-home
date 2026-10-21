@@ -301,6 +301,7 @@ export interface ContactSubmission {
    */
   recipient: string;
   requestId: string;
+  lastInteractionAt?: string | null;
   /**
    * Files that passed the malware scan and content checks. Stored privately; open them with the download path (admin login required).
    */
@@ -567,6 +568,7 @@ export interface ContactSubmissionsSelect<T extends boolean = true> {
   message?: T;
   recipient?: T;
   requestId?: T;
+  lastInteractionAt?: T;
   attachments?:
     | T
     | {

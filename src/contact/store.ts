@@ -59,6 +59,8 @@ export class PayloadContactStore implements ContactStore {
               }
             : {}),
           category: message.category,
+          // A verified visitor submission is the only structured interaction today.
+          lastInteractionAt: new Date().toISOString(),
           email: message.email,
           message: message.message,
           name: message.name,

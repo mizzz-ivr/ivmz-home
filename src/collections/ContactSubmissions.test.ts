@@ -18,6 +18,20 @@ function request(findByID: ReturnType<typeof vi.fn>, collection: string | null =
 }
 
 describe('ContactSubmissions deletion guard', () => {
+  it('keeps the first interaction timestamp server-owned and read-only', () => {
+    const field = ContactSubmissions.fields.find(
+      (entry) => 'name' in entry && entry.name === 'lastInteractionAt',
+    )
+    expect(field).toMatchObject({
+      type: 'date',
+      admin: { readOnly: true },
+    })
+    if (field && 'access' in field) {
+      expect(field.access?.create?.({} as never)).toBe(false)
+      expect(field.access?.update?.({} as never)).toBe(false)
+    }
+  })
+
   it('denies guests and accounts outside the configured CMS admin collection', () => {
     for (const collection of [null, 'other-users']) {
       const req = request(vi.fn(), collection)
