@@ -56,6 +56,10 @@ jobs:
         env:
           PAYLOAD_DB_BOUNDARY_AUDIT_INTEGRATION: 'true'
         run: pnpm exec vitest run src/security/audit-db-boundary.integration.test.ts
+      - name: 最終対話日時の列追加・ロールバックを使い捨てDBで先行検証
+        env:
+          CONTACT_INTERACTION_MIGRATION_PROBE: 'true'
+        run: pnpm exec vitest run src/ops/last-interaction-migration.integration.test.ts
       - run: pnpm generate:types
       - run: pnpm generate:importmap
       - name: 生成済みPayload成果物がコミットされていることを確認
