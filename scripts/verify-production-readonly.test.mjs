@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import { publicReleaseProbes, verifyProductionReadOnly } from './verify-production-readonly.mjs'
+import {
+  publicReleaseProbes,
+  verifyProductionReadOnly,
+} from './verify-production-readonly.mjs'
 
 function mockResponse(path, override = {}) {
   const probe = publicReleaseProbes.find((item) => item.path === path)
@@ -15,7 +18,10 @@ function mockResponse(path, override = {}) {
     ...override.headers,
   })
   if (probe.admin && status >= 300 && status < 400) headers.set('location', '/admin/login')
-  return new Response(probe.docs ? JSON.stringify(override.json ?? { docs: [] }) : '', { status, headers })
+  return new Response(probe.docs ? JSON.stringify(override.json ?? { docs: [] }) : '', {
+    status,
+    headers,
+  })
 }
 
 function requester(overrides = {}) {
@@ -72,19 +78,36 @@ test('rejects cross-origin redirects from admin and unexpected redirects on publ
   )
 
   const extra = requester({ '/works': { status: 302 } })
-  await assert.rejects(verifyProductionReadOnly({ request: extra.request }), /unexpected HTTP status 302/)
+  await assert.rejects(
+    verifyProductionReadOnly({ request: extra.request }),
+    /unexpected HTTP status 302/,
+  )
 })
 
 test('rejects missing CSP, enforcing CSP, uncacheable flags and malformed JSON', async () => {
   const noCsp = requester({ '/': { headers: { 'content-security-policy-report-only': '' } } })
-  await assert.rejects(verifyProductionReadOnly({ request: noCsp.request }), /CSP Report-Only missing/)
+  await assert.rejects(
+    verifyProductionReadOnly({ request: noCsp.request }),
+    /CSP Report-Only missing/,
+  )
 
-  const enforced = requester({ '/': { headers: { 'content-security-policy': "default-src 'self'" } } })
-  await assert.rejects(verifyProductionReadOnly({ request: enforced.request }), /unexpected enforcing CSP/)
+  const enforced = requester({
+    '/': { headers: { 'content-security-policy': "default-src 'self'" } },
+  })
+  await assert.rejects(
+    verifyProductionReadOnly({ request: enforced.request }),
+    /unexpected enforcing CSP/,
+  )
 
   const noCache = requester({ '/api/ops/health': { headers: { 'cache-control': 'public' } } })
-  await assert.rejects(verifyProductionReadOnly({ request: noCache.request }), /no-store missing/)
+  await assert.rejects(
+    verifyProductionReadOnly({ request: noCache.request }),
+    /no-store missing/,
+  )
 
   const badDocs = requester({ '/api/works?limit=1&depth=0': { json: { count: 5 } } })
-  await assert.rejects(verifyProductionReadOnly({ request: badDocs.request }), /shape mismatch/)
+  await assert.rejects(
+    verifyProductionReadOnly({ request: badDocs.request }),
+    /shape mismatch/,
+  )
 })
