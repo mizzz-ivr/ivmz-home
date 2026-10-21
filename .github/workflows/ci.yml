@@ -46,6 +46,11 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm format:check
+      - name: 一時的な整形差分の診断（修正後に撤去）
+        if: failure()
+        run: |
+          pnpm exec prettier scripts/verify-production-readonly.mjs scripts/verify-production-readonly.test.mjs --write
+          git diff -- scripts/verify-production-readonly.mjs scripts/verify-production-readonly.test.mjs
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
