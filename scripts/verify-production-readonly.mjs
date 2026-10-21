@@ -28,7 +28,7 @@ export const publicReleaseProbes = [
 ]
 
 function must(condition, path, explanation) {
-  if (!condition) throw new Error(\`Release smoke failed at \${path}: \${explanation}\`)
+  if (!condition) throw new Error(`Release smoke failed at ${path}: ${explanation}`)
 }
 
 export async function verifyProductionReadOnly({ request = fetch } = {}) {
@@ -47,10 +47,10 @@ export async function verifyProductionReadOnly({ request = fetch } = {}) {
         signal: AbortSignal.timeout(15_000),
       })
     } catch {
-      throw new Error(\`Release smoke failed at \${probe.path}: network or timeout\`)
+      throw new Error(`Release smoke failed at ${probe.path}: network or timeout`)
     }
 
-    must(probe.status.includes(response.status), probe.path, \`unexpected HTTP status \${response.status}\`)
+    must(probe.status.includes(response.status), probe.path, `unexpected HTTP status ${response.status}`)
     const headers = response.headers
     const isRedirect = response.status >= 300 && response.status < 400
 
@@ -61,7 +61,7 @@ export async function verifyProductionReadOnly({ request = fetch } = {}) {
       try {
         next = new URL(location, url)
       } catch {
-        throw new Error(\`Release smoke failed at \${probe.path}: invalid redirect\`)
+        throw new Error(`Release smoke failed at ${probe.path}: invalid redirect`)
       }
       must(next.origin === PRODUCTION_ORIGIN, probe.path, 'cross-origin redirect')
     } else {
@@ -97,7 +97,7 @@ export async function verifyProductionReadOnly({ request = fetch } = {}) {
       try {
         document = await response.json()
       } catch {
-        throw new Error(\`Release smoke failed at \${probe.path}: invalid JSON\`)
+        throw new Error(`Release smoke failed at ${probe.path}: invalid JSON`)
       }
       must(Array.isArray(document?.docs), probe.path, 'public collection shape mismatch')
     }
@@ -111,8 +111,8 @@ export async function verifyProductionReadOnly({ request = fetch } = {}) {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   verifyProductionReadOnly()
     .then((checked) => {
-      for (const item of checked) console.info(\`OK \${item.path}: HTTP \${item.status}\`)
-      console.info(\`Read-only Production smoke passed: \${checked.length} endpoints\`)
+      for (const item of checked) console.info(`OK ${item.path}: HTTP ${item.status}`)
+      console.info(`Read-only Production smoke passed: ${checked.length} endpoints`)
     })
     .catch((error) => {
       console.error(error instanceof Error ? error.message : 'Release smoke failed')
