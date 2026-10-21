@@ -40,16 +40,15 @@ describe.skipIf(process.env.CONTACT_INTERACTION_MIGRATION_PROBE !== 'true')(
       // Keep this gate valid in both states so merging the migration cannot break main CI.
       const columnsBefore = total(await columnExists())
       expect([0, 1]).toContain(columnsBefore)
-      const nullableWithoutDefault = () =>
-        db.execute(sql`
+      const nullableWithoutDefault = sql`
           SELECT count(*)::integer AS total FROM information_schema.columns
           WHERE table_schema = 'ivmz_home' AND table_name = 'contact_submissions'
             AND column_name = 'last_interaction_at'
             AND data_type = 'timestamp with time zone'
             AND is_nullable = 'YES'
             AND column_default IS NULL
-        `)
-      if (columnsBefore === 1) expect(total(await nullableWithoutDefault())).toBe(1)
+      `
+      if (columnsBefore === 1) expect(total(await db.execute(nullableWithoutDefault))).toBe(1)
 
       await expect(
         db.transaction(async (tx) => {
@@ -65,7 +64,7 @@ describe.skipIf(process.env.CONTACT_INTERACTION_MIGRATION_PROBE !== 'true')(
               ADD COLUMN "last_interaction_at" timestamp(3) with time zone
             `)
           }
-          expect(total(await nullableWithoutDefault())).toBe(1)
+          expect(total(await tx.execute(nullableWithoutDefault))).toBe(1)
           const unknown = await tx.execute(sql`
             SELECT count(*)::integer AS total FROM "ivmz_home"."contact_submissions"
             WHERE "request_id" = 'ci-last-interaction-probe' AND "last_interaction_at" IS NULL
@@ -110,7 +109,7 @@ describe.skipIf(process.env.CONTACT_INTERACTION_MIGRATION_PROBE !== 'true')(
       // The entire transaction, including its DOWN rehearsal, must restore the
       // original pre-migration or post-migration schema without losing any values.
       expect(total(await columnExists())).toBe(columnsBefore)
-      if (columnsBefore === 1) expect(total(await nullableWithoutDefault())).toBe(1)
+      if (columnsBefore === 1) expect(total(await db.execute(nullableWithoutDefault))).toBe(1)
       expect(
         total(
           await db.execute(sql`
