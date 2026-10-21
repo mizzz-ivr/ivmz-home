@@ -99,11 +99,7 @@ export async function verifyProductionReadOnly({ request = fetch } = {}) {
           probe.path,
           'CSP Report-Only missing',
         )
-        must(
-          !headers.get('content-security-policy'),
-          probe.path,
-          'unexpected enforcing CSP',
-        )
+        must(!headers.get('content-security-policy'), probe.path, 'unexpected enforcing CSP')
       }
     }
 

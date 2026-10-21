@@ -1,10 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import {
-  publicReleaseProbes,
-  verifyProductionReadOnly,
-} from './verify-production-readonly.mjs'
+import { publicReleaseProbes, verifyProductionReadOnly } from './verify-production-readonly.mjs'
 
 function mockResponse(path, override = {}) {
   const probe = publicReleaseProbes.find((item) => item.path === path)
@@ -100,14 +97,8 @@ test('rejects missing CSP, enforcing CSP, uncacheable flags and malformed JSON',
   )
 
   const noCache = requester({ '/api/ops/health': { headers: { 'cache-control': 'public' } } })
-  await assert.rejects(
-    verifyProductionReadOnly({ request: noCache.request }),
-    /no-store missing/,
-  )
+  await assert.rejects(verifyProductionReadOnly({ request: noCache.request }), /no-store missing/)
 
   const badDocs = requester({ '/api/works?limit=1&depth=0': { json: { count: 5 } } })
-  await assert.rejects(
-    verifyProductionReadOnly({ request: badDocs.request }),
-    /shape mismatch/,
-  )
+  await assert.rejects(verifyProductionReadOnly({ request: badDocs.request }), /shape mismatch/)
 })
