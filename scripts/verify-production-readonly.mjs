@@ -21,10 +21,27 @@ export const publicReleaseProbes = [
   ].map((path) => ({ path, status: [200], mime: 'text/html', csp: path === '/' })),
   { path: '/robots.txt', status: [200], mime: 'text/plain' },
   { path: '/sitemap.xml', status: [200], mime: 'xml' },
-  { path: '/api/works?limit=1&depth=0', status: [200], mime: 'application/json', docs: true, csp: true },
-  { path: '/admin', status: [200, 302, 303, 307, 308], mime: 'text/html', csp: true, admin: true },
+  {
+    path: '/api/works?limit=1&depth=0',
+    status: [200],
+    mime: 'application/json',
+    docs: true,
+    csp: true,
+  },
+  {
+    path: '/admin',
+    status: [200, 302, 303, 307, 308],
+    mime: 'text/html',
+    csp: true,
+    admin: true,
+  },
   { path: '/api/ops/health', status: [401, 404], noStore: true },
-  { path: '/message/this-is-not-a-public-message', status: [404], noStore: true, noIndex: true },
+  {
+    path: '/message/this-is-not-a-public-message',
+    status: [404],
+    noStore: true,
+    noIndex: true,
+  },
 ]
 
 function must(condition, path, explanation) {
@@ -50,7 +67,11 @@ export async function verifyProductionReadOnly({ request = fetch } = {}) {
       throw new Error(`Release smoke failed at ${probe.path}: network or timeout`)
     }
 
-    must(probe.status.includes(response.status), probe.path, `unexpected HTTP status ${response.status}`)
+    must(
+      probe.status.includes(response.status),
+      probe.path,
+      `unexpected HTTP status ${response.status}`,
+    )
     const headers = response.headers
     const isRedirect = response.status >= 300 && response.status < 400
 
@@ -73,8 +94,16 @@ export async function verifyProductionReadOnly({ request = fetch } = {}) {
         )
       }
       if (probe.csp) {
-        must(!!headers.get('content-security-policy-report-only'), probe.path, 'CSP Report-Only missing')
-        must(!headers.get('content-security-policy'), probe.path, 'unexpected enforcing CSP')
+        must(
+          !!headers.get('content-security-policy-report-only'),
+          probe.path,
+          'CSP Report-Only missing',
+        )
+        must(
+          !headers.get('content-security-policy'),
+          probe.path,
+          'unexpected enforcing CSP',
+        )
       }
     }
 
