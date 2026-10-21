@@ -1,3 +1,5 @@
+import { Mascot3DPreference } from '@/components/site/Mascot3D'
+
 const footerNavigation = [
   ['HOME', '/'],
   ['ABOUT', '/about'],
@@ -33,6 +35,7 @@ export function SiteFooter() {
         </nav>
 
         <div className="footer-meta">
+          <Mascot3DPreference />
           <span>© 2026 ivmz</span>
           <span className="footer-legal-links">
             <a href="/legal/privacy">PRIVACY</a>
