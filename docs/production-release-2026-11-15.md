@@ -10,7 +10,7 @@
 - ユーザー申告：Netlifyクレジット不足、**2026-11-15（JST）回復予定**。実際の回復・枠残高は当日に要確認。
 - `main`のPR #159/#160は**最終対話日時の設計・CI試験のみ**。本番DBへの正式な列追加・イベントwriterの公開は含まない。
 - 正式Migrationと受付時のwriterは**Draft PR #157**（Issue #98）。Production Supabase `ivrm-core`に`last_interaction_at`がないため、復元検証と先行DDLまで本番化を禁止する。
-- FAQ文言は**Draft PR #158**（Issue #72）。未公開。レビュー指摘は修正済みだが**最新HEADの実Netlify Previewは未検証**。
+- FAQ文言は**PR #158**（Issue #72）。レビュー指摘解決・GitHub CI成功後、2026-10-22に**非Productionリリースブランチへsquashマージ済み**（`17d784810bf68353d80d0d040c03bb26431631a3`）。`main`/Productionでは未公開。**統合後HEADの実Netlify Previewは未検証**。
 - 匿名メッセージの連続Draft PR #128〜#141（Issue #69/#133）と3DマスコットのPR #121/#126（Issue #103/#125）は**別リリース**。今回のmainにまとめて投入しない。
 - 正規の公開経路：`reviewed PR -> GitHub main -> Netlify Git integration -> Production`。手動Trigger、API/MCPの直接publish、承認なきDB操作は使わない。Issue #161、`docs/netlify-production-sync.md`参照。
 
@@ -18,12 +18,22 @@
 
 | 単位 | 対象 | 通過条件 | 失敗した場合 |
 | --- | --- | --- | --- |
-| R0（最初） | 現mainに積み残されたPR #159/#160 + 安全なリリース手順PR | Netlifyクレジット回復、GitHub CI、**1回の実Preview**、レビュー、Git由来本番SHA一致 | 公開停止、Issue #161を維持 |
-| R1（独立） | PR #158：FAQチャットUI文言 | 最新HEAD CI・Preview Smoke・文言レビュー、R0の稼働確認 | Draft維持、既存チャットを変更しない |
+| R0（最初・統合） | 現mainのPR #159/#160 + リリース手順PR #162 + **FAQチャットPR #158**（公開用PR #163） | Netlifyクレジット回復、統合HEADのGitHub CI、**1回の実Preview**、FAQ文言レビュー、Git由来本番SHA一致 | 公開停止、Issue #161を維持 |
 | R2（厳格） | PR #157：`lastInteractionAt` writer + Migration | **Production DBのバックアップ/復元実証、接続先/権限、列の先行適用、Preview検証** | Draft維持、本番DBにDDLを実行しない |
 | 別計画 | 匿名投稿 / 3D / その他Issue | 各Issue固有の隔離環境・プライバシー・実機・ロールバック要件 | 一括マージしない |
 
-**R0を飛ばしてR1/R2を公開しない**。必要な実Previewがない場合、保護ルールを無効にしてマージしない。`[skip netlify]`付きのコミットでは本番がスキップされるため、回復後の最終PRは明示的にタグを外し、**実内容のあるレビュー済みコミット**でPreviewとGit連携を検証する。
+**R0へ安全なUI文言修正（従来R1）を統合済み**。R2のDB Migrationは独立させ、R0より先に公開しない。必要な実Previewがない場合、保護ルールを無効にしてマージしない。`[skip netlify]`付きのコミットでは本番がスキップされるため、回復後の最終PRは明示的にタグを外し、**実内容のあるレビュー済みコミット**でPreviewとGit連携を検証する。
+
+
+## 11/15以降の最小Netlifyビルド手順
+
+- 現在のreleaseブランチ `release/2026-11-15-validation`には **PR #162とPR #158がsquashマージ済み**。GitHub `main`には未マージ。
+- [公開用Draft PR #163](https://github.com/mizzz-ivr/ivmz-home/pull/163)に今回の一括リリースを集約し、**Netlifyクレジット回復まで** `[skip netlify]` を維持する。
+- 回復後、`[skip netlify]`をタイトルから取り除き、review済みの最終コミットをpushして、**実Deploy Previewを1回**ビルド・Smoke検証する。PRタイトルの変更だけではPreviewが起動しない。
+- `quality`と`netlify/ivmz-home/deploy-preview`が必須なので、**Previewを省略してmainだけマージすることは不可**。保護ルールを無効化したり、成功ステータスを偽造したりしない。
+- 実Previewの成功後、PR #163を`main`へ`[skip netlify]`なしでマージして、**Git連携によるProductionビルドを1回**確認する。単にNetlify UIの`Trigger deploy`を押すだけでは、GitHub main連動の正常化を証明できず、既存のGit-onlyリリース方針とも整合しない。
+- このリリースで必要なNetlifyビルドは、正常進行なら**Preview 1回 + Production 1回**。失敗時の再ビルドは必要性と残クレジットを再評価して判断する。
+- Production deploy `ready`・exact SHA一致の後にC〜G/Iの本番チェックを実施する。実データ書込みやDB Migrationは別承認とする。
 
 ## A. 11月15日より前：準備のみ
 
@@ -40,7 +50,7 @@
 - [ ] [B02] GitHub main/PR HEADのSHAを取得し、Review未解決0・CI quality/e2e-local successを確認する。
 - [ ] [B03] Netlify Production branch=`main`、GitHub連携有効、Auto publishing有効、Deploy lockなし、Git-based enforcement有効を確認する。
 - [ ] [B04] Netlify PreviewとProductionのDB Project Refが別で、Previewが本番DBに書き込まないことを証明する。シークレット実値をログへ出さない。
-- [ ] [B05] リリース対象がDB Migrationを含むか確認。**R0/R1はProduction DDL不要**、R2は下のHをすべて通す。
+- [ ] [B05] リリース対象がDB Migrationを含むか確認。**R0（FAQを含む）はProduction DDL不要**、R2は下のHをすべて通す。
 - [ ] [B06] `[skip netlify]`を除いた最終HEADのNetlify Deploy Previewが`ready`でSHA一致・plugin success・secret scan 0。
 - [ ] [B07] Preview Smoke：Payload公開API、Chromium/mobile WebKit、認可、ヘッダー、429レート制限の各結果を確認する。Previewの失敗を本番で試験して補わない。
 - [ ] [B08] Review済みPRを`main`へマージ（squashのメッセージにも`[skip netlify]`を入れない）。mainの統合CIが成功する。
@@ -51,7 +61,7 @@
 
 ## C. 本番公開直後：自動の**読み取り専用**Smoke
 
-**R0以降に実施。クレジット回復前に最新HEADが公開されていると誤認して実行しない。** 作業PC等でNode.js 24を用いる：
+**R0の本番公開後に実施。クレジット回復前に最新HEADが公開されていると誤認して実行しない。** 作業PC等でNode.js 24を用いる：
 
 ```bash
 node scripts/verify-production-readonly.mjs
@@ -108,7 +118,7 @@ node scripts/verify-production-readonly.mjs
 - [ ] [F11] Webhook URL・DB接続先・PAYLOAD_SECRET・AWSキーがクライアント/Logs/Issue/Artifactsに露出しない。
 - [ ] [F12] Preview/ProductionのSupabase ref/権限分離を再検証。既存の本番DBレコードに対するSQL更新は行わない。
 
-## G. R1：FAQ文言を反映した場合だけ確認する（PR #158）
+## G. R0：FAQ文言統合の確認（PR #158、今回必須）
 
 - [ ] [G01] FAQの選択肢は端末内処理。選択ボタンだけで外部AI送信が発生しない。
 - [ ] [G02] 外部AI有効時の注意文には送信/非保存/個人情報禁止が明記され、**公開チャットで提供元の固有名が表示されない**。
@@ -145,7 +155,7 @@ node scripts/verify-production-readonly.mjs
 
 | 項目 | 記入 |
 | --- | --- |
-| リリース単位 | R0 / R1 / R2 |
+| リリース単位 | R0（PR #162 + #158統合） / R2（Migration） |
 | 実施日・担当 | 未実施 |
 | 対象PR / GitHub main SHA | 未実施 |
 | CI実行ID・結果 | 未実施 |
@@ -157,6 +167,6 @@ node scripts/verify-production-readonly.mjs
 | 既知の不具合・保留・切り戻し判断 | 未実施 |
 | 公開承認・完了判断 | 未実施 |
 
-**判定：** A/Bのゲートは実PreviewとGit連携の公開に必要。C〜FとIは公開後の共通回帰、GはR1、HはR2にのみ適用。重大な権限漏えい・データ消失・Migration不一致・Production SHA不一致が発生したら、以後のリリースと破壊的操作を停止する。
+**判定：** A/Bのゲートは実PreviewとGit連携の公開に必要。C〜GとIはR0の公開後に確認し、HはR2のDB Migrationを含む別リリースにのみ適用。重大な権限漏えい・データ消失・Migration不一致・Production SHA不一致が発生したら、以後のリリースと破壊的操作を停止する。
 
 関連：[Issue #161](https://github.com/mizzz-ivr/ivmz-home/issues/161) ／ [Issue #98](https://github.com/mizzz-ivr/ivmz-home/issues/98) ／ [Issue #72](https://github.com/mizzz-ivr/ivmz-home/issues/72) ／ [Issue #133](https://github.com/mizzz-ivr/ivmz-home/issues/133) ／ [Netlify Credit Saving](./netlify-credit-saving.md) ／ [CMS Runbook](./cms-operational-runbook.md) ／ [Retention Policy](./contact-retention-policy.md)。
