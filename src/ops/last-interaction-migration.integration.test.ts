@@ -36,7 +36,19 @@ describe.skipIf(process.env.CONTACT_INTERACTION_MIGRATION_PROBE !== 'true')(
           WHERE table_schema = 'ivmz_home' AND table_name = 'contact_submissions'
             AND column_name = 'last_interaction_at'
         `)
-      expect(total(await columnExists())).toBe(0)
+      // The current main schema has no column; the forthcoming migration will add it.
+      // Keep this gate valid in both states so merging the migration cannot break main CI.
+      const columnsBefore = total(await columnExists())
+      expect([0, 1]).toContain(columnsBefore)
+      const nullableWithoutDefault = sql`
+          SELECT count(*)::integer AS total FROM information_schema.columns
+          WHERE table_schema = 'ivmz_home' AND table_name = 'contact_submissions'
+            AND column_name = 'last_interaction_at'
+            AND data_type = 'timestamp with time zone'
+            AND is_nullable = 'YES'
+            AND column_default IS NULL
+      `
+      if (columnsBefore === 1) expect(total(await db.execute(nullableWithoutDefault))).toBe(1)
 
       await expect(
         db.transaction(async (tx) => {
@@ -46,10 +58,13 @@ describe.skipIf(process.env.CONTACT_INTERACTION_MIGRATION_PROBE !== 'true')(
             VALUES ('probe', 'fixture', 'fixture@example.invalid', 'personal',
               'synthetic', 'fixture@example.invalid', 'ci-last-interaction-probe')
           `)
-          await tx.execute(sql`
-            ALTER TABLE "ivmz_home"."contact_submissions"
-            ADD COLUMN "last_interaction_at" timestamp(3) with time zone
-          `)
+          if (columnsBefore === 0) {
+            await tx.execute(sql`
+              ALTER TABLE "ivmz_home"."contact_submissions"
+              ADD COLUMN "last_interaction_at" timestamp(3) with time zone
+            `)
+          }
+          expect(total(await tx.execute(nullableWithoutDefault))).toBe(1)
           const unknown = await tx.execute(sql`
             SELECT count(*)::integer AS total FROM "ivmz_home"."contact_submissions"
             WHERE "request_id" = 'ci-last-interaction-probe' AND "last_interaction_at" IS NULL
@@ -79,6 +94,8 @@ describe.skipIf(process.env.CONTACT_INTERACTION_MIGRATION_PROBE !== 'true')(
               AND "last_interaction_at" = '2026-10-21T00:00:00.000Z'
           `)
           expect(total(recorded)).toBe(1)
+          // Explicit timestamp remains attached until the drop is executed.
+          // Existing columns must come back after the outer rollback.
           // The down DDL is technically executable, but destroys populated values.
           // Never run the down migration in production after writers are enabled.
           await tx.execute(sql`
@@ -89,7 +106,10 @@ describe.skipIf(process.env.CONTACT_INTERACTION_MIGRATION_PROBE !== 'true')(
         }),
       ).rejects.toBeInstanceOf(ExpectedRollback)
 
-      expect(total(await columnExists())).toBe(0)
+      // The entire transaction, including its DOWN rehearsal, must restore the
+      // original pre-migration or post-migration schema without losing any values.
+      expect(total(await columnExists())).toBe(columnsBefore)
+      if (columnsBefore === 1) expect(total(await db.execute(nullableWithoutDefault))).toBe(1)
       expect(
         total(
           await db.execute(sql`

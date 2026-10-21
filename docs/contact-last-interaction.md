@@ -38,3 +38,16 @@
 正常：新規・追記・実際の返信、履歴更新／異常：送信失敗、DB障害、認可なし、重複受信／境界：365日、UTC/JST、同時返信、未来日時、NULL／回帰：メモ・ステータス・SES通知・既存APIの集計と削除停止を検証する。実際のイベントwriter、正式Migration、削除判定変更のテストと本番移行は**未対応**。
 
 参照：[保持ポリシー](./contact-retention-policy.md)／[Issue #98](https://github.com/mizzz-ivr/ivmz-home/issues/98)。
+
+
+## 2026-10-21 実環境の読み取り専用確認
+
+- Supabase `ivmz-home-preview`（Preview用）：`last_interaction_at` はすでに `timestamptz NULL`、defaultなしで存在し、RLSは有効。Supabase migration履歴にも追加実施の記録がある。
+- Supabase `ivrm-core`（Production用）：当該列は**未追加**。既存問い合わせがあるため、空DBとは扱わない。
+- 両プロジェクトは別project refとして存在する。ただし**接続secretの値そのものと権限の完全分離・Netlify本番ランタイム接続先は未検証**。
+- Supabase組織はFreeプラン。標準の自動DBバックアップ/復元は本番の安全策として確認できていない。**取得物を守れる論理バックアップ、オフサイト保管、復元テストの確証がない状態で本番Migrationを実行しない**。
+- Draft [PR #157](https://github.com/mizzz-ivr/ivmz-home/pull/157) の実装を公開する場合は、Production側に列を**先行移行・検証**してからアプリコードをマージする。現行の列未追加状態では公開しない。
+- PR #159のCI移行試験は列なしの状態だけを想定していたため、今回、列が**存在しない場合も既存の場合も安全に試験できる**よう更新。両パターンで試験レコードとDDLのトランザクションROLLBACK後の復元を確認する。正式Migrationが含まれるPRでのCI再実行が引き続き必要。
+- NetlifyのProductionはPR #159マージ後も旧コミットのままであり、GitHub/main一致の本番公開を確認できていない。自動ビルド・自動公開設定とDeploy履歴を確認する。公開状態とMigration状態を混同しない。
+
+**解除条件：** (1)復元可能なバックアップを確保し隔離環境で復元実証、(2)実接続先を検証、(3)Preview migration/CI・E2E成功、(4)Productionで安全な追加型Migrationを先行適用し既存値/列/RLSをread-only確認、(5)本番デプロイのSHA一致と動作検証。未達の場合は #157 Draftを維持する。
