@@ -36,7 +36,7 @@ function requester(overrides = {}) {
   }
 }
 
-test('all release probes are GET-only, unauthenticated, same-origin and do not follow redirects', async () => {
+test('all probes use anonymous GET without redirect following', async () => {
   const { observed, request } = requester()
   const results = await verifyProductionReadOnly({ request })
   assert.equal(results.length, publicReleaseProbes.length)
@@ -68,7 +68,7 @@ test('reports 500 without printing a response body', async () => {
   )
 })
 
-test('rejects cross-origin redirects from admin and unexpected redirects on public pages', async () => {
+test('rejects admin cross-origin and unexpected public redirects', async () => {
   const external = requester({
     '/admin': { status: 302, headers: { location: 'https://attacker.invalid/steal' } },
   })
