@@ -1,0 +1,111 @@
+/* Decorative SVG vocabulary for the Digital × Entertainment Hero.
+   The original avatar and primary content remain independent from this graphic. */
+.signal-play-art {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 54%;
+  width: 110%;
+  max-width: none;
+  height: auto;
+  overflow: visible;
+  pointer-events: none;
+  user-select: none;
+  transform: translate(-50%, -50%);
+}
+
+.signal-play-trace {
+  stroke: var(--color-primary-soft);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 14 11;
+  opacity: 0.78;
+}
+
+.signal-play-guide {
+  stroke: var(--color-line-strong);
+  stroke-width: 3;
+  stroke-linejoin: round;
+}
+
+.signal-play-ink {
+  stroke: var(--color-pink);
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.signal-play-tab rect {
+  fill: var(--color-pop, #ffd84a);
+  stroke: var(--color-pop-ink, #1a1230);
+  stroke-width: 3;
+}
+
+.signal-play-tab path,
+.signal-play-tab circle {
+  stroke: var(--color-pop-ink, #1a1230);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.signal-play-tag rect {
+  fill: var(--color-bg-elevated);
+  stroke: var(--color-cyan);
+  stroke-width: 3;
+}
+
+.signal-play-tag path {
+  stroke: var(--color-cyan);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.signal-play-accent {
+  stroke: var(--color-pop, #ffd84a);
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+.signal-play-stitches {
+  stroke: var(--color-primary-soft);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.signal-play-highlight {
+  fill: var(--color-pink);
+  stroke: var(--color-bg);
+  stroke-width: 3;
+}
+
+.signal-play-dot {
+  fill: var(--color-pop, #ffd84a);
+  stroke: var(--color-pop-ink, #1a1230);
+  stroke-width: 3;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .signal-play-trace {
+    animation: signal-play-pulse 22s linear infinite;
+  }
+
+  @keyframes signal-play-pulse {
+    to {
+      stroke-dashoffset: -275;
+    }
+  }
+}
+
+@media (max-width: 640px) {
+  .signal-play-art {
+    left: 52%;
+    width: 104%;
+  }
+}
+
+@media print {
+  .signal-play-art {
+    display: none;
+  }
+}
