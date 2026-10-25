@@ -13,6 +13,7 @@ import './chat.css'
 import './errors.css'
 import './delight.css'
 import { StructuredData } from '@/components/seo/StructuredData'
+import { AnalyticsConsent } from '@/components/site/AnalyticsConsent'
 import { Delights } from '@/components/site/Delights'
 import { SiteEnhancements } from '@/components/site/SiteEnhancements'
 import { SignatureIntro, SiteHeader } from '@/components/site/SiteExperience'
@@ -94,6 +95,7 @@ export default function SiteLayout({ children }: Readonly<{ children: React.Reac
         <SiteHeader />
         <SiteEnhancements />
         <Delights />
+        <AnalyticsConsent />
         {children}
         <SiteFooter />
       </body>
