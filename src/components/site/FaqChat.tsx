@@ -32,10 +32,16 @@ const prefersReducedMotion = () =>
 const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
 
 /** Opens the chat from anywhere on the page (the FAQ section uses this). */
-export function ChatOpenButton({ children }: { children: React.ReactNode }) {
+export function ChatOpenButton({
+  children,
+  variant = 'primary',
+}: {
+  children: React.ReactNode
+  variant?: 'primary' | 'secondary'
+}) {
   return (
     <button
-      className="action-link action-primary"
+      className={variant === 'primary' ? 'action-link action-primary' : 'action-link'}
       type="button"
       onClick={() => window.dispatchEvent(new Event(OPEN_CHAT_EVENT))}
     >
@@ -47,6 +53,7 @@ export function ChatOpenButton({ children }: { children: React.ReactNode }) {
 export function FaqChat() {
   // Learned at runtime: the home page is static, so build-time env would not reflect the setup.
   const [aiEnabled, setAiEnabled] = useState<boolean | null>(null)
+  const [aiUnavailable, setAiUnavailable] = useState(false)
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
   const [typing, setTyping] = useState(false)
@@ -193,6 +200,7 @@ export function FaqChat() {
           const answer = await askAi(text)
           setTyping(false)
           if (answer) {
+            setAiUnavailable(false)
             push({
               link: contactLink,
               role: 'bot',
@@ -201,6 +209,7 @@ export function FaqChat() {
             })
             return
           }
+          setAiUnavailable(true)
         }
         await reply({
           link: contactLink,
@@ -249,9 +258,13 @@ export function FaqChat() {
           </span>
           <div>
             <h2 id={titleId}>FAQ Assistant</h2>
-            <p>
+            <p className={aiUnavailable ? 'chat-connection-unavailable' : undefined}>
               <i aria-hidden="true" />
-              {aiEnabled === true ? 'FAQ + AI で回答します' : 'よくある質問にお答えします'}
+              {aiUnavailable
+                ? 'AI応答を取得できませんでした。FAQでご案内します'
+                : aiEnabled === true
+                  ? 'FAQ + AI で回答します'
+                  : 'よくある質問にお答えします'}
             </p>
           </div>
           <button
@@ -341,11 +354,13 @@ export function FaqChat() {
           </button>
         </form>
         <p className="chat-note">
-          {aiEnabled === true
-            ? 'ボタンの質問はこの端末の中だけで処理されます。自由入力でFAQにない内容は、AI（Cloudflare Workers AI）に送って回答を作ります。送信内容は当サイトでは保存しません。個人情報は入力しないでください。'
-            : aiEnabled === false
-              ? '入力した内容はこの端末の中だけで処理され、送信も保存もされません。'
-              : 'ボタンの質問はこの端末の中だけで処理されます。自由入力でFAQにない内容は、AI回答が有効な場合に限り、AI（Cloudflare Workers AI）に送られます。個人情報は入力しないでください。'}
+          {aiUnavailable
+            ? 'AI回答を取得できなかったため、FAQの案内に切り替えました。自由入力はAIへ送られる場合があります。個人情報は入力しないでください。'
+            : aiEnabled === true
+              ? 'ボタンの質問はこの端末の中だけで処理されます。自由入力でFAQにない内容は、AIに送って回答を作ります。送信内容は当サイトでは保存しません。個人情報は入力しないでください。'
+              : aiEnabled === false
+                ? '入力した内容はこの端末の中だけで処理され、送信も保存もされません。'
+                : 'ボタンの質問はこの端末の中だけで処理されます。自由入力でFAQにない内容は、AI回答が有効な場合に限り、AIに送られます。個人情報は入力しないでください。'}
         </p>
       </section>
     </>
