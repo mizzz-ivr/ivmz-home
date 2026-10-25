@@ -1,5 +1,7 @@
 import type { ServerProps } from 'payload'
 
+import { AnalyticsOverview } from '@/components/admin/AnalyticsOverview'
+
 import { readOpsConfig, type OpsConfig } from '@/ops/config'
 import { resolveRetentionDays } from '@/ops/retention'
 import { collectOpsStats, deriveHealth, type OpsStats } from '@/ops/stats'
@@ -217,6 +219,7 @@ export async function OpsDashboard({ payload, user }: ServerProps) {
           </li>
         ))}
       </ul>
+      <AnalyticsOverview />
     </section>
   )
 }
