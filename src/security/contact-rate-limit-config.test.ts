@@ -3,9 +3,9 @@ import { describe, expect, it, vi } from 'vitest'
 import contactRateLimit, { config } from '../../netlify/edge-functions/contact-rate-limit'
 
 describe('contact rate-limit edge function', () => {
-  it('applies a narrow rate limit to the contact endpoint', () => {
+  it('shares a narrow POST limit between contact and chat on the Free plan', () => {
     expect(config).toEqual({
-      path: '/api/contact',
+      path: ['/api/contact', '/api/chat'],
       method: 'POST',
       rateLimit: {
         action: 'rate_limit',
