@@ -14,6 +14,7 @@ import './errors.css'
 import './delight.css'
 import { StructuredData } from '@/components/seo/StructuredData'
 import { Delights } from '@/components/site/Delights'
+import { PointerPet } from '@/components/site/PointerPet'
 import { SiteEnhancements } from '@/components/site/SiteEnhancements'
 import { SignatureIntro, SiteHeader } from '@/components/site/SiteExperience'
 import { SiteFooter } from '@/components/site/SiteFooter'
@@ -94,6 +95,7 @@ export default function SiteLayout({ children }: Readonly<{ children: React.Reac
         <SiteHeader />
         <SiteEnhancements />
         <Delights />
+        <PointerPet />
         {children}
         <SiteFooter />
       </body>

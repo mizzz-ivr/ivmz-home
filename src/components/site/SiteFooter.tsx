@@ -1,3 +1,5 @@
+import { PointerPetPreference } from '@/components/site/PointerPet'
+
 const footerNavigation = [
   ['HOME', '/'],
   ['ABOUT', '/about'],
@@ -39,6 +41,7 @@ export function SiteFooter() {
             <span aria-hidden="true"> / </span>
             <a href="/legal/terms">TERMS</a>
           </span>
+          <PointerPetPreference />
           <a href="#main-content">BACK TO TOP ↑</a>
         </div>
       </div>
