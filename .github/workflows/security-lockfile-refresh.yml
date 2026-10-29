@@ -1,0 +1,29 @@
+# Temporary branch-only reproducible lock refresh. No secrets, writes, deployments.
+name: Security Lockfile Refresh (Temporary)
+on:
+  push:
+    branches:
+      - security/nextjs-16-4-3-p0-20261029
+permissions:
+  contents: read
+jobs:
+  regenerate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.22.1'
+      - name: Generate lockfile with no lifecycle scripts
+        run: pnpm install --lockfile-only --no-frozen-lockfile --ignore-scripts
+      - name: Export lockfile to CI log (no credentials)
+        run: |
+          echo '===SECURITY_LOCKFILE_BEGIN==='
+          cat pnpm-lock.yaml
+          echo '===SECURITY_LOCKFILE_END==='
