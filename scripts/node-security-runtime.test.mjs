@@ -6,7 +6,9 @@ const version = "24.22.2";
 const root = new URL("../", import.meta.url);
 
 test("project requires the patched supported Node 24 line", () => {
-  const manifest = JSON.parse(readFileSync(new URL("package.json", root), "utf8"));
+  const manifest = JSON.parse(
+    readFileSync(new URL("package.json", root), "utf8"),
+  );
   const pinned = readFileSync(new URL(".node-version", root), "utf8").trim();
   assert.equal(manifest.engines.node, "^" + version);
   assert.equal(pinned, version);
