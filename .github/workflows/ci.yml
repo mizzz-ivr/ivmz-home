@@ -42,9 +42,11 @@ jobs:
           run_install: false
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version-file: .node-version
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Verify Node.js security patch level
+        run: node --test scripts/node-security-runtime.test.mjs
       - run: pnpm format:check
       - run: pnpm lint
       - run: pnpm typecheck
@@ -106,7 +108,7 @@ jobs:
           run_install: false
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version-file: .node-version
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm db:migrate
