@@ -35,22 +35,22 @@ meanings; tokens.css extends them rather than renaming.
 
 ## Colour
 
-| Token | Dark | Light | Use |
-| --- | --- | --- | --- |
-| `--color-bg` | `#0d0a1a` | `#faf8ff` | page background |
-| `--color-surface` | `#171130` | `#ffffff` | cards, panels |
-| `--color-surface-2` | `#1f1842` | `#f1edff` | raised / inset areas |
-| `--color-ink` | `#f2efff` | `#1a1230` | primary text |
-| `--color-ink-muted` | `#a79fd0` | `#5c5480` | secondary text |
-| `--color-line` | `#342a63` | `#ddd5f5` | borders, grid lines |
-| `--color-primary` | `#8b7bff` | `#6c4dff` | violet signal (primary actions, caret) |
-| `--color-pop` | `#ffd84a` | `#ffd23a` | pop yellow (existing token) |
-| `--color-pop-ink` | `#1a1230` | `#1a1230` | text on pop yellow |
-| `--color-signal-cyan` | `#3fd6e8` | `#0e7f96` | live / info signal |
-| `--color-signal-pink` | `#ff7ac1` | `#d63384` | game / accent signal |
-| `--color-ok` | `#4ade80` | `#178a4c` | success, live dot |
-| `--color-warn` | `#ffd84a` | `#9a7b00` | warning |
-| `--color-danger` | `#ff6b6b` | `#c92a2a` | error |
+| Token                 | Dark      | Light     | Use                                    |
+| --------------------- | --------- | --------- | -------------------------------------- |
+| `--color-bg`          | `#0d0a1a` | `#faf8ff` | page background                        |
+| `--color-surface`     | `#171130` | `#ffffff` | cards, panels                          |
+| `--color-surface-2`   | `#1f1842` | `#f1edff` | raised / inset areas                   |
+| `--color-ink`         | `#f2efff` | `#1a1230` | primary text                           |
+| `--color-ink-muted`   | `#a79fd0` | `#5c5480` | secondary text                         |
+| `--color-line`        | `#342a63` | `#ddd5f5` | borders, grid lines                    |
+| `--color-primary`     | `#8b7bff` | `#6c4dff` | violet signal (primary actions, caret) |
+| `--color-pop`         | `#ffd84a` | `#ffd23a` | pop yellow (existing token)            |
+| `--color-pop-ink`     | `#1a1230` | `#1a1230` | text on pop yellow                     |
+| `--color-signal-cyan` | `#3fd6e8` | `#0e7f96` | live / info signal                     |
+| `--color-signal-pink` | `#ff7ac1` | `#d63384` | game / accent signal                   |
+| `--color-ok`          | `#4ade80` | `#178a4c` | success, live dot                      |
+| `--color-warn`        | `#ffd84a` | `#9a7b00` | warning                                |
+| `--color-danger`      | `#ff6b6b` | `#c92a2a` | error                                  |
 
 Heatmap scale (contribution graph, Issue #173):
 `--heat-0` (empty) through `--heat-4` reuse `--color-line`,
@@ -58,13 +58,13 @@ Heatmap scale (contribution graph, Issue #173):
 
 ## Typography
 
-| Token | Value | Use |
-| --- | --- | --- |
-| `--font-sans` | system sans + `"Hiragino Kaku Gothic ProN"`, `"Noto Sans JP"` | body, headings |
-| `--font-mono` | `ui-monospace`, `"JetBrains Mono"`, `"SFMono-Regular"`, Consolas | labels, ticker, code, numbers |
-| `--text-xs` … `--text-display` | 12 / 14 / 16 / 20 / 28 / 40 / 56 px scale | fixed steps, no arbitrary sizes |
-| `--leading-body` / `--leading-tight` | 1.7 / 1.25 | body / headings |
-| `--tracking-label` | 0.12em | mono section labels (uppercase) |
+| Token                                | Value                                                            | Use                             |
+| ------------------------------------ | ---------------------------------------------------------------- | ------------------------------- |
+| `--font-sans`                        | system sans + `"Hiragino Kaku Gothic ProN"`, `"Noto Sans JP"`    | body, headings                  |
+| `--font-mono`                        | `ui-monospace`, `"JetBrains Mono"`, `"SFMono-Regular"`, Consolas | labels, ticker, code, numbers   |
+| `--text-xs` … `--text-display`       | 12 / 14 / 16 / 20 / 28 / 40 / 56 px scale                        | fixed steps, no arbitrary sizes |
+| `--leading-body` / `--leading-tight` | 1.7 / 1.25                                                       | body / headings                 |
+| `--tracking-label`                   | 0.12em                                                           | mono section labels (uppercase) |
 
 ## Spacing, radius, borders, shadows
 
@@ -82,14 +82,14 @@ Heatmap scale (contribution graph, Issue #173):
 
 ## Motion
 
-| Token | Value | Use |
-| --- | --- | --- |
-| `--ease-signal` | existing easing (reveals, hovers) | default |
-| `--dur-fast` | 120ms | hover, press |
-| `--dur-mid` | 320ms | reveals, palette open |
-| `--dur-slow` | 520ms | staggered group reveals |
-| `--ticker-dur` | 40s linear loop | activity ticker (pause on hover) |
-| `--caret-dur` | 1.1s steps(1) | blinking caret / live dot pulse |
+| Token           | Value                             | Use                              |
+| --------------- | --------------------------------- | -------------------------------- |
+| `--ease-signal` | existing easing (reveals, hovers) | default                          |
+| `--dur-fast`    | 120ms                             | hover, press                     |
+| `--dur-mid`     | 320ms                             | reveals, palette open            |
+| `--dur-slow`    | 520ms                             | staggered group reveals          |
+| `--ticker-dur`  | 40s linear loop                   | activity ticker (pause on hover) |
+| `--caret-dur`   | 1.1s steps(1)                     | blinking caret / live dot pulse  |
 
 Rules: transforms and opacity only; stagger step 70ms (as in digital.css);
 ticker and typing stop under reduced motion and show full content.

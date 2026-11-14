@@ -29,10 +29,8 @@
 
   /* Typography */
   --font-sans:
-    system-ui, -apple-system, 'Segoe UI', 'Hiragino Kaku Gothic ProN',
-    'Noto Sans JP', sans-serif;
-  --font-mono:
-    ui-monospace, 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+    system-ui, -apple-system, 'Segoe UI', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+  --font-mono: ui-monospace, 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
   --text-xs: 12px;
   --text-s: 14px;
   --text-m: 16px;
