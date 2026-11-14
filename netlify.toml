@@ -1,5 +1,6 @@
 [context.production]
   command = "node scripts/assert-production-database.mjs && pnpm build"
+  ignore = "node ./scripts/netlify-ignore-production.mjs"
 
 [context.production.environment]
   PAYLOAD_PREVIEW_DATABASE_PROJECT_REF = "dzdgbkjmomvmexcbjyin"
