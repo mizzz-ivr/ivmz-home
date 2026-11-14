@@ -1,0 +1,121 @@
+/* Design tokens v1 — Digital Pop (Issue #176).
+   Source of truth: docs/design-tokens.md. Load before pop.css / digital.css.
+   Extends the existing variables (--color-pop, --color-pop-ink, --pop-shadow,
+   --color-primary, --ease-signal); does not rename them. */
+
+:root {
+  /* Colour — dark (default) */
+  --color-bg: #0d0a1a;
+  --color-surface: #171130;
+  --color-surface-2: #1f1842;
+  --color-ink: #f2efff;
+  --color-ink-muted: #a79fd0;
+  --color-line: #342a63;
+  --color-primary: #8b7bff;
+  --color-pop: #ffd84a;
+  --color-pop-ink: #1a1230;
+  --color-signal-cyan: #3fd6e8;
+  --color-signal-pink: #ff7ac1;
+  --color-ok: #4ade80;
+  --color-warn: #ffd84a;
+  --color-danger: #ff6b6b;
+
+  /* Heatmap (Issue #173) */
+  --heat-0: var(--color-line);
+  --heat-1: color-mix(in srgb, var(--color-primary) 35%, transparent);
+  --heat-2: color-mix(in srgb, var(--color-primary) 65%, transparent);
+  --heat-3: var(--color-primary);
+  --heat-4: var(--color-pop);
+
+  /* Typography */
+  --font-sans:
+    system-ui, -apple-system, 'Segoe UI', 'Hiragino Kaku Gothic ProN',
+    'Noto Sans JP', sans-serif;
+  --font-mono:
+    ui-monospace, 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+  --text-xs: 12px;
+  --text-s: 14px;
+  --text-m: 16px;
+  --text-l: 20px;
+  --text-xl: 28px;
+  --text-2xl: 40px;
+  --text-display: 56px;
+  --leading-body: 1.7;
+  --leading-tight: 1.25;
+  --tracking-label: 0.12em;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+  --space-10: 128px;
+
+  /* Radius / borders / shadows */
+  --radius-s: 6px;
+  --radius-m: 12px;
+  --radius-l: 20px;
+  --radius-pill: 999px;
+  --border-1: 1px solid var(--color-line);
+  --border-pop: 2px solid var(--color-ink);
+  --pop-shadow: 4px 4px 0 color-mix(in srgb, var(--color-pop) 85%, transparent);
+  --shadow-raise: 0 16px 40px rgb(0 0 0 / 0.45);
+
+  /* Motion */
+  --ease-signal: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast: 120ms;
+  --dur-mid: 320ms;
+  --dur-slow: 520ms;
+  --ticker-dur: 40s;
+  --caret-dur: 1.1s;
+
+  /* Layout */
+  --grid-dot: radial-gradient(var(--color-line) 1px, transparent 1.5px);
+  --grid-dot-size: 24px;
+  --z-header: 50;
+  --z-palette: 100;
+  --z-toast: 110;
+}
+
+:root[data-theme='light'] {
+  --color-bg: #faf8ff;
+  --color-surface: #ffffff;
+  --color-surface-2: #f1edff;
+  --color-ink: #1a1230;
+  --color-ink-muted: #5c5480;
+  --color-line: #ddd5f5;
+  --color-primary: #6c4dff;
+  --color-pop: #ffd23a;
+  --color-signal-cyan: #0e7f96;
+  --color-signal-pink: #d63384;
+  --color-ok: #178a4c;
+  --color-warn: #9a7b00;
+  --color-danger: #c92a2a;
+  --pop-shadow: 4px 4px 0 var(--color-pop-ink);
+  --shadow-raise: 0 16px 40px rgb(26 18 48 / 0.18);
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    --color-bg: #faf8ff;
+    --color-surface: #ffffff;
+    --color-surface-2: #f1edff;
+    --color-ink: #1a1230;
+    --color-ink-muted: #5c5480;
+    --color-line: #ddd5f5;
+    --color-primary: #6c4dff;
+    --color-pop: #ffd23a;
+    --color-signal-cyan: #0e7f96;
+    --color-signal-pink: #d63384;
+    --color-ok: #178a4c;
+    --color-warn: #9a7b00;
+    --color-danger: #c92a2a;
+    --pop-shadow: 4px 4px 0 var(--color-pop-ink);
+    --shadow-raise: 0 16px 40px rgb(26 18 48 / 0.18);
+  }
+}
