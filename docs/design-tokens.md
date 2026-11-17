@@ -55,9 +55,10 @@ meanings; tokens.css extends them rather than renaming.
 | `--color-warn`        | `#ffd84a` | `#9a7b00` | warning                                |
 | `--color-danger`      | `#ff6b6b` | `#c92a2a` | error                                  |
 | `--color-selection`   | `rgba(156, 108, 255, 0.14)` | `rgba(109, 59, 216, 0.1)` | selection / hover wash (carried over, see note) |
+| `--color-bg-elevated` | `#10101d` | `#e9e4f2` | elevated surface (carried over, see note) |
 
 Note (2026-11-17, S2): `--color-ink-soft`, `--color-line-strong`,
-`--color-primary-soft` and `--color-selection` are carried over from the
+`--color-primary-soft`, `--color-selection` and `--color-bg-elevated` (added in S3) are carried over from the
 legacy globals.css palette with their values unchanged, so page CSS can
 migrate to token names without a visual change. Retuning them to the v1
 palette is a separate, deliberate step.

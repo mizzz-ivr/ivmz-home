@@ -23,6 +23,7 @@
   --color-warn: #ffd84a;
   --color-danger: #ff6b6b;
   --color-selection: rgba(156, 108, 255, 0.14);
+  --color-bg-elevated: #10101d;
 
   /* Heatmap (Issue #173) */
   --heat-0: var(--color-line);
@@ -102,6 +103,7 @@
   --color-warn: #9a7b00;
   --color-danger: #c92a2a;
   --color-selection: rgba(109, 59, 216, 0.1);
+  --color-bg-elevated: #e9e4f2;
   --pop-shadow: 4px 4px 0 var(--color-pop-ink);
   --shadow-raise: 0 16px 40px rgb(26 18 48 / 0.18);
 }
@@ -125,6 +127,7 @@
     --color-warn: #9a7b00;
     --color-danger: #c92a2a;
     --color-selection: rgba(109, 59, 216, 0.1);
+    --color-bg-elevated: #e9e4f2;
     --pop-shadow: 4px 4px 0 var(--color-pop-ink);
     --shadow-raise: 0 16px 40px rgb(26 18 48 / 0.18);
   }
