@@ -43,7 +43,7 @@
   letter-spacing: 0.16em;
 }
 .latest-column > header a {
-  color: var(--color-text-soft);
+  color: var(--color-ink-soft);
   font-size: 0.8rem;
   text-decoration: none;
 }
@@ -62,7 +62,7 @@
   border-top: 1px solid var(--color-line);
 }
 .latest-column li small {
-  color: var(--color-cyan);
+  color: var(--color-signal-cyan);
   font: 800 0.62rem/1 var(--font-mono);
   letter-spacing: 0.14em;
 }
@@ -81,7 +81,7 @@
 }
 .latest-column li p {
   margin: 0;
-  color: var(--color-muted);
+  color: var(--color-ink-muted);
   font-size: 0.88rem;
   line-height: 1.8;
 }
@@ -103,13 +103,13 @@
   padding: 8px 14px;
   border: 1px solid var(--color-line-strong);
   border-radius: 999px;
-  color: var(--color-text);
+  color: var(--color-ink);
   font-size: 0.82rem;
   font-weight: 700;
   text-decoration: none;
   transition:
-    background var(--duration-fast) ease,
-    border-color var(--duration-fast) ease;
+    background var(--dur-fast) ease,
+    border-color var(--dur-fast) ease;
 }
 .contact-routes .social-row a:hover,
 .contact-routes .social-row a:focus-visible {
@@ -118,7 +118,7 @@
   background: var(--color-selection);
 }
 .contact-routes .social-row small {
-  color: var(--color-muted);
+  color: var(--color-ink-muted);
   font: 650 0.66rem/1 var(--font-mono);
 }
 
@@ -218,8 +218,8 @@ html.ivmz-signature-seen .hero-name-chars > span {
   background: conic-gradient(
     from 0deg,
     var(--color-primary),
-    var(--color-cyan),
-    var(--color-pink),
+    var(--color-signal-cyan),
+    var(--color-signal-pink),
     var(--color-pop, #ffd84a),
     var(--color-primary)
   );
@@ -275,7 +275,7 @@ html.ivmz-signature-seen .hero-name-chars > span {
 .sat-c {
   left: 12%;
   top: 84%;
-  color: var(--color-pink);
+  color: var(--color-signal-pink);
 }
 @keyframes orbit-spin {
   to {
@@ -388,7 +388,7 @@ html.ivmz-signature-seen .hero-name-chars > span {
   bottom: 8px;
   width: 3px;
   border-radius: 3px;
-  background: linear-gradient(var(--color-primary), var(--color-cyan));
+  background: linear-gradient(var(--color-primary), var(--color-signal-cyan));
   transform: scaleY(0);
   transform-origin: top;
   transition: transform 520ms var(--ease-signal);
@@ -424,7 +424,7 @@ html.ivmz-signature-seen .hero-name-chars > span {
     color 300ms ease;
 }
 .capability-lines article:hover .capability-icon {
-  color: var(--color-text);
+  color: var(--color-ink);
   transform: translateY(-3px) rotate(-6deg) scale(1.08);
 }
 
@@ -476,7 +476,7 @@ html.ivmz-signature-seen .hero-name-chars > span {
     ),
     radial-gradient(
       36% 46% at 76% 58%,
-      color-mix(in srgb, var(--color-pink) 18%, transparent),
+      color-mix(in srgb, var(--color-signal-pink) 18%, transparent),
       transparent 70%
     );
   filter: blur(46px);
