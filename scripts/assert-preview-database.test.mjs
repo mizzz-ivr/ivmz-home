@@ -2,38 +2,36 @@ import { describe, expect, it } from 'vitest'
 
 import { assertPreviewDatabaseTarget } from './assert-preview-database.mjs'
 
-const PREVIEW_REF = 'dzdgbkjmomvmexcbjyin'
-const PRODUCTION_REF = 'drazbrcqnjxjuygfxmlz'
+const HOST = '13.197.31.66'
+const PREVIEW_DB = 'ivmz_home_preview'
+const PROD_DB = 'ivmz_home'
 
 function baseEnv(overrides = {}) {
   return {
     CONTEXT: 'deploy-preview',
-    DATABASE_URL: `postgresql://postgres:secret@db.${PREVIEW_REF}.supabase.co:5432/postgres`,
-    PAYLOAD_PREVIEW_DATABASE_PROJECT_REF: PREVIEW_REF,
-    PAYLOAD_PRODUCTION_DATABASE_PROJECT_REF: PRODUCTION_REF,
+    DATABASE_URL: `postgresql://ivmz_preview_runtime:secret@${HOST}:5432/${PREVIEW_DB}?sslmode=no-verify`,
+    PAYLOAD_PREVIEW_DATABASE_HOST: HOST,
+    PAYLOAD_PREVIEW_DATABASE_NAME: PREVIEW_DB,
+    PAYLOAD_PRODUCTION_DATABASE_HOST: HOST,
+    PAYLOAD_PRODUCTION_DATABASE_NAME: PROD_DB,
     ...overrides,
   }
 }
 
 describe('assertPreviewDatabaseTarget', () => {
-  it('accepts the Preview project direct connection for deploy previews', () => {
+  it('accepts the Preview database connection for deploy previews', () => {
     expect(assertPreviewDatabaseTarget(baseEnv())).toEqual({
       context: 'deploy-preview',
-      projectRef: PREVIEW_REF,
+      host: HOST,
+      database: PREVIEW_DB,
     })
   })
 
-  it('accepts the Preview project pooler connection for branch deploys', () => {
-    expect(
-      assertPreviewDatabaseTarget(
-        baseEnv({
-          CONTEXT: 'branch-deploy',
-          DATABASE_URL: `postgresql://postgres.${PREVIEW_REF}:secret@aws-1-ap-northeast-1.pooler.supabase.com:5432/postgres`,
-        }),
-      ),
-    ).toEqual({
+  it('accepts the Preview database connection for branch deploys', () => {
+    expect(assertPreviewDatabaseTarget(baseEnv({ CONTEXT: 'branch-deploy' }))).toEqual({
       context: 'branch-deploy',
-      projectRef: PREVIEW_REF,
+      host: HOST,
+      database: PREVIEW_DB,
     })
   })
 
@@ -43,25 +41,24 @@ describe('assertPreviewDatabaseTarget', () => {
     )
   })
 
-  it('rejects the Production project even in a preview context', () => {
+  it('rejects the Production database even in a preview context', () => {
     expect(() =>
       assertPreviewDatabaseTarget(
         baseEnv({
-          DATABASE_URL: `postgresql://postgres:secret@db.${PRODUCTION_REF}.supabase.co:5432/postgres`,
+          DATABASE_URL: `postgresql://ivmz_runtime:secret@${HOST}:5432/${PROD_DB}?sslmode=no-verify`,
         }),
       ),
-    ).toThrow('refusing to migrate the Production Supabase project')
+    ).toThrow('refusing to migrate the Production database')
   })
 
-  it('rejects another Supabase project', () => {
+  it('rejects another database on the same host', () => {
     expect(() =>
       assertPreviewDatabaseTarget(
         baseEnv({
-          DATABASE_URL:
-            'postgresql://postgres:secret@db.aaaaaaaaaaaaaaaaaaaa.supabase.co:5432/postgres',
+          DATABASE_URL: `postgresql://ivmz_preview_runtime:secret@${HOST}:5432/ivmz_other`,
         }),
       ),
-    ).toThrow('DATABASE_URL does not target the configured Preview Supabase project')
+    ).toThrow('DATABASE_URL does not target the configured Preview database')
   })
 
   it('rejects a missing database URL without exposing a secret', () => {
@@ -70,44 +67,39 @@ describe('assertPreviewDatabaseTarget', () => {
     )
   })
 
-  it('requires valid, distinct project references for every preview deploy', () => {
+  it('requires valid, distinct database targets for every preview deploy', () => {
     for (const overrides of [
-      { PAYLOAD_PRODUCTION_DATABASE_PROJECT_REF: '' },
-      { PAYLOAD_PREVIEW_DATABASE_PROJECT_REF: '' },
-      { PAYLOAD_PREVIEW_DATABASE_PROJECT_REF: 'short' },
-      { PAYLOAD_PRODUCTION_DATABASE_PROJECT_REF: 'short' },
-      { PAYLOAD_PRODUCTION_DATABASE_PROJECT_REF: PREVIEW_REF },
-      { PAYLOAD_PREVIEW_DATABASE_PROJECT_REF: PRODUCTION_REF },
-      { PAYLOAD_PRODUCTION_DATABASE_PROJECT_REF: 'malformed-project-id!' },
+      { PAYLOAD_PRODUCTION_DATABASE_HOST: '' },
+      { PAYLOAD_PREVIEW_DATABASE_HOST: '' },
+      { PAYLOAD_PREVIEW_DATABASE_NAME: '' },
+      { PAYLOAD_PREVIEW_DATABASE_NAME: 'malformed-name!' },
+      { PAYLOAD_PRODUCTION_DATABASE_NAME: PREVIEW_DB },
     ]) {
       expect(() => assertPreviewDatabaseTarget(baseEnv(overrides))).toThrow(
-        'Preview and Production project references must be valid and distinct',
+        'Preview and Production database targets must be valid and distinct',
       )
     }
   })
 
-  it('rejects production pooler connections and disguised connection targets', () => {
+  it('rejects disguised connection targets and invalid protocols', () => {
     for (const databaseUrl of [
-      `postgresql://postgres.${PRODUCTION_REF}:secret@aws-1.pooler.supabase.com/postgres`,
-      `postgresql://postgres:secret@db.${PREVIEW_REF}.supabase.co.attacker.invalid/postgres`,
-      `postgresql://postgres:secret@aws-1.pooler.supabase.com.attacker.invalid/postgres`,
-      'postgresql://postgres.other:secret@aws-1.pooler.supabase.com/postgres',
-      `https://db.${PREVIEW_REF}.supabase.co/postgres`,
+      `postgresql://ivmz_preview_runtime:secret@${HOST}.attacker.invalid:5432/${PREVIEW_DB}`,
+      `postgresql://ivmz_preview_runtime:secret@203.0.113.10:5432/${PREVIEW_DB}`,
+      `https://${HOST}:5432/${PREVIEW_DB}`,
     ]) {
       expect(() => assertPreviewDatabaseTarget(baseEnv({ DATABASE_URL: databaseUrl }))).toThrow()
     }
   })
 
-  it('rejects malformed pooler usernames without exposing credentials', () => {
+  it('rejects malformed URLs without exposing credentials', () => {
     const secret = 'NeverLeakCredentialsOrTokens'
-    const databaseUrl = `postgresql://%ZZ:${secret}@aws-1.pooler.supabase.com/postgres`
-    expect(() => assertPreviewDatabaseTarget(baseEnv({ DATABASE_URL: databaseUrl }))).toThrow(
-      'DATABASE_URL does not target the configured Preview Supabase project',
-    )
+    const databaseUrl = `postgresql://ivmz_preview_runtime:${secret}@${HOST}:5432/%E0%A4%A`
     try {
       assertPreviewDatabaseTarget(baseEnv({ DATABASE_URL: databaseUrl }))
     } catch (error) {
       expect(String(error)).not.toContain(secret)
+      return
     }
+    throw new Error('expected assertPreviewDatabaseTarget to throw')
   })
 })

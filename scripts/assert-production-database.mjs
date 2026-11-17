@@ -4,26 +4,32 @@ function normalize(value) {
   return value?.trim().toLowerCase() ?? ''
 }
 
-function targetsSupabaseProject(url, projectRef) {
+function configuredTarget(env, prefix) {
+  return {
+    host: normalize(env[`PAYLOAD_${prefix}_DATABASE_HOST`]),
+    database: normalize(env[`PAYLOAD_${prefix}_DATABASE_NAME`]),
+  }
+}
+
+function isValidTarget(target) {
+  return /^[a-z0-9.-]+$/.test(target.host) && /^[a-z_][a-z0-9_]*$/.test(target.database)
+}
+
+function isSameTarget(a, b) {
+  return a.host === b.host && a.database === b.database
+}
+
+function targetsDatabase(url, target) {
   const hostname = normalize(url.hostname)
-  const directHost = `db.${projectRef}.supabase.co`
-  if (hostname === directHost) return true
 
-  if (!hostname.endsWith('.pooler.supabase.com')) return false
-
-  let username
+  let pathname
   try {
-    username = normalize(decodeURIComponent(url.username))
+    pathname = normalize(decodeURIComponent(url.pathname))
   } catch {
     return false
   }
-  const suffix = `.${projectRef}`
-  if (!username.endsWith(suffix)) return false
 
-  // Supabase Pooler usernames are <database-role>.<project-ref>.
-  // Keep a single, conventional unquoted role name: no empty or multi-dot prefixes.
-  const role = username.slice(0, -suffix.length)
-  return /^[a-z_][a-z0-9_]*$/.test(role)
+  return hostname === target.host && pathname === `/${target.database}`
 }
 
 /**
@@ -36,14 +42,14 @@ export function assertProductionDatabaseTarget(env = process.env) {
     throw new Error('Production DB target guard requires Netlify production context')
   }
 
-  const expectedRef = normalize(env.PAYLOAD_PRODUCTION_DATABASE_PROJECT_REF)
-  const previewRef = normalize(env.PAYLOAD_PREVIEW_DATABASE_PROJECT_REF)
+  const productionTarget = configuredTarget(env, 'PRODUCTION')
+  const previewTarget = configuredTarget(env, 'PREVIEW')
   if (
-    !/^[a-z0-9]{20}$/.test(expectedRef) ||
-    !/^[a-z0-9]{20}$/.test(previewRef) ||
-    expectedRef === previewRef
+    !isValidTarget(productionTarget) ||
+    !isValidTarget(previewTarget) ||
+    isSameTarget(productionTarget, previewTarget)
   ) {
-    throw new Error('Production and Preview project references must be valid and distinct')
+    throw new Error('Production and Preview database targets must be valid and distinct')
   }
 
   const databaseUrl = env.DATABASE_URL?.trim()
@@ -61,14 +67,18 @@ export function assertProductionDatabaseTarget(env = process.env) {
   if (url.protocol !== 'postgresql:' && url.protocol !== 'postgres:') {
     throw new Error('Production DATABASE_URL must use PostgreSQL')
   }
-  if (targetsSupabaseProject(url, previewRef)) {
-    throw new Error('Production deployment must not target the Preview project')
+  if (targetsDatabase(url, previewTarget)) {
+    throw new Error('Production deployment must not target the Preview database')
   }
-  if (!targetsSupabaseProject(url, expectedRef)) {
-    throw new Error('Production DATABASE_URL does not target the configured Production project')
+  if (!targetsDatabase(url, productionTarget)) {
+    throw new Error('Production DATABASE_URL does not target the configured Production database')
   }
 
-  return { context: 'production', projectRef: expectedRef }
+  return {
+    context: 'production',
+    host: productionTarget.host,
+    database: productionTarget.database,
+  }
 }
 
 const isExecutedDirectly =
@@ -78,7 +88,7 @@ if (isExecutedDirectly) {
   try {
     const result = assertProductionDatabaseTarget()
     console.log(
-      `[production-db-guard] verified ${result.context} Supabase project ${result.projectRef}`,
+      `[production-db-guard] verified ${result.context} database ${result.database} on ${result.host}`,
     )
   } catch (error) {
     // Only emit constant validation messages, never the supplied connection string.

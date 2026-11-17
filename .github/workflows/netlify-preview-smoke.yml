@@ -20,7 +20,7 @@ concurrency:
 jobs:
   resolve-preview:
     if: ${{ !contains(github.event.pull_request.title, '[skip netlify]') && !contains(github.event.pull_request.title, '[skip ci]') }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       head_sha: ${{ steps.preview.outputs.head_sha }}
       pr_number: ${{ steps.preview.outputs.pr_number }}
@@ -34,7 +34,7 @@ jobs:
 
   preview-smoke:
     needs: resolve-preview
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       E2E_BASE_URL: https://deploy-preview-${{ needs.resolve-preview.outputs.pr_number }}--ivmz-home.netlify.app
       NETLIFY_STATUS_CONTEXT: netlify/ivmz-home/deploy-preview
@@ -195,3 +195,5 @@ jobs:
               process.exit(1)
             })
           NODE
+
+# Pinned to ubuntu-24.04: Playwright 1.59.1 does not support ubuntu26.04 (see #179).
