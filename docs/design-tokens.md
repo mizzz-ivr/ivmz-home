@@ -42,8 +42,11 @@ meanings; tokens.css extends them rather than renaming.
 | `--color-surface-2`   | `#1f1842` | `#f1edff` | raised / inset areas                   |
 | `--color-ink`         | `#f2efff` | `#1a1230` | primary text                           |
 | `--color-ink-muted`   | `#a79fd0` | `#5c5480` | secondary text                         |
+| `--color-ink-soft`    | `#d4cfe2` | `#373044` | soft body text (carried over, see note) |
 | `--color-line`        | `#342a63` | `#ddd5f5` | borders, grid lines                    |
+| `--color-line-strong` | `rgba(205, 194, 255, 0.38)` | `rgba(68, 45, 92, 0.3)` | strong borders (carried over, see note) |
 | `--color-primary`     | `#8b7bff` | `#6c4dff` | violet signal (primary actions, caret) |
+| `--color-primary-soft` | `#c8b4ff` | `#6747a5` | soft violet text/accents (carried over, see note) |
 | `--color-pop`         | `#ffd84a` | `#ffd23a` | pop yellow (existing token)            |
 | `--color-pop-ink`     | `#1a1230` | `#1a1230` | text on pop yellow                     |
 | `--color-signal-cyan` | `#3fd6e8` | `#0e7f96` | live / info signal                     |
@@ -51,6 +54,13 @@ meanings; tokens.css extends them rather than renaming.
 | `--color-ok`          | `#4ade80` | `#178a4c` | success, live dot                      |
 | `--color-warn`        | `#ffd84a` | `#9a7b00` | warning                                |
 | `--color-danger`      | `#ff6b6b` | `#c92a2a` | error                                  |
+| `--color-selection`   | `rgba(156, 108, 255, 0.14)` | `rgba(109, 59, 216, 0.1)` | selection / hover wash (carried over, see note) |
+
+Note (2026-11-17, S2): `--color-ink-soft`, `--color-line-strong`,
+`--color-primary-soft` and `--color-selection` are carried over from the
+legacy globals.css palette with their values unchanged, so page CSS can
+migrate to token names without a visual change. Retuning them to the v1
+palette is a separate, deliberate step.
 
 Heatmap scale (contribution graph, Issue #173):
 `--heat-0` (empty) through `--heat-4` reuse `--color-line`,
