@@ -3,19 +3,25 @@
   ignore = "node ./scripts/netlify-ignore-production.mjs"
 
 [context.production.environment]
-  PAYLOAD_PREVIEW_DATABASE_PROJECT_REF = "dzdgbkjmomvmexcbjyin"
-  PAYLOAD_PRODUCTION_DATABASE_PROJECT_REF = "drazbrcqnjxjuygfxmlz"
+  PAYLOAD_PREVIEW_DATABASE_HOST = "13.197.31.66"
+  PAYLOAD_PREVIEW_DATABASE_NAME = "ivmz_home_preview"
+  PAYLOAD_PRODUCTION_DATABASE_HOST = "13.197.31.66"
+  PAYLOAD_PRODUCTION_DATABASE_NAME = "ivmz_home"
 
 [context.deploy-preview]
   command = "node scripts/assert-preview-database.mjs && pnpm build"
 
 [context.deploy-preview.environment]
-  PAYLOAD_PREVIEW_DATABASE_PROJECT_REF = "dzdgbkjmomvmexcbjyin"
-  PAYLOAD_PRODUCTION_DATABASE_PROJECT_REF = "drazbrcqnjxjuygfxmlz"
+  PAYLOAD_PREVIEW_DATABASE_HOST = "13.197.31.66"
+  PAYLOAD_PREVIEW_DATABASE_NAME = "ivmz_home_preview"
+  PAYLOAD_PRODUCTION_DATABASE_HOST = "13.197.31.66"
+  PAYLOAD_PRODUCTION_DATABASE_NAME = "ivmz_home"
 
 [context.branch-deploy]
   command = "node scripts/assert-preview-database.mjs && pnpm build"
 
 [context.branch-deploy.environment]
-  PAYLOAD_PREVIEW_DATABASE_PROJECT_REF = "dzdgbkjmomvmexcbjyin"
-  PAYLOAD_PRODUCTION_DATABASE_PROJECT_REF = "drazbrcqnjxjuygfxmlz"
+  PAYLOAD_PREVIEW_DATABASE_HOST = "13.197.31.66"
+  PAYLOAD_PREVIEW_DATABASE_NAME = "ivmz_home_preview"
+  PAYLOAD_PRODUCTION_DATABASE_HOST = "13.197.31.66"
+  PAYLOAD_PRODUCTION_DATABASE_NAME = "ivmz_home"

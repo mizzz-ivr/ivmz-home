@@ -6,31 +6,39 @@ function normalize(value) {
   return value?.trim().toLowerCase() ?? ''
 }
 
-function containsProjectRef(url, projectRef) {
-  const expectedRef = normalize(projectRef)
+function configuredTarget(env, prefix) {
+  return {
+    host: normalize(env[`PAYLOAD_${prefix}_DATABASE_HOST`]),
+    database: normalize(env[`PAYLOAD_${prefix}_DATABASE_NAME`]),
+  }
+}
+
+function isValidTarget(target) {
+  return /^[a-z0-9.-]+$/.test(target.host) && /^[a-z_][a-z0-9_]*$/.test(target.database)
+}
+
+function isSameTarget(a, b) {
+  return a.host === b.host && a.database === b.database
+}
+
+function targetsDatabase(url, target) {
   const hostname = normalize(url.hostname)
-  let username
+
+  let pathname
   try {
-    username = normalize(decodeURIComponent(url.username))
+    pathname = normalize(decodeURIComponent(url.pathname))
   } catch {
     return false
   }
 
-  if (!expectedRef) return false
-
-  const isDirectConnection = hostname === `db.${expectedRef}.supabase.co`
-  const isPoolerConnection =
-    hostname.endsWith('.pooler.supabase.com') &&
-    (username === `postgres.${expectedRef}` || username.endsWith(`.${expectedRef}`))
-
-  return isDirectConnection || isPoolerConnection
+  return hostname === target.host && pathname === `/${target.database}`
 }
 
 export function assertPreviewDatabaseTarget(env = process.env) {
   const context = env.CONTEXT?.trim()
   const databaseUrl = env.DATABASE_URL?.trim()
-  const previewProjectRef = normalize(env.PAYLOAD_PREVIEW_DATABASE_PROJECT_REF)
-  const productionProjectRef = normalize(env.PAYLOAD_PRODUCTION_DATABASE_PROJECT_REF)
+  const previewTarget = configuredTarget(env, 'PREVIEW')
+  const productionTarget = configuredTarget(env, 'PRODUCTION')
 
   if (!PREVIEW_CONTEXTS.has(context)) {
     throw new Error(`database migration is disabled for Netlify context: ${context || 'unset'}`)
@@ -41,11 +49,11 @@ export function assertPreviewDatabaseTarget(env = process.env) {
   }
 
   if (
-    !/^[a-z0-9]{20}$/.test(previewProjectRef) ||
-    !/^[a-z0-9]{20}$/.test(productionProjectRef) ||
-    previewProjectRef === productionProjectRef
+    !isValidTarget(previewTarget) ||
+    !isValidTarget(productionTarget) ||
+    isSameTarget(previewTarget, productionTarget)
   ) {
-    throw new Error('Preview and Production project references must be valid and distinct')
+    throw new Error('Preview and Production database targets must be valid and distinct')
   }
 
   let parsedDatabaseUrl
@@ -59,17 +67,18 @@ export function assertPreviewDatabaseTarget(env = process.env) {
     throw new Error('DATABASE_URL must use the postgres or postgresql protocol')
   }
 
-  if (containsProjectRef(parsedDatabaseUrl, productionProjectRef)) {
-    throw new Error('refusing to migrate the Production Supabase project from a preview deploy')
+  if (targetsDatabase(parsedDatabaseUrl, productionTarget)) {
+    throw new Error('refusing to migrate the Production database from a preview deploy')
   }
 
-  if (!containsProjectRef(parsedDatabaseUrl, previewProjectRef)) {
-    throw new Error('DATABASE_URL does not target the configured Preview Supabase project')
+  if (!targetsDatabase(parsedDatabaseUrl, previewTarget)) {
+    throw new Error('DATABASE_URL does not target the configured Preview database')
   }
 
   return {
     context,
-    projectRef: previewProjectRef,
+    host: previewTarget.host,
+    database: previewTarget.database,
   }
 }
 
@@ -80,7 +89,7 @@ if (isExecutedDirectly) {
   try {
     const result = assertPreviewDatabaseTarget()
     console.log(
-      `[preview-db-guard] verified ${result.context} targets Supabase project ${result.projectRef}`,
+      `[preview-db-guard] verified ${result.context} targets database ${result.database} on ${result.host}`,
     )
   } catch (error) {
     const message = error instanceof Error ? error.message : 'unknown preview database guard error'
