@@ -613,3 +613,112 @@
     transform: none;
   }
 }
+
+.github-panel {
+  margin-top: 28px;
+  padding: 22px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-m);
+  background: var(--color-surface);
+}
+
+.github-panel-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.github-panel-title {
+  margin: 0;
+  font: 600 1.05rem var(--font-sans);
+}
+
+.github-panel-title span {
+  color: var(--color-ink-muted);
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+}
+
+.github-panel-head a {
+  color: var(--color-primary);
+  font: 500 0.82rem var(--font-mono);
+  text-decoration: none;
+}
+
+.github-panel-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 26px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.github-panel-stats li {
+  display: grid;
+  gap: 2px;
+}
+
+.github-panel-stats strong {
+  font: 600 1.3rem var(--font-display, var(--font-sans));
+}
+
+.github-panel-stats span {
+  color: var(--color-ink-muted);
+  font: 500 0.72rem var(--font-mono);
+  letter-spacing: 0.05em;
+}
+
+.github-panel-langs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.github-panel-langs li {
+  padding: 5px 11px;
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
+  font: 500 0.78rem var(--font-mono);
+}
+
+.github-panel-langs span {
+  color: var(--color-ink-muted);
+}
+
+.github-panel-repos {
+  display: grid;
+  gap: 10px;
+  margin: 18px 0 0;
+  padding: 16px 0 0;
+  border-top: 1px solid var(--color-line);
+  list-style: none;
+}
+
+.github-panel-repos li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.github-panel-repos a {
+  color: var(--color-ink);
+  font: 600 0.95rem var(--font-mono);
+  text-decoration: none;
+}
+
+.github-panel-repos a:hover {
+  color: var(--color-primary);
+}
+
+.github-panel-repos span {
+  color: var(--color-ink-muted);
+  font: 500 0.78rem var(--font-mono);
+}

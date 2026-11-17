@@ -1,5 +1,6 @@
 import Image from 'next/image'
 
+import { GitHubProfilePanel } from '@/components/site/GitHubProfilePanel'
 import { PageCTA, PageSection } from '@/components/site/PageFoundation'
 import {
   aboutAreas,
@@ -14,6 +15,7 @@ import {
   storyParagraphs,
   tagline,
 } from '@/lib/about-content'
+import { getGitHubProfile } from '@/lib/github-profile'
 import { createPageMetadata } from '@/lib/metadata'
 import { site } from '@/lib/site'
 
@@ -24,7 +26,8 @@ export const metadata = createPageMetadata({
   path: '/about',
 })
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const githubProfile = await getGitHubProfile(site.githubUrl)
   return (
     <main id="main-content" className="route-page about-page">
       <header className="about-hero">
@@ -206,6 +209,7 @@ export default function AboutPage() {
             </li>
           ))}
         </ul>
+        <GitHubProfilePanel profile={githubProfile} />
       </PageSection>
 
       <PageSection
