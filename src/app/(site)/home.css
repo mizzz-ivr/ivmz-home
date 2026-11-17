@@ -727,3 +727,111 @@ a.ticker-item:hover .ticker-title {
     display: none;
   }
 }
+
+.hero-socials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hero-socials a {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+  padding: 7px 13px;
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
+  color: var(--color-ink);
+  font: 500 0.78rem var(--font-mono);
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  transition:
+    border-color var(--dur-fast) ease,
+    box-shadow var(--dur-fast) ease,
+    transform var(--dur-fast) ease;
+}
+
+.hero-socials a span {
+  color: var(--color-ink-muted);
+}
+
+.hero-socials a:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--pop-shadow);
+  transform: translateY(-2px);
+}
+
+.slogan-band {
+  overflow: hidden;
+  padding-block: 14px;
+  border-bottom: 1px solid var(--color-line);
+  background: var(--color-surface);
+  user-select: none;
+}
+
+.slogan-track {
+  display: flex;
+  width: max-content;
+  animation: slogan-scroll 30s linear infinite;
+}
+
+.slogan-track > span {
+  display: flex;
+  flex: none;
+}
+
+.slogan-track b {
+  display: inline-flex;
+  align-items: center;
+  gap: 26px;
+  padding-right: 26px;
+  color: var(--color-ink);
+  font: 600 clamp(1rem, 2.2vw, 1.35rem) / 1.2 var(--font-sans);
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.slogan-track b i {
+  color: var(--color-signal-pink);
+  font-size: 0.8em;
+  font-style: normal;
+}
+
+.slogan-track > span b:nth-child(2n) i {
+  color: var(--color-signal-cyan);
+}
+
+@keyframes slogan-scroll {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.work-entry,
+.latest-column {
+  transition: box-shadow var(--dur-fast) ease;
+}
+
+.work-entry:hover,
+.latest-column:hover {
+  box-shadow: var(--pop-shadow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slogan-track {
+    animation: none;
+  }
+
+  .hero-socials a,
+  .work-entry,
+  .latest-column {
+    transition: none;
+  }
+
+  .hero-socials a:hover {
+    transform: none;
+  }
+}

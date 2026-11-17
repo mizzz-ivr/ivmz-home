@@ -160,6 +160,17 @@ export default async function HomePage() {
               Contact <span aria-hidden="true">→</span>
             </a>
           </div>
+          {home.socials.length > 0 ? (
+            <ul className="hero-socials" aria-label="Social links">
+              {home.socials.map((social) => (
+                <li key={social.label}>
+                  <a href={social.href} target="_blank" rel="noreferrer">
+                    {social.label} <span>{social.handle}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          ) : null}
           <div className="hero-status" aria-label="Current focus">
             <span>
               <i aria-hidden="true" /> NOW
@@ -222,6 +233,20 @@ export default async function HomePage() {
           SCROLL <span aria-hidden="true">↓</span>
         </a>
       </section>
+
+      <div className="slogan-band" aria-hidden="true">
+        <div className="slogan-track">
+          {[0, 1].map((half) => (
+            <span key={half}>
+              {Array.from({ length: 4 }).map((_, index) => (
+                <b key={index}>
+                  技術で作って、データで攻略する。<i>✦</i>
+                </b>
+              ))}
+            </span>
+          ))}
+        </div>
+      </div>
 
       <ActivityTicker items={tickerItems} />
 
