@@ -234,20 +234,6 @@ export default async function HomePage() {
         </a>
       </section>
 
-      <div className="slogan-band" aria-hidden="true">
-        <div className="slogan-track">
-          {[0, 1].map((half) => (
-            <span key={half}>
-              {Array.from({ length: 4 }).map((_, index) => (
-                <b key={index}>
-                  技術で作って、データで攻略する。<i>✦</i>
-                </b>
-              ))}
-            </span>
-          ))}
-        </div>
-      </div>
-
       <ActivityTicker items={tickerItems} />
 
       <ToolboxMarquee tools={toolbox} />
