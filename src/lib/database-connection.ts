@@ -4,6 +4,7 @@ const SUPABASE_POOLER_HOST_SUFFIX = '.pooler.supabase.com'
 const SUPABASE_SESSION_PORT = '5432'
 const SUPABASE_TRANSACTION_PORT = '6543'
 const SERVERLESS_POOL_MAX = 5
+const SERVERLESS_POOL_IDLE_TIMEOUT_MS = 30_000
 
 export function resolveDatabasePoolMode(
   configuredMode: string | undefined,
@@ -44,6 +45,7 @@ export function getDatabasePoolConfig(
 ): {
   connectionString: string
   max?: number
+  idleTimeoutMillis?: number
 } {
   const connectionString = resolveDatabaseConnectionString(databaseUrl, poolMode)
 
@@ -51,6 +53,7 @@ export function getDatabasePoolConfig(
     return {
       connectionString,
       max: SERVERLESS_POOL_MAX,
+      idleTimeoutMillis: SERVERLESS_POOL_IDLE_TIMEOUT_MS,
     }
   }
 
