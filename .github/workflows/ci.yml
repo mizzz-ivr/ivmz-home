@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   quality:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     services:
       postgres:
         image: postgres:17-alpine
@@ -72,7 +72,7 @@ jobs:
   # test still runs once on the final commit of a pull request and covers what only Netlify
   # provides (headers, rate limits, the real deploy pipeline).
   e2e-local:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     services:
       postgres:
@@ -126,3 +126,4 @@ jobs:
       - name: Server log on failure
         if: failure()
         run: tail -n 100 server.log || true
+# Pinned to ubuntu-24.04: Playwright 1.59.1 does not support ubuntu26.04 (see #179).
