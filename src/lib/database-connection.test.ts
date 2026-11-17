@@ -56,6 +56,15 @@ describe('getDatabasePoolConfig', () => {
     })
   })
 
+  it('直接接続でもtransaction modeではpool上限を付ける', () => {
+    const directUrl = 'postgresql://app:password@db.example.com:5432/postgres?sslmode=no-verify'
+
+    expect(getDatabasePoolConfig(directUrl, 'transaction')).toEqual({
+      connectionString: directUrl,
+      max: 5,
+    })
+  })
+
   it('migration/local向けsession接続にはpool制限を追加しない', () => {
     expect(getDatabasePoolConfig(sessionPoolerUrl, undefined)).toEqual({
       connectionString: sessionPoolerUrl,
