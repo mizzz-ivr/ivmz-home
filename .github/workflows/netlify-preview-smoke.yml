@@ -195,4 +195,5 @@ jobs:
               process.exit(1)
             })
           NODE
+
 # Pinned to ubuntu-24.04: Playwright 1.59.1 does not support ubuntu26.04 (see #179).
