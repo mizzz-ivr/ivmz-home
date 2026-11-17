@@ -47,7 +47,7 @@ export function getDatabasePoolConfig(
 } {
   const connectionString = resolveDatabaseConnectionString(databaseUrl, poolMode)
 
-  if (poolMode === 'transaction' && connectionString !== databaseUrl) {
+  if (poolMode === 'transaction') {
     return {
       connectionString,
       max: SERVERLESS_POOL_MAX,
