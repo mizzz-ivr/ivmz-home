@@ -53,6 +53,7 @@ describe('getDatabasePoolConfig', () => {
       connectionString:
         'postgresql://ivmz_home_app.example:password@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres?sslmode=require',
       max: 5,
+      idleTimeoutMillis: 30_000,
     })
   })
 
@@ -62,6 +63,7 @@ describe('getDatabasePoolConfig', () => {
     expect(getDatabasePoolConfig(directUrl, 'transaction')).toEqual({
       connectionString: directUrl,
       max: 5,
+      idleTimeoutMillis: 30_000,
     })
   })
 
