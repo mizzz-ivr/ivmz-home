@@ -1141,3 +1141,34 @@
     transition: none;
   }
 }
+
+/* Detail refresh (#176 S4): facts panel, tag chips, external panel.
+   Shared by the blog / news / works detail pages. */
+.detail-facts {
+  border-radius: var(--radius-m);
+  overflow: hidden;
+}
+.detail-facts > div {
+  background: var(--color-surface);
+}
+.detail-tags li {
+  padding: 6px 11px;
+  border-radius: 999px;
+}
+.external-publication {
+  padding: clamp(22px, 3vw, 34px);
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-m);
+}
+.detail-back-link {
+  transition: color var(--dur-fast) ease;
+}
+.detail-back-link:hover {
+  color: var(--color-primary);
+}
+@media (prefers-reduced-motion: reduce) {
+  .detail-back-link {
+    transition: none;
+  }
+}
