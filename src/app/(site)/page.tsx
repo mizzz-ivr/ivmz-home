@@ -177,7 +177,6 @@ export default async function HomePage() {
             </span>
             <strong>BUILD SMALL · POLISH FAST · OPERATE SAFELY</strong>
           </div>
-          <HeroTerminal />
         </div>
 
         <div className="identity-stage" aria-label="mizzz original character identity">
@@ -191,6 +190,7 @@ export default async function HomePage() {
             <span className="orbit-sat sat-b">✦</span>
             <span className="orbit-sat sat-c">●</span>
           </div>
+          <span className="stage-ring-b" aria-hidden="true" />
           <div className="avatar-frame avatar-orb">
             <Image
               src={site.githubAvatarUrl}
@@ -225,6 +225,18 @@ export default async function HomePage() {
           <span className="floating-note note-c" aria-hidden="true">
             01 / identity
           </span>
+          <div className="hud-chip hud-status">
+            <span className="hud-label">STATUS</span>
+            <strong>BUILD · POLISH · OPERATE</strong>
+          </div>
+          <div className="hud-chip hud-oshi">
+            <span className="hud-label">推し</span>
+            <strong>綺良々 ✦ 原神</strong>
+          </div>
+          <div className="stage-plate" aria-hidden="true">
+            <strong>いゔる。</strong>
+            <span>mizzz-ivr / ivmz</span>
+          </div>
           <svg className="rough-line" viewBox="0 0 180 70" aria-hidden="true">
             <path d="M4 54 C36 10 68 68 96 28 S144 50 176 8" />
           </svg>
@@ -233,6 +245,10 @@ export default async function HomePage() {
           SCROLL <span aria-hidden="true">↓</span>
         </a>
       </section>
+
+      <div className="section-shell hero-console">
+        <HeroTerminal />
+      </div>
 
       <ActivityTicker items={tickerItems} />
 
