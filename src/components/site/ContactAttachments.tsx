@@ -350,7 +350,7 @@ export function ContactAttachments({ disabled = false, onChange }: Props) {
         </ul>
       ) : null}
 
-      <p aria-live="polite" className="contact-visually-hidden" role="status">
+      <p aria-live="polite" className="contact-visually-hidden">
         {announcement}
       </p>
     </fieldset>
