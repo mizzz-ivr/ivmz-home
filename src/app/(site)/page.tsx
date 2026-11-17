@@ -3,6 +3,8 @@ import { SectionIndex, ToolboxMarquee } from '@/components/site/SiteEnhancements
 import { StructuredData } from '@/components/seo/StructuredData'
 import { ChatOpenButton, FaqChat } from '@/components/site/FaqChat'
 import { HeroPointerSignal } from '@/components/site/SiteExperience'
+import { HeroTerminal } from '@/components/site/HeroTerminal'
+import { ActivityTicker } from '@/components/site/ActivityTicker'
 import { faqEntries } from '@/lib/faq-content'
 import { createFaqStructuredData } from '@/lib/structured-data'
 import { buildSteps } from '@/lib/about-content'
@@ -101,6 +103,12 @@ export default async function HomePage() {
     { key: 'schedule', label: 'SCHEDULE', href: '/schedule', items: home.schedule.slice(0, 3) },
   ].filter((column) => column.items.length > 0)
 
+  const tickerItems = [
+    ...home.writing.slice(0, 3).map((item) => ({ ...item, label: 'WRITING' })),
+    ...home.activity.slice(0, 3).map((item) => ({ ...item, label: 'NEWS' })),
+    ...home.schedule.slice(0, 3).map((item) => ({ ...item, label: 'SCHEDULE' })),
+  ]
+
   const sectionIndex = [
     { id: 'top', label: 'TOP' },
     { id: 'works', label: 'WORKS' },
@@ -154,10 +162,11 @@ export default async function HomePage() {
           </div>
           <div className="hero-status" aria-label="Current focus">
             <span>
-              <i aria-hidden="true" /> CURRENT SIGNAL
+              <i aria-hidden="true" /> NOW
             </span>
             <strong>BUILD SMALL · POLISH FAST · OPERATE SAFELY</strong>
           </div>
+          <HeroTerminal />
         </div>
 
         <div className="identity-stage" aria-label="mizzz original character identity">
@@ -213,6 +222,8 @@ export default async function HomePage() {
           SCROLL <span aria-hidden="true">↓</span>
         </a>
       </section>
+
+      <ActivityTicker items={tickerItems} />
 
       <ToolboxMarquee tools={toolbox} />
 
