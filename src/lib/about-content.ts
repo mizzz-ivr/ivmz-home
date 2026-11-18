@@ -243,3 +243,235 @@ export const personas: readonly Persona[] = [
     ],
   },
 ]
+
+export type Favorite = {
+  kanji: string
+  kicker: string
+  title: string
+  body: string
+  note?: string
+}
+
+export const favorites: readonly Favorite[] = [
+  {
+    kanji: '推',
+    kicker: 'OSHI — GENSHIN',
+    title: '綺良々が推し',
+    body: '原神の推しは綺良々。強さだけじゃなく、探索のお供としての楽しさも含めて好きで、探索パーティには必ず入れる枠。推しがいるから続けられる、というタイプです。',
+    note: 'こだわり： 戦闘用 2PT とは別に、綺良々入りの探索 PT を組む。効率より「一緒に歩きたい」を優先する場面がある。',
+  },
+  {
+    kanji: '音',
+    kicker: 'MUSIC — WHILE WORKING',
+    title: '音楽と作業環境',
+    body: '作業中はプレイリストが常駐。集中したいときの BGM があると手が止まらない。最近聴いた曲をプロフィールに出す Spotify 連携（ivrm-web #991）を進めていて、公開は同意したときだけ出す設計です。',
+  },
+  {
+    kanji: '画',
+    kicker: 'VIDEO — IN PRODUCTION',
+    title: '動画づくり',
+    body: '声は VOICEVOX「ずんだもん」。開発の解説とゲーム動画を制作中で、現在は公開準備フェーズ。台本→編集→確認の流れも、開発と同じく小さく回して直していくスタイルです。',
+  },
+  {
+    kanji: '箱',
+    kicker: 'MINECRAFT — PLAY & OPERATE',
+    title: 'Minecraft',
+    body: 'IVRM の MC サーバー（main / resource）を運営しながら自分も遊ぶ。独自 mod で活動統計を取ってポータルの XP やランキングに繋げるなど、遊びを仕組み化するのが楽しい。',
+  },
+  {
+    kanji: '書',
+    kicker: 'WRITING — NOTES & LOGS',
+    title: '書く・残す',
+    body: '移行の実録、障害の切り分け、設計の判断理由——あとから自分が助かる記録を、誰かも助かる形で記事にする。日報や Issue の記録癖もここから来ています。',
+  },
+  {
+    kanji: '試',
+    kicker: 'TINKERING — INFRA & TOOLS',
+    title: '基盤いじり',
+    body: 'サーバー、CI、監視、自動集計のパイプラインなど、「裏側が勝手に回っている」状態を作るのが好き。本番で回る自動運転（毎晩 01:15 の DevIntel 集計など）が増えるほど嬉しい。',
+  },
+]
+
+export type GameShelfEntry = {
+  name: string
+  en: string
+  status: string
+  tone: 'daily' | 'chill' | 'watch'
+  style: string
+  tags: readonly string[]
+}
+
+export const gameShelf: readonly GameShelfEntry[] = [
+  {
+    name: '原神',
+    en: 'GENSHIN IMPACT',
+    status: '毎日デイリー',
+    tone: 'daily',
+    style:
+      '推しは綺良々。世界任務と探索度上げをまったり進めるのが本線で、戦闘は螺旋などの目標があるときに本気を出す。探索 PT に推しを入れるのがマイルール。',
+    tags: ['探索重視', '推し：綺良々', 'Enka 連携'],
+  },
+  {
+    name: '崩壊：スターレイル',
+    en: 'HONKAI: STAR RAIL',
+    status: '毎日デイリー',
+    tone: 'daily',
+    style:
+      'デイリーと開拓力の消化が日常の軸。Herta の /game コマンドで UID 連携と聖遺物スコア確認ができるようにした側でもあり、遊ぶ体験と作る体験が一番重なっているタイトル。',
+    tags: ['デイリー消化', '聖遺物スコア', 'Enka + Herta'],
+  },
+  {
+    name: 'ゼンレスゾーンゼロ',
+    en: 'ZENLESS ZONE ZERO',
+    status: 'まったり進行',
+    tone: 'chill',
+    style:
+      '式輿防衛戦を回しつつ、新エリアの探索は急がず楽しむ枠。アクションの手触りが好きで、短い時間でも触れるのがちょうどいい。',
+    tags: ['防衛戦', '短時間プレイ', 'Enka 連携'],
+  },
+  {
+    name: 'エンドフィールド ＋ 様子見組',
+    en: 'ENDFIELD / WUTHERING WAVES / NTE / GAKUMAS',
+    status: '様子見も含む',
+    tone: 'watch',
+    style:
+      'エンドフィールドは基地運営を眺めている時間が長めで、育成はこれから。鳴潮 / NTE / 学マスは管理対象として枠を用意しつつ、触れるタイミングを見ている組。取得手段がないものは UID 登録のみで無理に数字を作らない。',
+    tags: ['基地運営', 'UID 登録のみの枠あり'],
+  },
+]
+
+export type ContentMixItem = {
+  label: string
+  percent: number
+}
+
+export const contentMix: readonly ContentMixItem[] = [
+  { label: '個人開発', percent: 40 },
+  { label: 'ゲーム', percent: 30 },
+  { label: 'その他趣味', percent: 10 },
+  { label: '日常', percent: 10 },
+  { label: 'ライフハック / 経済', percent: 10 },
+]
+
+export type CreatorStep = {
+  title: string
+  body: string
+}
+
+export const creatorSteps: readonly CreatorStep[] = [
+  { title: 'ネタを拾う', body: '開発の詰まり、障害、攻略の気づきをメモに残す' },
+  { title: '下書きする', body: '記事も投稿も、まず下書きで形にする' },
+  { title: '確認・承認', body: '数字と事実を実測で確かめてから出す' },
+  { title: '公開する', body: 'RSS / API でこのサイトにも自動連動' },
+  { title: '振り返る', body: '反応を見て次のネタと改善に繋げる' },
+]
+
+export type CreatorChannel = {
+  name: string
+  body: string
+  status: string
+  tone: 'daily' | 'chill' | 'watch'
+}
+
+export const creatorChannels: readonly CreatorChannel[] = [
+  {
+    name: 'X — @ivuruGG',
+    body: '開発の進捗と日常の本丸。感想や軽い連絡もここで受けています。',
+    status: 'メイン',
+    tone: 'daily',
+  },
+  {
+    name: 'Qiita / Zenn',
+    body: '移行や運用の実録記事の置き場。公開すると RSS でこのサイトの BLOG に自動で届く。',
+    status: 'RSS AUTO',
+    tone: 'daily',
+  },
+  {
+    name: 'note',
+    body: '技術に寄りすぎない話と、収益化を意識した記事の置き場。',
+    status: '不定期',
+    tone: 'chill',
+  },
+  {
+    name: 'YouTube',
+    body: '動画は制作中（声： VOICEVOX ずんだもん）。公開したらチャンネルと最新動画をここにも出す。',
+    status: '制作中',
+    tone: 'watch',
+  },
+]
+
+export type SnsCell = {
+  name: string
+  handle: string
+  body: string
+  href?: string
+}
+
+export const snsCells: readonly SnsCell[] = [
+  {
+    name: 'GitHub',
+    handle: '@mizzz-ivr ↗',
+    body: 'コードの本丸。開発はここが正本。',
+    href: 'https://github.com/mizzz-ivr',
+  },
+  {
+    name: 'X',
+    handle: '@ivuruGG ↗',
+    body: '毎日の進捗とゲームの話。感想や軽い連絡もここで。',
+    href: 'https://x.com/ivuruGG',
+  },
+  {
+    name: 'Qiita',
+    handle: '@mizzz-ivr ↗',
+    body: '移行・運用の実録記事。RSS でサイトへ自動連動。',
+    href: 'https://qiita.com/mizzz-ivr',
+  },
+  {
+    name: 'Zenn / note',
+    handle: '連携を整え中',
+    body: 'Zenn は技術記事、note は柔らかい話の置き場。',
+  },
+  { name: 'YouTube', handle: '連携予定', body: '動画は制作中。公開したら最新動画を埋め込む。' },
+  { name: 'Instagram', handle: '連携予定', body: '表記と運用を確認中。整ったらここに出す。' },
+  {
+    name: 'IVRM ポータル',
+    handle: 'ivrm.jp ↗',
+    body: 'コミュニティの会員ポータル。活動の中心地。',
+    href: 'https://ivrm.jp/',
+  },
+  {
+    name: 'リンク集',
+    handle: '/LINKS →',
+    body: '居場所の完全版は LINKS ページにまとめている。',
+    href: '/links',
+  },
+]
+
+export type DayStep = {
+  time: string
+  title: string
+  body: string
+}
+
+export const dayFlow: readonly DayStep[] = [
+  {
+    time: 'MORNING — 09:00',
+    title: 'デイリーが切り替わる',
+    body: 'Daily Quiz の通知と前日分の締切。ゲームのデイリー計画もここで立てる。',
+  },
+  {
+    time: 'DAYTIME — BUILD',
+    title: '作る時間',
+    body: 'ポータルや Bot の開発・運用。Issue を切って、小さく公開して直す。',
+  },
+  {
+    time: 'EVENING — PLAY & POST',
+    title: '遊んで、書く時間',
+    body: 'ゲームのデイリー消化と探索。進捗や気づきは X や記事の下書きへ。',
+  },
+  {
+    time: 'NIGHT — 01:15 AUTO',
+    title: '裏側が回る時間',
+    body: 'DevIntel の夜間集計など、自動運転が翌朝の材料を揃えてくれる。',
+  },
+]

@@ -7,6 +7,13 @@ import {
   aboutAreas,
   buildSteps,
   consultTopics,
+  contentMix,
+  creatorChannels,
+  creatorSteps,
+  dayFlow,
+  favorites,
+  gameShelf,
+  snsCells,
   personas,
   playerStats,
   practices,
@@ -102,6 +109,155 @@ export default async function AboutPage() {
           </h2>
         </div>
         <PersonaTabs personas={personas} />
+      </section>
+
+      <section className="about-favorites" aria-labelledby="about-favorites-title">
+        <div className="about-player-head" data-reveal>
+          <p className="signal-label">FAVORITES &amp; HOBBIES</p>
+          <h2 id="about-favorites-title">
+            好きなこと・<mark className="marker">推しごと。</mark>
+          </h2>
+          <p className="about-section-lead">
+            仕事の外側をもう少しだけ詳しく。ここが厚いほうが、このサイトの「人となり」は伝わると思っています。
+          </p>
+        </div>
+        <div className="fav-grid">
+          {favorites.map((fav) => (
+            <article className="fav-card" key={fav.kicker} data-kanji={fav.kanji} data-reveal>
+              <p className="fav-kicker">{fav.kicker}</p>
+              <h3>{fav.title}</h3>
+              <p>{fav.body}</p>
+              {fav.note ? <p className="fav-note">{fav.note}</p> : null}
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="about-shelf" aria-labelledby="about-shelf-title">
+        <div className="about-player-head" data-reveal>
+          <p className="signal-label">GAME SHELF / HOW I PLAY</p>
+          <h2 id="about-shelf-title">
+            ゲーム棚 — <mark className="marker">遊び方まで。</mark>
+          </h2>
+          <p className="about-section-lead">
+            タイトル名だけじゃなく、どう付き合っているかまで書く棚。数字が取れないタイトルは、取れないまま書きます。
+          </p>
+        </div>
+        <div className="game-plays">
+          {gameShelf.map((game) => (
+            <article className="play-card" key={game.name} data-reveal>
+              <div className="play-head">
+                <div>
+                  <h3>{game.name}</h3>
+                  <p className="play-en">{game.en}</p>
+                </div>
+                <span className={`shelf-status tone-${game.tone}`}>{game.status}</span>
+              </div>
+              <p className="play-style">{game.style}</p>
+              <ul className="play-tags" aria-label={`${game.name} の特徴`}>
+                {game.tags.map((tag) => (
+                  <li key={tag}>{tag}</li>
+                ))}
+              </ul>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="about-creator" aria-labelledby="about-creator-title">
+        <div className="about-player-head" data-reveal>
+          <p className="signal-label">CREATOR DESK</p>
+          <h2 id="about-creator-title">
+            クリエイター<mark className="marker">机。</mark>
+          </h2>
+          <p className="about-section-lead">
+            発信を「思いついたら出す」ではなく、チャンネルの役割・配分・手順まで決めて回している机の上。
+          </p>
+        </div>
+        <div className="creator-card" data-reveal>
+          <h3 className="creator-sub">発信の配分 — CONTENT MIX</h3>
+          <div
+            className="mixbar"
+            role="img"
+            aria-label="発信配分: 個人開発40%、ゲーム30%、その他趣味10%、日常10%、ライフハック・経済10%"
+          >
+            {contentMix.map((item, index) => (
+              <i
+                key={item.label}
+                className={`mix-seg mix-${index + 1}`}
+                style={{ width: `${item.percent}%` }}
+              />
+            ))}
+          </div>
+          <ul className="mix-legend">
+            {contentMix.map((item, index) => (
+              <li key={item.label}>
+                <i className={`mix-seg mix-${index + 1}`} aria-hidden="true" />
+                {item.label} {item.percent}%
+              </li>
+            ))}
+          </ul>
+          <ol className="creator-steps">
+            {creatorSteps.map((step, index) => (
+              <li key={step.title}>
+                <b>STEP {String(index + 1).padStart(2, '0')}</b>
+                <span>{step.title}</span>
+                <p>{step.body}</p>
+              </li>
+            ))}
+          </ol>
+          <div className="creator-channels">
+            {creatorChannels.map((channel) => (
+              <div className="channel-row" key={channel.name}>
+                <span className="channel-name">{channel.name}</span>
+                <p>{channel.body}</p>
+                <span className={`shelf-status tone-${channel.tone}`}>{channel.status}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="about-sns" aria-labelledby="about-sns-title">
+        <div className="about-player-head" data-reveal>
+          <p className="signal-label">SNS MAP &amp; A DAY IN THE LIFE</p>
+          <h2 id="about-sns-title">
+            つながる場所・<mark className="marker">一日の流れ。</mark>
+          </h2>
+        </div>
+        <div className="sns-map">
+          {snsCells.map((cell) =>
+            cell.href ? (
+              <a
+                className="sns-cell"
+                key={cell.name}
+                href={cell.href}
+                {...(cell.href.startsWith('http')
+                  ? { target: '_blank', rel: 'noopener noreferrer' }
+                  : {})}
+              >
+                <span className="sns-name">{cell.name}</span>
+                <span className="sns-handle">{cell.handle}</span>
+                <p>{cell.body}</p>
+              </a>
+            ) : (
+              <span className="sns-cell" key={cell.name}>
+                <span className="sns-name">{cell.name}</span>
+                <span className="sns-handle">{cell.handle}</span>
+                <p>{cell.body}</p>
+              </span>
+            ),
+          )}
+        </div>
+        <ol className="day-flow">
+          {dayFlow.map((step) => (
+            <li className="day-step" key={step.time} data-reveal>
+              <p className="day-time">{step.time}</p>
+              <h3>{step.title}</h3>
+              <p>{step.body}</p>
+            </li>
+          ))}
+        </ol>
       </section>
 
       <section className="about-player" aria-labelledby="about-player-title">
