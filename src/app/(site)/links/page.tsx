@@ -93,6 +93,17 @@ export default async function LinksPage() {
           </div>
         </PageSection>
       )}
+      <PageSection title="相互リンク・掲載について">
+        <div className="mutual-note">
+          <p>
+            個人サイト同士の相互リンクは歓迎しています。掲載希望や修正依頼は{' '}
+            <a className="inline-link" href="/contact">
+              CONTACT
+            </a>{' '}
+            からご連絡ください。リンク先の内容確認のため、返信まで少し時間をいただく場合があります。バナー画像は用意していないため、テキストリンクでお願いします。
+          </p>
+        </div>
+      </PageSection>
     </main>
   )
 }
