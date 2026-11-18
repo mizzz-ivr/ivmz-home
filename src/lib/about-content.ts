@@ -198,3 +198,48 @@ export const consultTopics = [
     body: '開発や運用で得た知見の共有、インタビュー、勉強会などのご依頼。',
   },
 ] as const
+
+export type Persona = {
+  id: string
+  label: string
+  title: string
+  lead: string
+  points: readonly string[]
+}
+
+/** About の「三つの顔」。いずれも本人の活動事実の範囲で書く。 */
+export const personas: readonly Persona[] = [
+  {
+    id: 'engineer',
+    label: '作る人',
+    title: 'エンジニアとして',
+    lead: 'Web・Realtime AI・Discord・API・DB・運用まで、体験から裏側までを一つのプロダクトとして作ります。',
+    points: [
+      '個人開発コミュニティ ivRooom の基盤を設計・運用',
+      '認証基盤、ポイント基盤、監視基盤まで自前で構築',
+      '小さく作って公開し、運用しながら磨く進め方',
+    ],
+  },
+  {
+    id: 'gamer',
+    label: '遊ぶ人',
+    title: 'ゲーマーとして',
+    lead: '原神・崩壊：スターレイル・ゼンレスゾーンゼロ・エンドフィールド・鳴潮・NTE を並行して遊んでいます。推しは原神の綺良々。',
+    points: [
+      'ビルドや編成はデータを見て組み立てる派',
+      '聖遺物スコアや探索度を可視化する自作ツールも開発',
+      'ゲームの活動記録を Web のプロフィールと連動させる実験中',
+    ],
+  },
+  {
+    id: 'creator',
+    label: '届ける人',
+    title: 'クリエイターとして',
+    lead: 'X・note・Qiita・Zenn・YouTube で、個人開発とゲームの記録を発信しています。動画の声は VOICEVOX「ずんだもん」。',
+    points: [
+      '発信の配分は 個人開発 40% / ゲーム 30% / 趣味・日常・ライフハック 各10%',
+      '下書き → 本人確認 → 投稿 の順を守って公開',
+      '作ったものは記事と動画で記録に残す',
+    ],
+  },
+]

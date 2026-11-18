@@ -1,11 +1,13 @@
 import Image from 'next/image'
 
 import { GitHubProfilePanel } from '@/components/site/GitHubProfilePanel'
+import { PersonaTabs } from '@/components/site/PersonaTabs'
 import { PageCTA, PageSection } from '@/components/site/PageFoundation'
 import {
   aboutAreas,
   buildSteps,
   consultTopics,
+  personas,
   playerStats,
   practices,
   principles,
@@ -42,6 +44,11 @@ export default async function AboutPage() {
             {site.name}
             。UIだけ、APIだけで区切らず、触れる体験からデータ・運用までを一つのプロダクトとして実装します。
           </p>
+          <ul className="about-persona-chips" aria-label="三つの顔">
+            <li>作る人</li>
+            <li>遊ぶ人</li>
+            <li>届ける人</li>
+          </ul>
           <div className="about-hero-actions">
             <a className="action-link action-primary" href="/works">
               Works を見る <span aria-hidden="true">↗</span>
@@ -85,6 +92,16 @@ export default async function AboutPage() {
             </div>
           ))}
         </dl>
+      </section>
+
+      <section className="about-personas" aria-labelledby="about-personas-title">
+        <div className="about-player-head" data-reveal>
+          <p className="signal-label">THREE FACES</p>
+          <h2 id="about-personas-title">
+            三つの<mark className="marker">顔。</mark>
+          </h2>
+        </div>
+        <PersonaTabs personas={personas} />
       </section>
 
       <section className="about-player" aria-labelledby="about-player-title">
