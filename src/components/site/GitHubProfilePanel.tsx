@@ -1,5 +1,7 @@
 import type { GitHubProfile } from '@/lib/github-profile'
 
+import { AutoSyncBadge } from './AutoSyncBadge'
+
 function formatDate(value: string | null) {
   if (!value) return null
   const date = new Date(value)
@@ -16,6 +18,7 @@ export function GitHubProfilePanel({ profile }: { profile: GitHubProfile | null 
         <p className="github-panel-title">
           GitHub <span>@{profile.login}</span>
         </p>
+        <AutoSyncBadge source="GitHub API" />
         <a href={profile.profileUrl} target="_blank" rel="noreferrer">
           プロフィールを見る <span aria-hidden="true">↗</span>
         </a>

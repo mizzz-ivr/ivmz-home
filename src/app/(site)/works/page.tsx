@@ -1,3 +1,4 @@
+import { AutoSyncBadge } from '@/components/site/AutoSyncBadge'
 import { EmptyState, PageCTA, PageHero, PageSection } from '@/components/site/PageFoundation'
 import { RepoStats } from '@/components/site/RepoStats'
 import { getGitHubRepoStatsByUrl } from '@/lib/github-repo'
@@ -60,6 +61,12 @@ export default async function WorksPage() {
         </div>
       </PageSection>
       <PageSection title="Published works" description={<p>公開中のプロジェクトです。</p>}>
+        {content.items.length > 0 && repoStats.size > 0 ? (
+          <p className="autosync-row">
+            <AutoSyncBadge source="GitHub API" />
+            <span>スター・言語・更新日は GitHub から自動取得しています。</span>
+          </p>
+        ) : null}
         {content.state === 'error' ? (
           <EmptyState title="一覧を読み込めませんでした">{copy.queryError}</EmptyState>
         ) : content.items.length === 0 ? (
