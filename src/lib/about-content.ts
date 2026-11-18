@@ -339,3 +339,139 @@ export const gameShelf: readonly GameShelfEntry[] = [
     tags: ['基地運営', 'UID 登録のみの枠あり'],
   },
 ]
+
+export type ContentMixItem = {
+  label: string
+  percent: number
+}
+
+export const contentMix: readonly ContentMixItem[] = [
+  { label: '個人開発', percent: 40 },
+  { label: 'ゲーム', percent: 30 },
+  { label: 'その他趣味', percent: 10 },
+  { label: '日常', percent: 10 },
+  { label: 'ライフハック / 経済', percent: 10 },
+]
+
+export type CreatorStep = {
+  title: string
+  body: string
+}
+
+export const creatorSteps: readonly CreatorStep[] = [
+  { title: 'ネタを拾う', body: '開発の詰まり、障害、攻略の気づきをメモに残す' },
+  { title: '下書きする', body: '記事も投稿も、まず下書きで形にする' },
+  { title: '確認・承認', body: '数字と事実を実測で確かめてから出す' },
+  { title: '公開する', body: 'RSS / API でこのサイトにも自動連動' },
+  { title: '振り返る', body: '反応を見て次のネタと改善に繋げる' },
+]
+
+export type CreatorChannel = {
+  name: string
+  body: string
+  status: string
+  tone: 'daily' | 'chill' | 'watch'
+}
+
+export const creatorChannels: readonly CreatorChannel[] = [
+  {
+    name: 'X — @ivuruGG',
+    body: '開発の進捗と日常の本丸。感想や軽い連絡もここで受けています。',
+    status: 'メイン',
+    tone: 'daily',
+  },
+  {
+    name: 'Qiita / Zenn',
+    body: '移行や運用の実録記事の置き場。公開すると RSS でこのサイトの BLOG に自動で届く。',
+    status: 'RSS AUTO',
+    tone: 'daily',
+  },
+  {
+    name: 'note',
+    body: '技術に寄りすぎない話と、収益化を意識した記事の置き場。',
+    status: '不定期',
+    tone: 'chill',
+  },
+  {
+    name: 'YouTube',
+    body: '動画は制作中（声： VOICEVOX ずんだもん）。公開したらチャンネルと最新動画をここにも出す。',
+    status: '制作中',
+    tone: 'watch',
+  },
+]
+
+export type SnsCell = {
+  name: string
+  handle: string
+  body: string
+  href?: string
+}
+
+export const snsCells: readonly SnsCell[] = [
+  {
+    name: 'GitHub',
+    handle: '@mizzz-ivr ↗',
+    body: 'コードの本丸。開発はここが正本。',
+    href: 'https://github.com/mizzz-ivr',
+  },
+  {
+    name: 'X',
+    handle: '@ivuruGG ↗',
+    body: '毎日の進捗とゲームの話。感想や軽い連絡もここで。',
+    href: 'https://x.com/ivuruGG',
+  },
+  {
+    name: 'Qiita',
+    handle: '@mizzz-ivr ↗',
+    body: '移行・運用の実録記事。RSS でサイトへ自動連動。',
+    href: 'https://qiita.com/mizzz-ivr',
+  },
+  {
+    name: 'Zenn / note',
+    handle: '連携を整え中',
+    body: 'Zenn は技術記事、note は柔らかい話の置き場。',
+  },
+  { name: 'YouTube', handle: '連携予定', body: '動画は制作中。公開したら最新動画を埋め込む。' },
+  { name: 'Instagram', handle: '連携予定', body: '表記と運用を確認中。整ったらここに出す。' },
+  {
+    name: 'IVRM ポータル',
+    handle: 'ivrm.jp ↗',
+    body: 'コミュニティの会員ポータル。活動の中心地。',
+    href: 'https://ivrm.jp/',
+  },
+  {
+    name: 'リンク集',
+    handle: '/LINKS →',
+    body: '居場所の完全版は LINKS ページにまとめている。',
+    href: '/links',
+  },
+]
+
+export type DayStep = {
+  time: string
+  title: string
+  body: string
+}
+
+export const dayFlow: readonly DayStep[] = [
+  {
+    time: 'MORNING — 09:00',
+    title: 'デイリーが切り替わる',
+    body: 'Daily Quiz の通知と前日分の締切。ゲームのデイリー計画もここで立てる。',
+  },
+  {
+    time: 'DAYTIME — BUILD',
+    title: '作る時間',
+    body: 'ポータルや Bot の開発・運用。Issue を切って、小さく公開して直す。',
+  },
+  {
+    time: 'EVENING — PLAY & POST',
+    title: '遊んで、書く時間',
+    body: 'ゲームのデイリー消化と探索。進捗や気づきは X や記事の下書きへ。',
+  },
+  {
+    time: 'NIGHT — 01:15 AUTO',
+    title: '裏側が回る時間',
+    body: 'DevIntel の夜間集計など、自動運転が翌朝の材料を揃えてくれる。',
+  },
+]
