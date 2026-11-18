@@ -7,6 +7,8 @@ import {
   aboutAreas,
   buildSteps,
   consultTopics,
+  favorites,
+  gameShelf,
   personas,
   playerStats,
   practices,
@@ -102,6 +104,59 @@ export default async function AboutPage() {
           </h2>
         </div>
         <PersonaTabs personas={personas} />
+      </section>
+
+      <section className="about-favorites" aria-labelledby="about-favorites-title">
+        <div className="about-player-head" data-reveal>
+          <p className="signal-label">FAVORITES &amp; HOBBIES</p>
+          <h2 id="about-favorites-title">
+            好きなこと・<mark className="marker">推しごと。</mark>
+          </h2>
+          <p className="about-section-lead">
+            仕事の外側をもう少しだけ詳しく。ここが厚いほうが、このサイトの「人となり」は伝わると思っています。
+          </p>
+        </div>
+        <div className="fav-grid">
+          {favorites.map((fav) => (
+            <article className="fav-card" key={fav.kicker} data-kanji={fav.kanji} data-reveal>
+              <p className="fav-kicker">{fav.kicker}</p>
+              <h3>{fav.title}</h3>
+              <p>{fav.body}</p>
+              {fav.note ? <p className="fav-note">{fav.note}</p> : null}
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="about-shelf" aria-labelledby="about-shelf-title">
+        <div className="about-player-head" data-reveal>
+          <p className="signal-label">GAME SHELF / HOW I PLAY</p>
+          <h2 id="about-shelf-title">
+            ゲーム棚 — <mark className="marker">遊び方まで。</mark>
+          </h2>
+          <p className="about-section-lead">
+            タイトル名だけじゃなく、どう付き合っているかまで書く棚。数字が取れないタイトルは、取れないまま書きます。
+          </p>
+        </div>
+        <div className="game-plays">
+          {gameShelf.map((game) => (
+            <article className="play-card" key={game.name} data-reveal>
+              <div className="play-head">
+                <div>
+                  <h3>{game.name}</h3>
+                  <p className="play-en">{game.en}</p>
+                </div>
+                <span className={`shelf-status tone-${game.tone}`}>{game.status}</span>
+              </div>
+              <p className="play-style">{game.style}</p>
+              <ul className="play-tags" aria-label={`${game.name} の特徴`}>
+                {game.tags.map((tag) => (
+                  <li key={tag}>{tag}</li>
+                ))}
+              </ul>
+            </article>
+          ))}
+        </div>
       </section>
 
       <section className="about-player" aria-labelledby="about-player-title">

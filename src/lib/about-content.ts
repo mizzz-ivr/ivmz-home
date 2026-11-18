@@ -243,3 +243,99 @@ export const personas: readonly Persona[] = [
     ],
   },
 ]
+
+export type Favorite = {
+  kanji: string
+  kicker: string
+  title: string
+  body: string
+  note?: string
+}
+
+export const favorites: readonly Favorite[] = [
+  {
+    kanji: '推',
+    kicker: 'OSHI — GENSHIN',
+    title: '綺良々が推し',
+    body: '原神の推しは綺良々。強さだけじゃなく、探索のお供としての楽しさも含めて好きで、探索パーティには必ず入れる枠。推しがいるから続けられる、というタイプです。',
+    note: 'こだわり： 戦闘用 2PT とは別に、綺良々入りの探索 PT を組む。効率より「一緒に歩きたい」を優先する場面がある。',
+  },
+  {
+    kanji: '音',
+    kicker: 'MUSIC — WHILE WORKING',
+    title: '音楽と作業環境',
+    body: '作業中はプレイリストが常駐。集中したいときの BGM があると手が止まらない。最近聴いた曲をプロフィールに出す Spotify 連携（ivrm-web #991）を進めていて、公開は同意したときだけ出す設計です。',
+  },
+  {
+    kanji: '画',
+    kicker: 'VIDEO — IN PRODUCTION',
+    title: '動画づくり',
+    body: '声は VOICEVOX「ずんだもん」。開発の解説とゲーム動画を制作中で、現在は公開準備フェーズ。台本→編集→確認の流れも、開発と同じく小さく回して直していくスタイルです。',
+  },
+  {
+    kanji: '箱',
+    kicker: 'MINECRAFT — PLAY & OPERATE',
+    title: 'Minecraft',
+    body: 'IVRM の MC サーバー（main / resource）を運営しながら自分も遊ぶ。独自 mod で活動統計を取ってポータルの XP やランキングに繋げるなど、遊びを仕組み化するのが楽しい。',
+  },
+  {
+    kanji: '書',
+    kicker: 'WRITING — NOTES & LOGS',
+    title: '書く・残す',
+    body: '移行の実録、障害の切り分け、設計の判断理由——あとから自分が助かる記録を、誰かも助かる形で記事にする。日報や Issue の記録癖もここから来ています。',
+  },
+  {
+    kanji: '試',
+    kicker: 'TINKERING — INFRA & TOOLS',
+    title: '基盤いじり',
+    body: 'サーバー、CI、監視、自動集計のパイプラインなど、「裏側が勝手に回っている」状態を作るのが好き。本番で回る自動運転（毎晩 01:15 の DevIntel 集計など）が増えるほど嬉しい。',
+  },
+]
+
+export type GameShelfEntry = {
+  name: string
+  en: string
+  status: string
+  tone: 'daily' | 'chill' | 'watch'
+  style: string
+  tags: readonly string[]
+}
+
+export const gameShelf: readonly GameShelfEntry[] = [
+  {
+    name: '原神',
+    en: 'GENSHIN IMPACT',
+    status: '毎日デイリー',
+    tone: 'daily',
+    style:
+      '推しは綺良々。世界任務と探索度上げをまったり進めるのが本線で、戦闘は螺旋などの目標があるときに本気を出す。探索 PT に推しを入れるのがマイルール。',
+    tags: ['探索重視', '推し：綺良々', 'Enka 連携'],
+  },
+  {
+    name: '崩壊：スターレイル',
+    en: 'HONKAI: STAR RAIL',
+    status: '毎日デイリー',
+    tone: 'daily',
+    style:
+      'デイリーと開拓力の消化が日常の軸。Herta の /game コマンドで UID 連携と聖遺物スコア確認ができるようにした側でもあり、遊ぶ体験と作る体験が一番重なっているタイトル。',
+    tags: ['デイリー消化', '聖遺物スコア', 'Enka + Herta'],
+  },
+  {
+    name: 'ゼンレスゾーンゼロ',
+    en: 'ZENLESS ZONE ZERO',
+    status: 'まったり進行',
+    tone: 'chill',
+    style:
+      '式輿防衛戦を回しつつ、新エリアの探索は急がず楽しむ枠。アクションの手触りが好きで、短い時間でも触れるのがちょうどいい。',
+    tags: ['防衛戦', '短時間プレイ', 'Enka 連携'],
+  },
+  {
+    name: 'エンドフィールド ＋ 様子見組',
+    en: 'ENDFIELD / WUTHERING WAVES / NTE / GAKUMAS',
+    status: '様子見も含む',
+    tone: 'watch',
+    style:
+      'エンドフィールドは基地運営を眺めている時間が長めで、育成はこれから。鳴潮 / NTE / 学マスは管理対象として枠を用意しつつ、触れるタイミングを見ている組。取得手段がないものは UID 登録のみで無理に数字を作らない。',
+    tags: ['基地運営', 'UID 登録のみの枠あり'],
+  },
+]
