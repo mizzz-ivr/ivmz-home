@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import { assertPreviewDatabaseTarget } from './assert-preview-database.mjs'
 
-const HOST = '13.197.31.66'
+const HOST = 'pg-relay.ivrm.jp'
 const PREVIEW_DB = 'ivmz_home_preview'
 const PROD_DB = 'ivmz_home'
 
