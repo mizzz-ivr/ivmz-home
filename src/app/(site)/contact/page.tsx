@@ -29,6 +29,10 @@ export default function ContactPage() {
         signal="CONTACT / FORM"
       />
 
+      <div className="contact-ghost" aria-hidden="true">
+        CONTACT
+      </div>
+
       <PageSection
         title="Send a message"
         description={<p>必要事項をご入力ください。送信前に内容を確認できます。</p>}
@@ -60,6 +64,20 @@ export default function ContactPage() {
               Open mail app ↗
             </a>
           </div>
+          <div className="contact-primary">
+            <div>
+              <span>X / LIGHT CONTACT</span>
+              <strong>
+                <a href={site.xUrl} target="_blank" rel="noopener noreferrer">
+                  @ivuruGG
+                </a>
+              </strong>
+            </div>
+            <a className="action-link" href={site.xUrl} target="_blank" rel="noopener noreferrer">
+              X で声をかける ↗
+            </a>
+          </div>
+          <p>軽い用件や感想は X のリプライ・DM でもどうぞ。開発の進捗もここで流しています。</p>
           <p>
             匿名のひとことメッセージは現在準備中です。受付開始までは通常のお問い合わせフォームをご利用ください。
           </p>

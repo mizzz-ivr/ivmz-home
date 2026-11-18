@@ -25,6 +25,28 @@ type Draft = {
 
 const categoryLabels: Record<string, string> = contactCategoryLabels
 
+const channelOrder: readonly ContactCategory[] = [
+  'job',
+  'development',
+  'collaboration',
+  'community',
+  'team',
+  'media',
+  'personal',
+  'security',
+]
+
+const channelDescriptions: Record<ContactCategory, string> = {
+  job: '仕事の依頼・業務の相談',
+  development: '技術相談・OSS・開発まわり',
+  collaboration: 'コラボレーションの提案',
+  community: 'コミュニティについての連絡',
+  team: 'ivRooom チームへの連絡',
+  media: '取材・登壇・掲載の依頼',
+  personal: '個人的な連絡・感想など',
+  security: '脆弱性報告など（専用メールも可）',
+}
+
 type ContactResponse = {
   code?: string
   errors?: ContactValidationErrors
@@ -54,6 +76,7 @@ export function ContactForm({ generalEmail, securityEmail, turnstileSiteKey }: C
   const submittingRef = useRef(false)
   const editedWhileSubmittingRef = useRef(false)
   const [fieldErrors, setFieldErrors] = useState<ContactValidationErrors>({})
+  const [channel, setChannel] = useState('')
   const [state, setState] = useState<SubmitState>('idle')
   const [attachmentState, setAttachmentState] = useState<{ busy: boolean; tokens: string[] }>({
     busy: false,
@@ -207,6 +230,32 @@ export function ContactForm({ generalEmail, securityEmail, turnstileSiteKey }: C
         }}
         onSubmit={review}
       >
+        <p className="ticket-head" aria-hidden="true">
+          <span>CONTACT TICKET — 受付票</span>
+          <span>ivmz</span>
+        </p>
+        <span className="ticket-stamp" aria-hidden="true">
+          受付中
+        </span>
+        <div className="contact-channels" role="group" aria-label="用件チャンネル">
+          {channelOrder.map((value, index) => (
+            <button
+              aria-pressed={channel === value}
+              className={channel === value ? 'chan-card is-on' : 'chan-card'}
+              key={value}
+              onClick={() => {
+                setChannel(value)
+                clearFieldError('category')
+              }}
+              type="button"
+            >
+              <span className="chan-no">CH-{String(index + 1).padStart(2, '0')}</span>
+              <span className="chan-name">{categoryLabels[value]}</span>
+              <span className="chan-desc">{channelDescriptions[value]}</span>
+            </button>
+          ))}
+        </div>
+
         <div className="contact-field-grid">
           <div className="contact-field">
             <label htmlFor="contact-name">お名前</label>
@@ -254,11 +303,14 @@ export function ContactForm({ generalEmail, securityEmail, turnstileSiteKey }: C
           <select
             aria-describedby={fieldErrors.category ? 'contact-category-error' : undefined}
             aria-invalid={Boolean(fieldErrors.category)}
-            defaultValue=""
             id="contact-category"
             name="category"
-            onChange={() => clearFieldError('category')}
+            onChange={(event) => {
+              setChannel(event.target.value)
+              clearFieldError('category')
+            }}
             required
+            value={channel}
           >
             <option disabled value="">
               選択してください
