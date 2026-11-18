@@ -905,3 +905,65 @@ a.ticker-item:hover .ticker-title {
     animation: none;
   }
 }
+
+/* W2 (mock v4): Works index rows, WHAT I DO tiles, process diamonds */
+/* Works: the signal label becomes an outlined chip, like an index tag. */
+.work-copy > span {
+  display: inline-block;
+  padding: 4px 10px;
+  border: 1px solid color-mix(in srgb, var(--color-signal-cyan) 45%, transparent);
+  border-radius: 999px;
+}
+
+/* WHAT I DO: line rows become coloured tiles (2 x 2 on desktop). */
+.capability-lines {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  border-top: 0;
+}
+.capability-lines article {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+  padding: 24px 24px 24px 80px;
+  border: 1px solid var(--color-line);
+  border-radius: 18px;
+  background: var(--color-surface);
+}
+.capability-lines article .capability-icon {
+  top: 24px;
+  left: 24px;
+}
+.capability-lines small {
+  grid-column: 1;
+}
+.capability-lines article:nth-child(1) {
+  border-top: 3px solid var(--color-primary);
+}
+.capability-lines article:nth-child(2) {
+  border-top: 3px solid var(--color-signal-cyan);
+}
+.capability-lines article:nth-child(3) {
+  border-top: 3px solid var(--color-pop, #ffd84a);
+}
+.capability-lines article:nth-child(4) {
+  border-top: 3px solid var(--color-selection);
+}
+@media (max-width: 720px) {
+  .capability-lines {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* HOW I BUILD: pipeline nodes are filled diamonds that light up on hover. */
+.process-steps li::after {
+  top: -5px;
+  width: 9px;
+  height: 9px;
+  background: color-mix(in srgb, var(--color-primary) 35%, var(--color-bg));
+  transition: background 300ms ease;
+}
+.process-steps li:hover::after {
+  background: var(--color-pop, #ffd84a);
+}
