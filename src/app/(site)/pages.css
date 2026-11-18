@@ -1274,3 +1274,57 @@
     display: none;
   }
 }
+
+/* S6 (mock v4): schedule rhythm cards + links mutual note */
+.rhythm-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.rhythm-card {
+  padding: clamp(18px, 3vw, 26px);
+  border: 1px solid var(--color-line);
+  border-radius: 18px;
+  background: var(--color-surface);
+}
+.rhythm-card h3 {
+  margin: 0 0 14px;
+  color: var(--color-muted);
+  font: 700 0.7rem/1.5 var(--font-mono);
+  letter-spacing: 0.1em;
+}
+.rhythm-row {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px dashed var(--color-line);
+}
+.rhythm-row strong {
+  display: block;
+  margin-bottom: 3px;
+}
+.rhythm-row p {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.88rem;
+}
+.rhythm-time {
+  color: var(--color-cyan);
+  font: 700 0.72rem/1.6 var(--font-mono);
+  white-space: nowrap;
+}
+.mutual-note {
+  padding: clamp(18px, 3vw, 26px);
+  border: 1px solid var(--color-line);
+  border-radius: 18px;
+  background: var(--color-surface);
+}
+.mutual-note p {
+  margin: 0;
+}
+@media (max-width: 860px) {
+  .rhythm-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -1,3 +1,4 @@
+import { AutoSyncBadge } from '@/components/site/AutoSyncBadge'
 import { EmptyState, PageCTA, PageHero, PageSection } from '@/components/site/PageFoundation'
 import { getIntegrationSettings } from '@/lib/integration-settings'
 import { createPageMetadata } from '@/lib/metadata'
@@ -77,6 +78,9 @@ export default async function SchedulePage() {
           title="Calendar"
           description={<p>Googleカレンダーの公開予定を、自動で表示しています。</p>}
         >
+          <p className="autosync-row">
+            <AutoSyncBadge source="Google Calendar" />
+          </p>
           <div className="content-list">
             {calendarEvents.map((event) => (
               <article className="content-row" key={`${event.start}-${event.title}`}>
@@ -99,6 +103,72 @@ export default async function SchedulePage() {
           </div>
         </PageSection>
       )}
+      <PageSection
+        title="Rhythm"
+        description={
+          <p>
+            毎日の自動運転と、これからの節目です。人の予定だけでなく、運用のリズムも公開しています。
+          </p>
+        }
+      >
+        <div className="rhythm-grid">
+          <article className="rhythm-card">
+            <h3>DAILY RHYTHM — 毎日自動で回るもの</h3>
+            <div className="rhythm-row">
+              <span className="rhythm-time">01:15 JST</span>
+              <div>
+                <strong>DevIntel 夜間集計</strong>
+                <p>全52 repo の開発活動を収集・集計します。翌朝の日報の元データになります。</p>
+              </div>
+            </div>
+            <div className="rhythm-row">
+              <span className="rhythm-time">03:15 JST</span>
+              <div>
+                <strong>データベースの日次バックアップ</strong>
+                <p>PostgreSQL 17 上の各データベースを自動でバックアップします。</p>
+              </div>
+            </div>
+            <div className="rhythm-row">
+              <span className="rhythm-time">09:00 JST</span>
+              <div>
+                <strong>Daily Quiz 通知＋前日分の締切</strong>
+                <p>当日分の受付は翌09:00まで。ボーナスは当日分のみ09:00に解放されます。</p>
+              </div>
+            </div>
+          </article>
+          <article className="rhythm-card">
+            <h3>NEXT MILESTONES</h3>
+            <div className="rhythm-row">
+              <span className="rhythm-time">#176</span>
+              <div>
+                <strong>サイト刷新の継続</strong>
+                <p>ページ単位で「実装 → 確認 → 本番反映」を繰り返しています。</p>
+              </div>
+            </div>
+            <div className="rhythm-row">
+              <span className="rhythm-time">#173</span>
+              <div>
+                <strong>開発ライブの公開</strong>
+                <p>GitHub / DevIntel の集計値を、公開範囲だけフィードとして出す予定です。</p>
+              </div>
+            </div>
+            <div className="rhythm-row">
+              <span className="rhythm-time">#174/175</span>
+              <div>
+                <strong>ゲーム連携</strong>
+                <p>Enka ショーケース（同意連動）と、Herta の活動の公開 API を設計中です。</p>
+              </div>
+            </div>
+            <div className="rhythm-row">
+              <span className="rhythm-time">2026-12-13</span>
+              <div>
+                <strong>監視 Console の枠が自動解除予定</strong>
+                <p>ingest 再開後に、アラート改善の効果測定を再開する想定です。</p>
+              </div>
+            </div>
+          </article>
+        </div>
+      </PageSection>
       <PageCTA
         title="ご相談はこちらから"
         body="お仕事・開発のご相談、コラボレーションなどはContactからご連絡ください。"
