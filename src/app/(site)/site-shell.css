@@ -173,3 +173,47 @@ html.ivmz-signature-seen .signature-intro {
     transition: none;
   }
 }
+
+/* W5 (mock v4): auto-sync source labels */
+.autosync-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 10px;
+  border: 1px solid var(--color-signal-cyan);
+  border-radius: 999px;
+  color: var(--color-signal-cyan);
+  font: 700 0.62rem/1.4 var(--font-mono);
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}
+.autosync-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-signal-cyan);
+  animation: autosync-pulse 2.4s ease-in-out infinite;
+}
+@keyframes autosync-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .autosync-dot {
+    animation: none;
+  }
+}
+.autosync-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 16px;
+  color: var(--color-muted);
+  font-size: 0.85rem;
+}

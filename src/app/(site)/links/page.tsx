@@ -1,3 +1,4 @@
+import { AutoSyncBadge } from '@/components/site/AutoSyncBadge'
 import { EmptyState, PageHero, PageSection } from '@/components/site/PageFoundation'
 import { createPageMetadata } from '@/lib/metadata'
 import { getSocialLinksListContent } from '@/lib/public-list-content'
@@ -61,6 +62,9 @@ export default async function LinksPage() {
       </PageSection>
       {videos.length > 0 && (
         <PageSection title="Latest videos" description={<p>YouTubeチャンネルの最新動画です。</p>}>
+          <p className="autosync-row">
+            <AutoSyncBadge source="YouTube RSS" />
+          </p>
           <ul className="video-grid">
             {videos.map((video) => (
               <li key={video.id}>
